@@ -2,9 +2,11 @@ import type {
   Cancion,
   CierreCaja,
   Evento,
+  EstadoTarea,
   EstadoTurno,
   Inscripcion,
   MovimientoCaja,
+  OrigenTarea,
   Propuesta,
   RoleAssignment,
   RolesMap,
@@ -17,6 +19,8 @@ import type {
 export const DEMO_MES = "2026-10";
 export const DEMO_EVENTO_ID = "ev-demo";
 export const DEMO_SESSION_KEY = "jam_demo_email";
+/** Sesión cerrada de referencia para el historial del admin. */
+export const DEMO_HISTORIAL_ID = "ev-2026-09";
 
 /** Cuenta dummy de demo: cada email entra con su propio uid y su rol. */
 export interface DemoAccount {
@@ -244,6 +248,16 @@ export const DEMO_TASK_TEMPLATES: Record<string, DemoTaskTemplate[]> = {
   ],
 };
 
+/** Sesión ya cerrada (realizada) con todos sus datos, para el historial. */
+export interface EntradaHistorial {
+  evento: Evento;
+  roles: RoleAssignment[];
+  inscripciones: Inscripcion[];
+  tareas: Tarea[];
+  movimientos: MovimientoCaja[];
+  cierre: CierreCaja | null;
+}
+
 export interface DemoStore {
   evento: Evento;
   dataVersion: number;
@@ -256,6 +270,7 @@ export interface DemoStore {
   turnos: Turno[];
   movimientos: MovimientoCaja[];
   cierre: CierreCaja | null;
+  historial: EntradaHistorial[];
   contador: number;
 }
 
@@ -327,6 +342,7 @@ export function createDemoStore(): DemoStore {
     turnos: [],
     movimientos: [],
     cierre: null,
+    historial: [],
     contador: 100,
   };
 
@@ -549,6 +565,159 @@ export function createDemoStore(): DemoStore {
     mov("otro", "Propina banda", 8, "efectivo"),
     mov("gasto", "Reposición de bebidas para el bar", 35, "efectivo"),
     mov("gasto", "Impresión de carteles", 6, "efectivo"),
+  ];
+
+  const eventoSep: Evento = {
+    id: DEMO_HISTORIAL_ID,
+    titulo: "Jam Session de Septiembre",
+    mes: "2026-09",
+    fecha: "2026-09-26",
+    hora: "20:30",
+    lugar: "Sala El Sótano — C/ Rock 12",
+    estado: "realizado",
+    aprobadoPor: "demo-gb",
+    cartelUrl: "",
+    ensayo: "2026-09-19T17:00",
+    inscripcionesCerradas: true,
+  };
+
+  const tareaSep = (
+    rol: Rol,
+    titulo: string,
+    estado: EstadoTarea,
+    origen: OrigenTarea = "auto",
+  ): Tarea => ({
+    id: demoId(store, "th"),
+    eventoId: eventoSep.id,
+    rol,
+    titulo,
+    origen,
+    estado,
+    creadaPor: "sistema",
+    marcadaPor: estado === "hecha" ? "demo-admin" : "",
+    marcadaAt: estado === "hecha" ? "2026-09-26T23:00:00.000Z" : "",
+  });
+
+  const movSep = (
+    tipo: MovimientoCaja["tipo"],
+    concepto: string,
+    importe: number,
+    metodo: string,
+  ): MovimientoCaja => ({
+    id: demoId(store, "mh"),
+    eventoId: eventoSep.id,
+    tipo,
+    concepto,
+    importe,
+    metodo,
+    uid: "demo-caja",
+    fecha: "2026-09-26T22:30:00.000Z",
+    nota: "",
+  });
+
+  store.historial = [
+    {
+      evento: eventoSep,
+      roles: [
+        { mes: "2026-09", rol: "admin", uid: "demo-admin", tipo: "titular" },
+        { mes: "2026-09", rol: "general", uid: "demo-gb", tipo: "titular" },
+        { mes: "2026-09", rol: "grupo-base", uid: "demo-general", tipo: "titular" },
+        { mes: "2026-09", rol: "stage-manager", uid: "demo-sm", tipo: "titular" },
+        { mes: "2026-09", rol: "stage-manager", uid: "u3", tipo: "apoyo" },
+        { mes: "2026-09", rol: "tecnico", uid: "demo-tecnico", tipo: "titular" },
+        { mes: "2026-09", rol: "caja", uid: "demo-caja", tipo: "titular" },
+        { mes: "2026-09", rol: "redes", uid: "demo-redes", tipo: "titular" },
+      ],
+      inscripciones: [
+        {
+          id: "ih1",
+          eventoId: eventoSep.id,
+          uid: "u2",
+          nombre: "Lucía Prado",
+          instrumentos: ["Voz", "Guitarra"],
+          temas: [
+            { temaId: "c1", titulo: "Sultans of Swing", instrumento: "Guitarra" },
+            { temaId: "c3", titulo: "Valerie", instrumento: "Voz" },
+          ],
+          estado: "asignado",
+          notas: "",
+          fecha: "2026-09-08T18:00:00.000Z",
+        },
+        {
+          id: "ih2",
+          eventoId: eventoSep.id,
+          uid: "u3",
+          nombre: "Marcos Vidal",
+          instrumentos: ["Bajo"],
+          temas: [{ temaId: "c2", titulo: "Come As You Are", instrumento: "Bajo" }],
+          estado: "parcial",
+          notas: "Solo el segundo bloque.",
+          fecha: "2026-09-09T19:30:00.000Z",
+        },
+        {
+          id: "ih3",
+          eventoId: eventoSep.id,
+          uid: "u4",
+          nombre: "Nuria Sáez",
+          instrumentos: ["Teclado", "Coro"],
+          temas: [{ temaId: "c5", titulo: "Wonderwall", instrumento: "Teclado" }],
+          estado: "asignado",
+          notas: "",
+          fecha: "2026-09-10T20:00:00.000Z",
+        },
+        {
+          id: "ih4",
+          eventoId: eventoSep.id,
+          uid: "u5",
+          nombre: "Iván Costa",
+          instrumentos: ["Batería"],
+          temas: [{ temaId: "c4", titulo: "Superstition", instrumento: "Batería" }],
+          estado: "rechazado",
+          notas: "Cupo de batería completo.",
+          fecha: "2026-09-11T21:00:00.000Z",
+        },
+      ],
+      tareas: [
+        tareaSep("admin", "Ejecutar la rotación mensual de roles", "hecha"),
+        tareaSep("general", "Evaluar viabilidad logística y económica de la sesión", "hecha"),
+        tareaSep("general", "Aprobar o rechazar las propuestas de repertorio", "hecha"),
+        tareaSep("grupo-base", "Evaluar las solicitudes de los músicos inscritos", "hecha"),
+        tareaSep("grupo-base", "Asignar quién toca cada tema en la escaleta", "hecha"),
+        tareaSep("stage-manager", "Preparar la escaleta base con los turnos", "hecha"),
+        tareaSep("tecnico", "Planificar micrófonos, líneas y monitores", "hecha"),
+        tareaSep("caja", "Realizar el cuadre de caja al cierre", "hecha"),
+        tareaSep("redes", "Publicar agradecimientos y material post-evento", "hecha"),
+        tareaSep(
+          "redes",
+          "Colgar el vídeo resumen en TikTok",
+          "pendiente",
+          "personal",
+        ),
+      ],
+      movimientos: [
+        movSep("consumible", "Cerveza", 2.5, "efectivo"),
+        movSep("consumible", "Cerveza", 2.5, "efectivo"),
+        movSep("consumible", "Refresco", 1.5, "efectivo"),
+        movSep("consumible", "Cerveza", 2.5, "efectivo"),
+        movSep("consumible", "Cerveza", 2.5, "efectivo"),
+        movSep("consumible", "Rebebida combinado", 4, "efectivo"),
+        movSep("consumible", "Agua", 1.5, "tarjeta"),
+        movSep("otro", "Aportación barra — acuerdo entidades", 60, "efectivo"),
+        movSep("otro", "Propina banda", 5, "efectivo"),
+        movSep("gasto", "Reposición de bebidas para el bar", 28, "efectivo"),
+        movSep("gasto", "Taxi de equipo", 15, "efectivo"),
+      ],
+      cierre: {
+        eventoId: eventoSep.id,
+        fondoInicial: 50,
+        efectivoContado: 87.5,
+        cobradoEfectivo: 37.5,
+        esperadoEnCaja: 87.5,
+        diferencia: 0,
+        cerradoPor: "demo-caja",
+        cerradoAt: "2026-09-26T23:30:00.000Z",
+      },
+    },
   ];
 
   return store;

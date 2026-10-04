@@ -468,6 +468,19 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         roles: s.roles.filter((r) => r.mes === DEMO_MES),
       } as T;
 
+    case "admin.history": {
+      validarTitular("admin");
+      const nombres = new Map(s.usuarios.map((u) => [u.uid, u.nombre]));
+      const historial = s.historial.map((e) => ({
+        ...e,
+        roles: e.roles.map((r) => ({
+          ...r,
+          nombre: nombres.get(r.uid) ?? r.uid,
+        })),
+      }));
+      return { historial } as T;
+    }
+
     case "admin.rotate": {
       validarTitular("admin");
       const mes = String(b.mes ?? "");

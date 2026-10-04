@@ -59,6 +59,7 @@ export const ROLES_META: Record<
 export const ROLE_GUIDES: Record<Rol, string[]> = {
   admin: [
     "Revisa la Vista global (solo lectura): estado de la sesión, tareas de todos los roles, escaleta, inscripciones y caja.",
+    "Consulta el Historial de sesiones cerradas: participantes, roles del mes, tareas completadas y resultado de caja.",
     "Antes del día 25 de cada mes, ejecuta la Rotación: asigna titular y apoyo a cada rol y guarda.",
     "Comprueba que cada nuevo titular puede entrar en su panel y que los apoyos solo leen.",
     "En la matriz, da de baja a usuarios inactivos y da de alta a los nuevos.",

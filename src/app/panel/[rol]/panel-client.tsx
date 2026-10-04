@@ -8,6 +8,7 @@ import { ROLES } from "@/types";
 import type { Rol } from "@/types";
 import { TaskList } from "@/components/panel/task-list";
 import { RotationPanel } from "@/components/admin/rotation-panel";
+import { HistoryReport } from "@/components/admin/history-report";
 import { ApproveCard } from "@/components/panel/approve-card";
 import { CashModule } from "@/components/panel/cash-module";
 import { InscripcionesPanel } from "@/components/panel/inscripciones-panel";
@@ -107,6 +108,13 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
           nota="Movimientos, totales y cierre. Escritura exclusiva del rol Caja."
         >
           <CashModule puedeEscribir={false} />
+        </Seccion>
+
+        <Seccion
+          titulo="Historial de sesiones"
+          nota="Sesiones cerradas: participantes, roles del mes, tareas y resultado de caja. Solo lectura."
+        >
+          <HistoryReport />
         </Seccion>
 
         <Seccion
