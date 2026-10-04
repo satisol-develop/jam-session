@@ -62,7 +62,22 @@ export function demoAccountFor(
 }
 
 export function demoRolesFor(account: DemoAccount): RolesMap {
-  return account.rol ? { [account.rol]: "titular" } : {};
+  const roles: RolesMap =
+    account.rol && account.rol !== "grupo-base"
+      ? { [account.rol]: "titular" }
+      : {};
+  if (!account.email) return roles;
+  // El Grupo Base no rota: acceso por pertenencia al grupo del mes vigente,
+  // elegido por el General (Opción 1: grupo ≠ rol de rotación).
+  const s = demoStore();
+  const enGrupo = s.roles.some(
+    (r) =>
+      r.mes === s.evento.mes &&
+      r.rol === "grupo-base" &&
+      r.uid === account.uid,
+  );
+  if (enGrupo) roles["grupo-base"] = "titular";
+  return roles;
 }
 
 export function readDemoSession(): { email: string; nombre?: string } | null {

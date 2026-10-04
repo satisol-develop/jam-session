@@ -70,7 +70,7 @@ export const ROLE_GUIDES: Record<Rol, string[]> = {
     "Valora la viabilidad logística y económica de la sesión (fecha, lugar, coste) antes de aprobar nada.",
     "Revisa las Propuestas de los músicos (canción + instrumento): aprueba o rechaza cada una; tu decisión es la final para el repertorio.",
     "Aprueba la sesión: se generan automáticamente las tareas de todos los roles.",
-    "Crea o confirma el Grupo Base del mes (es tu grupo) y revisa las inscripciones de músicos.",
+    "Elige quiénes forman el Grupo Base del mes en «Grupo Base del mes» (es tu grupo; no rota en la matriz) y revisa las inscripciones de músicos.",
     "Elige tus apoyos del mes en «Apoyos de tu rol»: usuarios con acceso de solo lectura para apoyarte.",
     "Tras la Jam, audita los fondos en «Auditoría de fondos» (solo lectura de la caja).",
     "Cuando la caja esté cerrada, cierra el evento: se congelará la operativa y quedará archivado en el historial.",

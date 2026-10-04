@@ -675,6 +675,33 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       return { evento: s.evento } as T;
     }
 
+    case "gb.set": {
+      validarTitular("general");
+      const mes = s.evento.mes;
+      const uids = [
+        ...new Set((Array.isArray(b.uids) ? b.uids : []).map(String)),
+      ];
+      const validos = uids
+        .filter((u) => u && s.usuarios.some((x) => x.uid === u && x.estado === "activo"))
+        .slice(0, 8);
+      if (validos.length === 0) {
+        throw new Error("El Grupo Base necesita al menos un miembro.");
+      }
+      s.roles = [
+        ...s.roles.filter((r) => !(r.mes === mes && r.rol === "grupo-base")),
+        ...validos.map((u) => ({
+          mes,
+          rol: "grupo-base" as const,
+          uid: u,
+          tipo: "titular" as const,
+        })),
+      ];
+      bumpDemoVersion(s);
+      return {
+        roles: s.roles.filter((r) => r.mes === mes && r.rol === "grupo-base"),
+      } as T;
+    }
+
     case "general.approve": {
       validarTitular("general");
       if (s.evento.estado !== "borrador") {

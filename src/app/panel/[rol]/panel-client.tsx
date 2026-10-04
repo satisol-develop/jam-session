@@ -17,6 +17,7 @@ import { InstrumentosPanel } from "@/components/panel/instrumentos-panel";
 import { PropuestasPanel } from "@/components/panel/propuestas-panel";
 import { DifusionKit } from "@/components/panel/difusion-kit";
 import { EnsayoPanel } from "@/components/panel/ensayo-panel";
+import { GrupoBasePanel } from "@/components/panel/grupo-base-panel";
 import { RoleGuide } from "@/components/panel/role-guide";
 
 function Seccion({
@@ -174,6 +175,15 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
           nota="Aprueba o rechaza cada propuesta: tu decisión es la final. Las aprobadas entran en el repertorio del mes. Siguen abiertas hasta que cierres el evento."
         >
           <PropuestasPanel editable={esTitular} />
+        </Seccion>
+      )}
+
+      {rol === "general" && (
+        <Seccion
+          titulo="Grupo Base del mes"
+          nota="Tu grupo: no rota en la matriz. Quien esté en la lista tiene acceso al panel de Grupo Base."
+        >
+          <GrupoBasePanel />
         </Seccion>
       )}
 
