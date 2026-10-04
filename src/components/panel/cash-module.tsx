@@ -94,7 +94,7 @@ export function CashModule({ puedeEscribir }: Props) {
   }
 
   if (!data) {
-    return <p className="text-sm text-neutral-500">{error ?? "Cargando caja…"}</p>;
+    return <p className="db-muted text-sm">{error ?? "Cargando caja…"}</p>;
   }
 
   const cobradoEfectivo = data.movimientos
@@ -106,11 +106,7 @@ export function CashModule({ puedeEscribir }: Props) {
 
   return (
     <div className="space-y-6">
-      {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-          {error}
-        </p>
-      )}
+      {error && <p className="db-error">{error}</p>}
 
       <div className="grid grid-cols-3 gap-3">
         {(
@@ -120,12 +116,11 @@ export function CashModule({ puedeEscribir }: Props) {
             ["Otros", data.totales.otros],
           ] as const
         ).map(([label, valor]) => (
-          <div
-            key={label}
-            className="rounded-xl border border-neutral-200 p-3 text-center dark:border-neutral-800"
-          >
-            <p className="text-xs text-neutral-500">{label}</p>
-            <p className="mt-1 text-lg font-bold tabular-nums">{eur.format(valor)}</p>
+          <div key={label} className="db-card p-3 text-center">
+            <p className="db-muted text-xs uppercase tracking-wider">{label}</p>
+            <p className="mt-1 text-lg font-bold tabular-nums text-[#FFE600]">
+              {eur.format(valor)}
+            </p>
           </div>
         ))}
       </div>
@@ -136,7 +131,7 @@ export function CashModule({ puedeEscribir }: Props) {
             <select
               value={tipo}
               onChange={(e) => setTipo(e.target.value as TipoMovimiento)}
-              className="rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+              className="db-input"
             >
               <option value="entrada">Entrada</option>
               <option value="consumible">Consumición</option>
@@ -145,7 +140,7 @@ export function CashModule({ puedeEscribir }: Props) {
             <select
               value={metodo}
               onChange={(e) => setMetodo(e.target.value)}
-              className="rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+              className="db-input"
             >
               <option value="efectivo">Efectivo</option>
               <option value="tarjeta">Tarjeta</option>
@@ -156,7 +151,7 @@ export function CashModule({ puedeEscribir }: Props) {
               onChange={(e) => setConcepto(e.target.value)}
               placeholder="Concepto (ej. Cerveza, Entrada)"
               maxLength={120}
-              className="rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+              className="db-input"
             />
             <div className="flex gap-2">
               <input
@@ -165,12 +160,12 @@ export function CashModule({ puedeEscribir }: Props) {
                 value={importe}
                 onChange={(e) => setImporte(e.target.value)}
                 placeholder="Importe €"
-                className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+                className="db-input"
               />
               <button
                 type="submit"
                 disabled={busy || !importe}
-                className="rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
+                className="db-btn shrink-0 px-4!"
               >
                 +
               </button>
@@ -180,14 +175,14 @@ export function CashModule({ puedeEscribir }: Props) {
       )}
 
       {data.movimientos.length === 0 ? (
-        <p className="text-sm text-neutral-500">Sin movimientos todavía.</p>
+        <p className="db-muted text-sm">Sin movimientos todavía.</p>
       ) : (
-        <ul className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
+        <ul className="db-card divide-y divide-white/10 overflow-hidden">
           {data.movimientos.map((m) => (
-            <li key={m.id} className="flex items-center gap-3 px-3 py-2 text-sm">
+            <li key={m.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
               <span className="flex-1">
                 <span className="font-medium">{m.concepto || m.tipo}</span>
-                <span className="ml-2 text-xs text-neutral-500">{m.metodo}</span>
+                <span className="db-muted ml-2 text-xs">{m.metodo}</span>
               </span>
               <span className="tabular-nums">{eur.format(m.importe)}</span>
               {puedeEscribir && !data.cierre && (
@@ -195,7 +190,7 @@ export function CashModule({ puedeEscribir }: Props) {
                   onClick={() => eliminar(m.id)}
                   disabled={busy}
                   aria-label="Anular movimiento"
-                  className="text-xs text-red-500 disabled:opacity-50"
+                  className="text-xs text-red-400 disabled:opacity-50"
                 >
                   ✕
                 </button>
@@ -205,17 +200,17 @@ export function CashModule({ puedeEscribir }: Props) {
         </ul>
       )}
 
-      <section className="rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
-        <h3 className="mb-3 text-sm font-bold">Cierre y cuadre</h3>
+      <section className="db-card p-4">
+        <h3 className="db-title mb-3 text-sm">Cierre y cuadre</h3>
 
         {data.cierre ? (
           <dl className="space-y-1 text-sm">
             <div className="flex justify-between">
-              <dt className="text-neutral-500">Fondo inicial</dt>
+              <dt className="db-muted">Fondo inicial</dt>
               <dd className="tabular-nums">{eur.format(data.cierre.fondoInicial)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-neutral-500">Cobrado en efectivo</dt>
+              <dt className="db-muted">Cobrado en efectivo</dt>
               <dd className="tabular-nums">{eur.format(data.cierre.cobradoEfectivo)}</dd>
             </div>
             <div className="flex justify-between font-medium">
@@ -228,15 +223,11 @@ export function CashModule({ puedeEscribir }: Props) {
             </div>
             <div
               className={`flex justify-between font-bold ${
-                data.cierre.diferencia === 0
-                  ? "text-green-600"
-                  : "text-red-600"
+                data.cierre.diferencia === 0 ? "text-[#FFE600]" : "text-red-400"
               }`}
             >
               <dt>Diferencia</dt>
-              <dd className="tabular-nums">
-                {eur.format(data.cierre.diferencia)}
-              </dd>
+              <dd className="tabular-nums">{eur.format(data.cierre.diferencia)}</dd>
             </div>
           </dl>
         ) : puedeEscribir ? (
@@ -248,7 +239,7 @@ export function CashModule({ puedeEscribir }: Props) {
                 value={fondoInicial}
                 onChange={(e) => setFondoInicial(e.target.value)}
                 placeholder="Fondo inicial €"
-                className="rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+                className="db-input"
               />
               <input
                 type="text"
@@ -256,22 +247,18 @@ export function CashModule({ puedeEscribir }: Props) {
                 value={efectivoContado}
                 onChange={(e) => setEfectivoContado(e.target.value)}
                 placeholder="Efectivo contado €"
-                className="rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+                className="db-input"
               />
             </div>
-            <p className="text-xs text-neutral-500">
-              Esperado en caja: <strong>{eur.format(esperado)}</strong>
+            <p className="db-muted text-xs">
+              Esperado en caja: <strong className="text-white">{eur.format(esperado)}</strong>
             </p>
-            <button
-              type="submit"
-              disabled={busy}
-              className="w-full rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
-            >
+            <button type="submit" disabled={busy} className="db-btn w-full">
               Cerrar caja
             </button>
           </form>
         ) : (
-          <p className="text-xs text-neutral-500">
+          <p className="db-muted text-xs">
             La caja aún no está cerrada. Solo el titular puede cerrarla.
           </p>
         )}

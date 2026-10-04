@@ -33,11 +33,11 @@ export function ApproveCard({ puedeAprobar }: { puedeAprobar: boolean }) {
   }
 
   if (evento === undefined) {
-    return <p className="text-sm text-neutral-500">Cargando evento…</p>;
+    return <p className="db-muted text-sm">Cargando evento…</p>;
   }
   if (!evento) {
     return (
-      <p className="text-sm text-neutral-500">
+      <p className="db-muted text-sm">
         No hay evento activo. Crea el evento del mes en la hoja Eventos.
       </p>
     );
@@ -47,8 +47,15 @@ export function ApproveCard({ puedeAprobar }: { puedeAprobar: boolean }) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="font-semibold">{evento.titulo || "Evento sin título"}</span>
-        <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium dark:bg-neutral-900">
+        <span
+          className={`db-badge ${
+            evento.estado === "aprobado" ? "db-badge-solid" : "db-badge-line"
+          }`}
+        >
           {evento.estado}
+        </span>
+        <span className="db-muted text-xs">
+          {evento.fecha} · {evento.hora} · {evento.lugar}
         </span>
       </div>
 
@@ -57,26 +64,18 @@ export function ApproveCard({ puedeAprobar }: { puedeAprobar: boolean }) {
           <button
             onClick={aprobar}
             disabled={busy}
-            className="rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
+            className="db-btn"
           >
             {busy ? "Aprobando…" : "Aprobar sesión y generar tareas"}
           </button>
         ) : (
-          <p className="text-xs text-neutral-500">
+          <p className="db-muted text-xs">
             Solo el titular del rol General puede aprobar la sesión.
           </p>
         ))}
 
-      {ok && (
-        <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-950 dark:text-green-300">
-          {ok}
-        </p>
-      )}
-      {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-          {error}
-        </p>
-      )}
+      {ok && <p className="db-ok">{ok}</p>}
+      {error && <p className="db-error">{error}</p>}
     </div>
   );
 }

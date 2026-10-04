@@ -24,3 +24,233 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ================================================================
+   Zona /panel — identidad Debarock Kolektiboa
+   Negro grunge, amarillo #FFE600 y blanco. Siempre oscuro (fijo),
+   sin depender de la preferencia del sistema.
+   ================================================================ */
+.db-zone {
+  color-scheme: dark;
+  color: #f2f2f2;
+  background-color: #0d0d0d;
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -10%, rgba(255, 230, 0, 0.1), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 100% 110%, rgba(255, 230, 0, 0.05), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)' opacity='0.07'/%3E%3C/svg%3E");
+  min-height: calc(100dvh - 4rem);
+}
+
+.db-title {
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.db-kicker {
+  color: #ffe600;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+}
+
+.db-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1rem;
+}
+
+.db-card-hover {
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.db-card-hover:hover {
+  border-color: rgba(255, 230, 0, 0.6);
+  box-shadow:
+    0 0 0 1px rgba(255, 230, 0, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.55);
+  transform: translateY(-2px);
+}
+
+.db-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #ffe600;
+  color: #0a0a0a;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.db-btn:hover {
+  background: #ffffff;
+}
+
+.db-btn:disabled {
+  opacity: 0.4;
+}
+
+.db-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.db-ghost:hover {
+  border-color: #ffe600;
+  color: #ffe600;
+}
+
+.db-ghost:disabled {
+  opacity: 0.4;
+}
+
+.db-input {
+  width: 100%;
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.db-input:focus {
+  border-color: #ffe600;
+}
+
+.db-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.db-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.db-badge-solid {
+  background: #ffe600;
+  color: #111111;
+}
+
+.db-badge-line {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.db-error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.db-ok {
+  background: rgba(255, 230, 0, 0.1);
+  border: 1px solid rgba(255, 230, 0, 0.45);
+  color: #ffe600;
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.db-muted {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.db-rule {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.db-progress-track {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+.db-progress-fill {
+  background: #ffe600;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* Guía de proceso desplegable */
+.db-guide {
+  border: 1px dashed rgba(255, 230, 0, 0.45);
+  background: rgba(255, 230, 0, 0.05);
+  border-radius: 1rem;
+}
+
+.db-guide summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #ffe600;
+}
+
+.db-guide summary::-webkit-details-marker {
+  display: none;
+}
+
+.db-guide summary::after {
+  content: "+";
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.db-guide[open] summary::after {
+  content: "–";
+}
+
+.db-guide ol {
+  list-style: decimal;
+  padding: 0 1rem 1rem 2.25rem;
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+}

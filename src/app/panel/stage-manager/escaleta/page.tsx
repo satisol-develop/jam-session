@@ -14,19 +14,19 @@ const ESTADO_META: Record<
 > = {
   espera: {
     label: "En espera",
-    cls: "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300",
+    cls: "bg-white/10 text-white/70",
     siguiente: "escena",
     accion: "Poner en escena",
   },
   escena: {
     label: "En escena",
-    cls: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400",
+    cls: "bg-[#FFE600] text-black",
     siguiente: "fin",
     accion: "Terminar",
   },
   fin: {
     label: "Terminado",
-    cls: "bg-neutral-100 text-neutral-400 dark:bg-neutral-900 dark:text-neutral-500",
+    cls: "bg-white/5 text-white/40",
     siguiente: "espera",
     accion: "Reponer",
   },
@@ -146,7 +146,7 @@ export default function EscaletaPage() {
   if (cargandoAuth) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
-        <p className="text-sm text-neutral-500">Cargando…</p>
+        <p className="db-muted text-sm">Cargando…</p>
       </div>
     );
   }
@@ -154,10 +154,10 @@ export default function EscaletaPage() {
   if (!puedeVer) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
-        <p className="text-sm text-neutral-500">
+        <p className="db-muted text-sm">
           Este panel es para Stage Manager y Grupo Base.
         </p>
-        <Link href="/panel" className="mt-2 text-sm underline">
+        <Link href="/panel" className="mt-2 text-sm text-[#FFE600] underline">
           Volver a paneles
         </Link>
       </div>
@@ -166,36 +166,32 @@ export default function EscaletaPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <header className="mb-5">
+      <header className="mb-6">
         <Link
           href="/panel/stage-manager"
-          className="text-xs text-neutral-500 underline"
+          className="db-kicker underline"
         >
           ← Panel Stage Manager
         </Link>
-        <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2">
-          <h1 className="text-2xl font-bold">Escaleta en directo</h1>
-          <span className="text-xs text-neutral-500">
+        <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2">
+          <h1 className="db-title text-3xl sm:text-4xl">Escaleta en directo</h1>
+          <span className="db-muted text-xs">
             {ultimaAct ? `Actualizado ${ultimaAct}` : "Conectando…"}
             {guardando && " · guardando…"}
           </span>
         </div>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="db-muted mt-1 text-sm">
           Orden de actuación de la Jam. Los cambios se sincronizan cada{" "}
           {POLL_MS / 1000} s.
         </p>
       </header>
 
-      {error && (
-        <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-          {error}
-        </p>
-      )}
+      {error && <p className="db-error mb-4">{error}</p>}
 
       {turnos === null ? (
-        <p className="text-sm text-neutral-500">Cargando escaleta…</p>
+        <p className="db-muted text-sm">Cargando escaleta…</p>
       ) : turnos.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-400 dark:border-neutral-700">
+        <p className="db-card p-6 text-center text-sm db-muted">
           La escaleta está vacía. Añade el primer turno.
         </p>
       ) : (
@@ -206,16 +202,16 @@ export default function EscaletaPage() {
             return (
               <li
                 key={t.id}
-                className={`rounded-2xl border p-4 transition ${
+                className={`db-card p-4 transition ${
                   enEscena
-                    ? "border-green-500 bg-green-50/50 dark:bg-green-950/30"
+                    ? "border-[#FFE600] bg-[#FFE600]/10"
                     : t.estado === "fin"
-                      ? "border-neutral-200 opacity-60 dark:border-neutral-800"
-                      : "border-neutral-200 dark:border-neutral-800"
+                      ? "opacity-50"
+                      : ""
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <span className="mt-0.5 w-6 text-sm font-bold tabular-nums text-neutral-400">
+                  <span className="mt-0.5 w-6 text-sm font-bold tabular-nums text-white/40">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -227,12 +223,12 @@ export default function EscaletaPage() {
                       {t.titulo}
                     </p>
                     {t.interpretes && (
-                      <p className="mt-0.5 text-sm text-neutral-500">
+                      <p className="db-muted mt-0.5 text-sm">
                         {t.interpretes}
                       </p>
                     )}
                     <span
-                      className={`mt-2 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${meta.cls}`}
+                      className={`db-badge mt-2 inline-flex ${meta.cls}`}
                     >
                       {meta.label}
                     </span>
@@ -245,7 +241,7 @@ export default function EscaletaPage() {
                           onClick={() => mover(i, -1)}
                           disabled={i === 0 || guardando}
                           aria-label="Subir"
-                          className="rounded-lg border border-neutral-300 px-2.5 py-1 text-sm disabled:opacity-30 dark:border-neutral-700"
+                          className="db-ghost px-2.5! py-1! text-sm disabled:opacity-30"
                         >
                           ↑
                         </button>
@@ -253,7 +249,7 @@ export default function EscaletaPage() {
                           onClick={() => mover(i, 1)}
                           disabled={i === turnos.length - 1 || guardando}
                           aria-label="Bajar"
-                          className="rounded-lg border border-neutral-300 px-2.5 py-1 text-sm disabled:opacity-30 dark:border-neutral-700"
+                          className="db-ghost px-2.5! py-1! text-sm disabled:opacity-30"
                         >
                           ↓
                         </button>
@@ -261,7 +257,7 @@ export default function EscaletaPage() {
                       <button
                         onClick={() => cambiarEstado(i)}
                         disabled={guardando}
-                        className="rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
+                        className="db-btn px-2.5! py-1.5! text-xs!"
                       >
                         {meta.accion}
                       </button>
@@ -269,7 +265,7 @@ export default function EscaletaPage() {
                         onClick={() => eliminar(i)}
                         disabled={guardando}
                         aria-label="Eliminar turno"
-                        className="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 disabled:opacity-50 dark:border-red-900"
+                        className="rounded-lg border border-red-500/40 px-2.5 py-1 text-xs text-red-400 disabled:opacity-50"
                       >
                         ✕
                       </button>
@@ -293,7 +289,7 @@ export default function EscaletaPage() {
             onChange={(e) => setNuevoTitulo(e.target.value)}
             placeholder="Título del turno"
             maxLength={120}
-            className="flex-1 rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+            className="db-input flex-1"
           />
           <input
             type="text"
@@ -301,12 +297,12 @@ export default function EscaletaPage() {
             onChange={(e) => setNuevoInterprete(e.target.value)}
             placeholder="Intérpretes (opcional)"
             maxLength={120}
-            className="flex-1 rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+            className="db-input flex-1"
           />
           <button
             type="submit"
             disabled={guardando || nuevoTitulo.trim().length < 2}
-            className="rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-50 dark:bg-white dark:text-black"
+            className="db-btn"
           >
             Añadir
           </button>

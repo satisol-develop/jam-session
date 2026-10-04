@@ -11,17 +11,18 @@ export default function PanelHubPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">Paneles del equipo</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+      <header className="mb-8">
+        <p className="db-kicker mb-2">Debarock Kolektiboa</p>
+        <h1 className="db-title text-4xl sm:text-5xl">Panel de control</h1>
+        <p className="db-muted mt-2 text-sm">
           Acceso a los paneles de los roles asignados en la rotación actual.
         </p>
       </header>
 
       {loading ? (
-        <p className="text-sm text-neutral-500">Cargando…</p>
+        <p className="db-muted text-sm">Cargando…</p>
       ) : asignados.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-neutral-300 p-6 text-sm text-neutral-500 dark:border-neutral-700">
+        <div className="db-card p-6 text-sm db-muted">
           No tienes roles de equipo asignados. Si crees que es un error,
           contacta con el administrador.
         </div>
@@ -31,21 +32,21 @@ export default function PanelHubPage() {
             <li key={rol}>
               <Link
                 href={`/panel/${rol}`}
-                className="block h-full rounded-2xl border border-neutral-200 p-5 transition hover:border-neutral-400 dark:border-neutral-800"
+                className="db-card db-card-hover block h-full p-5"
               >
-                <div className="flex items-center justify-between">
-                  <h2 className="font-bold">{ROLES_META[rol].label}</h2>
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="db-title text-lg">{ROLES_META[rol].label}</h2>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    className={`db-badge ${
                       roles[rol] === "titular"
-                        ? "bg-neutral-900 text-white dark:bg-white dark:text-black"
-                        : "bg-neutral-100 text-neutral-600 dark:bg-neutral-900 dark:text-neutral-400"
+                        ? "db-badge-solid"
+                        : "db-badge-line"
                     }`}
                   >
                     {roles[rol]}
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-neutral-500">
+                <p className="db-muted mt-2 text-sm">
                   {ROLES_META[rol].description}
                 </p>
               </Link>
@@ -53,6 +54,11 @@ export default function PanelHubPage() {
           ))}
         </ul>
       )}
+
+      <p className="db-muted mt-8 text-xs">
+        ¿Tarea del día? Entra en tu panel: cada rol incluye su guía de proceso
+        paso a paso.
+      </p>
     </div>
   );
 }
