@@ -26,6 +26,11 @@ Firebase ni Apps Script.
 
 - Se reconoce por la etiqueta «Demo» de la cabecera.
 - Los datos viven en `src/lib/demo/` y se reinician al recargar la página.
+- **Cuentas dummy por rol** (selector en `/login`, contraseña libre): `admin@`,
+  `general@`, `grupo@`, `sm@`, `tecnico@`, `caja@`, `redes@jam.session` (cada
+  una solo ve su panel; admin es vista global en solo lectura) y
+  `demo@jam.session` (músico sin roles). Cualquier otro email crea un músico
+  sin roles.
 - Para usar los servicios reales: `NEXT_PUBLIC_DEMO_MODE=false` en `.env.local`
   (y variables reales del paso siguiente).
 

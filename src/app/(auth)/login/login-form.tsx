@@ -4,6 +4,9 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { DEMO_MODE } from "@/lib/demo";
+import { DEMO_ACCOUNTS } from "@/lib/demo/data";
+import { ROLES_META } from "@/lib/constants";
 import { FirebaseError } from "firebase/app";
 
 export function LoginForm() {
@@ -42,6 +45,19 @@ export function LoginForm() {
       router.replace(next);
     } catch {
       setError("No se pudo iniciar sesión con Google.");
+    }
+  }
+
+  async function quickLogin(email: string) {
+    setError(null);
+    setBusy(true);
+    try {
+      await signIn(email, "demo");
+      router.replace(next);
+    } catch {
+      setError("No se pudo iniciar la sesión de demo.");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -104,6 +120,32 @@ export function LoginForm() {
         >
           Continuar con Google
         </button>
+
+        {DEMO_MODE && (
+          <div className="mt-6 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              Modo demo · entra como
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {DEMO_ACCOUNTS.map((a) => (
+                <button
+                  key={a.uid}
+                  type="button"
+                  onClick={() => quickLogin(a.email)}
+                  disabled={busy}
+                  className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-medium transition hover:border-neutral-900 disabled:opacity-50"
+                  title={a.email}
+                >
+                  {a.rol ? ROLES_META[a.rol].label.split("·")[0].trim() : "Músico"}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] leading-relaxed text-neutral-500">
+              Cada cuenta solo ve su panel (el músico no tiene roles). Contraseña
+              libre; en registro se crea un músico sin roles.
+            </p>
+          </div>
+        )}
 
         <p className="mt-6 text-center text-sm text-neutral-500">
           ¿No tienes cuenta?{" "}

@@ -15,13 +15,16 @@ import type {
 import {
   DEMO_EVENTO_ID,
   DEMO_MES,
-  DEMO_ROLES,
-  DEMO_UID,
   bumpDemoVersion,
+  currentDemoAccount,
+  demoAccountFor,
   demoId,
+  demoRolesFor,
   demoStore,
   demoSvgBase64,
+  ensureDemoUsuario,
   generarTareasDemo,
+  readDemoSession,
 } from "./data";
 
 function delay(ms = 180): Promise<void> {
@@ -29,8 +32,18 @@ function delay(ms = 180): Promise<void> {
 }
 
 function validarTitular(rol: Rol): void {
-  if (DEMO_ROLES[rol] !== "titular") {
+  const roles = demoRolesFor(currentDemoAccount());
+  if (roles[rol] !== "titular") {
     throw new Error(`Permiso denegado: no eres titular del rol ${rol}.`);
+  }
+}
+
+function validarTitularAlguno(listado: Rol[]): void {
+  const roles = demoRolesFor(currentDemoAccount());
+  if (!listado.some((rol) => roles[rol] === "titular")) {
+    throw new Error(
+      `Permiso denegado: requiere ser titular de ${listado.join(" / ")}.`,
+    );
   }
 }
 
@@ -48,6 +61,11 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
   await delay();
   const b = (body ?? {}) as Record<string, unknown>;
   const s = demoStore();
+  const session = readDemoSession();
+  const acc = session ? demoAccountFor(session.email, session.nombre) : null;
+  if (acc) ensureDemoUsuario(s, acc);
+  const uid = acc?.uid ?? "";
+  const nombre = acc?.nombre ?? "Músico Demo";
 
   switch (route) {
     case "public.event":
@@ -64,15 +82,27 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       } as T;
 
     case "user.create":
-      return { uid: DEMO_UID } as T;
+      return { uid: uid || `demo-user-${Date.now()}` } as T;
 
     case "user.me":
-      return { usuario: s.usuarios[0], roles: DEMO_ROLES } as T;
+      return {
+        usuario:
+          s.usuarios.find((u) => u.uid === uid) ??
+          ({
+            uid,
+            email: acc?.email ?? "",
+            nombre,
+            telefono: "",
+            estado: "activo",
+            fechaAlta: new Date().toISOString(),
+          } as Usuario),
+        roles: demoRolesFor(acc ?? demoAccountFor("")),
+      } as T;
 
     case "musician.subscription":
       return {
         eventoId: DEMO_EVENTO_ID,
-        inscripcion: s.inscripciones.find((i) => i.uid === DEMO_UID) ?? null,
+        inscripcion: s.inscripciones.find((i) => i.uid === uid) ?? null,
       } as T;
 
     case "musician.subscribe": {
@@ -87,12 +117,12 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       }
       if (temas.length === 0) throw new Error("Selecciona al menos un tema.");
 
-      const existente = s.inscripciones.find((i) => i.uid === DEMO_UID);
+      const existente = s.inscripciones.find((i) => i.uid === uid);
       const guardada: Inscripcion = {
         id: existente?.id ?? demoId(s, "ins"),
         eventoId: DEMO_EVENTO_ID,
-        uid: DEMO_UID,
-        nombre: s.usuarios[0]?.nombre ?? "Músico Demo",
+        uid,
+        nombre,
         instrumentos,
         temas,
         estado: existente?.estado ?? "pendiente",
@@ -118,8 +148,8 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       }
       const propuesta = {
         id: demoId(s, "p"),
-        uid: DEMO_UID,
-        nombre: s.usuarios[0]?.nombre ?? "Músico Demo",
+        uid,
+        nombre,
         cancion,
         artista,
         instrumento,
@@ -133,7 +163,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
 
     case "musician.myProposals":
       return {
-        propuestas: s.propuestas.filter((p) => p.uid === DEMO_UID),
+        propuestas: s.propuestas.filter((p) => p.uid === uid),
       } as T;
 
     case "musician.attendees": {
@@ -242,7 +272,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         titulo,
         origen: "personal",
         estado: "pendiente",
-        creadaPor: DEMO_UID,
+        creadaPor: uid,
         marcadaPor: "",
         marcadaAt: "",
       };
@@ -261,7 +291,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         tarea.marcadaAt = "";
       } else {
         tarea.estado = "hecha";
-        tarea.marcadaPor = DEMO_UID;
+        tarea.marcadaPor = uid;
         tarea.marcadaAt = new Date().toISOString();
       }
       bumpDemoVersion(s);
@@ -276,6 +306,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       } as T;
 
     case "escaleta.save": {
+      validarTitularAlguno(["stage-manager", "grupo-base"]);
       const turnos = Array.isArray(b.turnos) ? (b.turnos as Turno[]) : [];
       if (turnos.length > 100) throw new Error("Demasiados turnos.");
       s.turnos = turnos.map((t, i) => ({
@@ -286,7 +317,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         estado:
           t.estado === "escena" || t.estado === "fin" ? t.estado : "espera",
         updatedAt: new Date().toISOString(),
-        updatedBy: DEMO_UID,
+        updatedBy: uid,
       }));
       bumpDemoVersion(s);
       return {
@@ -305,6 +336,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       } as T;
 
     case "cash.add": {
+      validarTitular("caja");
       const tipo = String(b.tipo ?? "");
       if (!["entrada", "consumible", "otro"].includes(tipo)) {
         throw new Error("Tipo de movimiento inválido.");
@@ -321,7 +353,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         concepto: String(b.concepto ?? "").slice(0, 120),
         importe,
         metodo: b.metodo === "tarjeta" ? "tarjeta" : "efectivo",
-        uid: DEMO_UID,
+        uid,
         fecha: new Date().toISOString(),
         nota: "",
       };
@@ -331,6 +363,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     }
 
     case "cash.delete": {
+      validarTitular("caja");
       const idx = s.movimientos.findIndex((m) => m.id === String(b.id ?? ""));
       if (idx < 0) throw new Error("Movimiento no encontrado.");
       if (s.cierre) throw new Error("La caja ya está cerrada.");
@@ -362,7 +395,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         cobradoEfectivo,
         esperadoEnCaja: fondoInicial + cobradoEfectivo,
         diferencia: efectivoContado - (fondoInicial + cobradoEfectivo),
-        cerradoPor: DEMO_UID,
+        cerradoPor: uid,
         cerradoAt: new Date().toISOString(),
       };
       s.cierre = cierre;
@@ -401,7 +434,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       s.evento = {
         ...s.evento,
         estado: "aprobado",
-        aprobadoPor: DEMO_UID,
+        aprobadoPor: uid,
       };
       const generadas = generarTareasDemo(s);
       bumpDemoVersion(s);

@@ -8,24 +8,104 @@ import type {
   Propuesta,
   RoleAssignment,
   RolesMap,
+  Rol,
   Tarea,
   Turno,
   Usuario,
 } from "@/types";
 
-export const DEMO_UID = "demo-uid";
 export const DEMO_MES = "2026-10";
 export const DEMO_EVENTO_ID = "ev-demo";
+export const DEMO_SESSION_KEY = "jam_demo_email";
 
-export const DEMO_ROLES: RolesMap = {
-  admin: "titular",
-  general: "titular",
-  "grupo-base": "titular",
-  "stage-manager": "titular",
-  tecnico: "titular",
-  caja: "titular",
-  redes: "titular",
-};
+/** Cuenta dummy de demo: cada email entra con su propio uid y su rol. */
+export interface DemoAccount {
+  uid: string;
+  email: string;
+  nombre: string;
+  /** null = músico sin roles (solo /mi y material). */
+  rol: Rol | null;
+}
+
+export const DEMO_ACCOUNTS: DemoAccount[] = [
+  { uid: "demo-admin", email: "admin@jam.session", nombre: "Aitor Administración", rol: "admin" },
+  { uid: "demo-general", email: "general@jam.session", nombre: "Gabi Coordinación", rol: "general" },
+  { uid: "demo-gb", email: "grupo@jam.session", nombre: "Grupo Base", rol: "grupo-base" },
+  { uid: "demo-sm", email: "sm@jam.session", nombre: "Sara Escena", rol: "stage-manager" },
+  { uid: "demo-tecnico", email: "tecnico@jam.session", nombre: "Tomás Sonido", rol: "tecnico" },
+  { uid: "demo-caja", email: "caja@jam.session", nombre: "Rocío Caja", rol: "caja" },
+  { uid: "demo-redes", email: "redes@jam.session", nombre: "Nico Difusión", rol: "redes" },
+  { uid: "demo-musico", email: "demo@jam.session", nombre: "Músico Demo", rol: null },
+];
+
+const ACCOUNTS_BY_EMAIL = new Map(
+  DEMO_ACCOUNTS.map((a) => [a.email.toLowerCase(), a]),
+);
+
+export function demoAccountFor(
+  email?: string | null,
+  nombre?: string,
+): DemoAccount {
+  const key = (email ?? "").trim().toLowerCase();
+  const known = ACCOUNTS_BY_EMAIL.get(key);
+  if (known) return known;
+  return {
+    uid: `demo-user-${key || "anon"}`,
+    email: key,
+    nombre: (nombre ?? "").trim() || key.split("@")[0] || "Músico",
+    rol: null,
+  };
+}
+
+export function demoRolesFor(account: DemoAccount): RolesMap {
+  return account.rol ? { [account.rol]: "titular" } : {};
+}
+
+export function readDemoSession(): { email: string; nombre?: string } | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.localStorage.getItem(DEMO_SESSION_KEY);
+  if (!raw) return null;
+  if (raw.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(raw) as { email?: string; nombre?: string };
+      if (parsed.email) return { email: parsed.email, nombre: parsed.nombre };
+    } catch {
+      /* formato antiguo: el valor es el email */
+    }
+  }
+  return { email: raw };
+}
+
+export function writeDemoSession(email: string, nombre?: string): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(
+    DEMO_SESSION_KEY,
+    JSON.stringify({ email, nombre }),
+  );
+}
+
+export function clearDemoSession(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(DEMO_SESSION_KEY);
+}
+
+export function currentDemoAccount(): DemoAccount {
+  const session = readDemoSession();
+  return demoAccountFor(session?.email, session?.nombre);
+}
+
+export function ensureDemoUsuario(store: DemoStore, account: DemoAccount): void {
+  if (!account.email) return;
+  if (store.usuarios.some((u) => u.uid === account.uid)) return;
+  store.usuarios.push({
+    uid: account.uid,
+    email: account.email,
+    nombre: account.nombre,
+    telefono: "",
+    estado: "activo",
+    fechaAlta: new Date().toISOString(),
+  });
+}
 
 export const DEMO_TASK_TEMPLATES: Record<string, string[]> = {
   admin: [
@@ -124,7 +204,7 @@ export function createDemoStore(): DemoStore {
       hora: "20:30",
       lugar: "Sala El Sótano — C/ Rock 12",
       estado: "aprobado",
-      aprobadoPor: DEMO_UID,
+      aprobadoPor: "demo-general",
       cartelUrl: "",
     },
     dataVersion: 1,
@@ -161,14 +241,14 @@ export function createDemoStore(): DemoStore {
   }));
 
   store.usuarios = [
-    {
-      uid: DEMO_UID,
-      email: "demo@jam.session",
-      nombre: "Músico Demo",
-      telefono: "600 000 001",
-      estado: "activo",
+    ...DEMO_ACCOUNTS.map((a) => ({
+      uid: a.uid,
+      email: a.email,
+      nombre: a.nombre,
+      telefono: "",
+      estado: "activo" as const,
       fechaAlta: "2026-09-01T10:00:00.000Z",
-    },
+    })),
     {
       uid: "u2",
       email: "lucia@banda.test",
@@ -204,15 +284,14 @@ export function createDemoStore(): DemoStore {
   ];
 
   store.roles = [
-    { mes: DEMO_MES, rol: "admin", uid: DEMO_UID, tipo: "titular" },
-    { mes: DEMO_MES, rol: "general", uid: DEMO_UID, tipo: "titular" },
-    { mes: DEMO_MES, rol: "grupo-base", uid: DEMO_UID, tipo: "titular" },
-    { mes: DEMO_MES, rol: "stage-manager", uid: DEMO_UID, tipo: "titular" },
-    { mes: DEMO_MES, rol: "tecnico", uid: DEMO_UID, tipo: "titular" },
-    { mes: DEMO_MES, rol: "caja", uid: DEMO_UID, tipo: "titular" },
-    { mes: DEMO_MES, rol: "redes", uid: DEMO_UID, tipo: "titular" },
-    { mes: DEMO_MES, rol: "stage-manager", uid: "u2", tipo: "apoyo" },
-    { mes: DEMO_MES, rol: "redes", uid: "u4", tipo: "apoyo" },
+    ...DEMO_ACCOUNTS.filter((a) => a.rol !== null).map((a) => ({
+      mes: DEMO_MES,
+      rol: a.rol as Rol,
+      uid: a.uid,
+      tipo: "titular" as const,
+    })),
+    { mes: DEMO_MES, rol: "stage-manager" as const, uid: "u2", tipo: "apoyo" },
+    { mes: DEMO_MES, rol: "redes" as const, uid: "u4", tipo: "apoyo" },
   ];
 
   store.inscripciones = [
@@ -274,7 +353,7 @@ export function createDemoStore(): DemoStore {
   store.propuestas = [
     {
       id: "p1",
-      uid: DEMO_UID,
+      uid: "demo-musico",
       nombre: "Músico Demo",
       cancion: "September",
       artista: "Earth, Wind & Fire",
@@ -284,7 +363,7 @@ export function createDemoStore(): DemoStore {
     },
     {
       id: "p2",
-      uid: DEMO_UID,
+      uid: "demo-musico",
       nombre: "Músico Demo",
       cancion: "Use Somebody",
       artista: "Kings of Leon",
@@ -296,10 +375,10 @@ export function createDemoStore(): DemoStore {
 
   generarTareasDemo(store);
   store.tareas[0].estado = "hecha";
-  store.tareas[0].marcadaPor = DEMO_UID;
+  store.tareas[0].marcadaPor = "demo-admin";
   store.tareas[0].marcadaAt = "2026-10-02T09:00:00.000Z";
   store.tareas[3].estado = "hecha";
-  store.tareas[3].marcadaPor = DEMO_UID;
+  store.tareas[3].marcadaPor = "demo-general";
   store.tareas[3].marcadaAt = "2026-10-04T11:00:00.000Z";
   store.tareas.push({
     id: demoId(store, "t"),
@@ -308,7 +387,7 @@ export function createDemoStore(): DemoStore {
     titulo: "Colgar el cartel en Instagram y Stories",
     origen: "personal",
     estado: "pendiente",
-    creadaPor: DEMO_UID,
+    creadaPor: "demo-redes",
     marcadaPor: "",
     marcadaAt: "",
   });

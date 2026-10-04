@@ -20,7 +20,16 @@ import {
 } from "firebase/auth";
 import { getFirebaseAuth, getGoogleProvider } from "@/lib/firebase/client";
 import { DEMO_MODE } from "@/lib/demo";
-import { DEMO_ROLES, DEMO_UID } from "@/lib/demo/data";
+import {
+  clearDemoSession,
+  demoAccountFor,
+  demoRolesFor,
+  demoStore,
+  ensureDemoUsuario,
+  readDemoSession,
+  writeDemoSession,
+  type DemoAccount,
+} from "@/lib/demo/data";
 import type { RolesMap } from "@/types";
 
 interface AuthContextValue {
@@ -36,13 +45,11 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const DEMO_SESSION_KEY = "jam_demo_email";
-
-function demoUser(email: string, nombre?: string): User {
+function demoUser(account: DemoAccount): User {
   return {
-    uid: DEMO_UID,
-    email,
-    displayName: nombre ?? email.split("@")[0],
+    uid: account.uid,
+    email: account.email,
+    displayName: account.nombre,
     emailVerified: true,
     isAnonymous: false,
     providerData: [],
@@ -50,9 +57,10 @@ function demoUser(email: string, nombre?: string): User {
   } as unknown as User;
 }
 
-function readDemoSession(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(DEMO_SESSION_KEY);
+function demoSessionAccount(): DemoAccount | null {
+  const session = readDemoSession();
+  if (!session) return null;
+  return demoAccountFor(session.email, session.nombre);
 }
 
 function setSessionCookies(user: User | null, roles: RolesMap) {
@@ -84,12 +92,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (DEMO_MODE) {
       queueMicrotask(() => {
-        const email = readDemoSession();
-        if (email) {
-          const u = demoUser(email);
+        const account = demoSessionAccount();
+        if (account) {
+          const u = demoUser(account);
+          const map = demoRolesFor(account);
           setUser(u);
-          setRoles(DEMO_ROLES);
-          setSessionCookies(u, DEMO_ROLES);
+          setRoles(map);
+          setSessionCookies(u, map);
         }
         setLoading(false);
       });
@@ -112,11 +121,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (email: string, _password: string) => {
     if (DEMO_MODE) {
-      const u = demoUser(email);
-      window.localStorage.setItem(DEMO_SESSION_KEY, email);
+      const account = demoAccountFor(email);
+      ensureDemoUsuario(demoStore(), account);
+      const u = demoUser(account);
+      const map = demoRolesFor(account);
+      writeDemoSession(email, account.nombre);
       setUser(u);
-      setRoles(DEMO_ROLES);
-      setSessionCookies(u, DEMO_ROLES);
+      setRoles(map);
+      setSessionCookies(u, map);
       return;
     }
     await signInWithEmailAndPassword(getFirebaseAuth(), email, _password);
@@ -133,11 +145,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (nombre: string, email: string, password: string) => {
       if (DEMO_MODE) {
-        const u = demoUser(email, nombre);
-        window.localStorage.setItem(DEMO_SESSION_KEY, email);
+        const account = demoAccountFor(email, nombre);
+        ensureDemoUsuario(demoStore(), account);
+        const u = demoUser(account);
+        const map = demoRolesFor(account);
+        writeDemoSession(email, nombre);
         setUser(u);
-        setRoles(DEMO_ROLES);
-        setSessionCookies(u, DEMO_ROLES);
+        setRoles(map);
+        setSessionCookies(u, map);
         return;
       }
       const cred = await createUserWithEmailAndPassword(
@@ -153,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     if (DEMO_MODE) {
-      window.localStorage.removeItem(DEMO_SESSION_KEY);
+      clearDemoSession();
       setUser(null);
       setRoles({});
       setSessionCookies(null, {});
@@ -164,8 +179,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshRoles = useCallback(async () => {
     if (DEMO_MODE) {
-      setRoles(DEMO_ROLES);
-      return DEMO_ROLES;
+      const account = demoSessionAccount();
+      const map = account ? demoRolesFor(account) : {};
+      setRoles(map);
+      return map;
     }
     const auth = getFirebaseAuth();
     if (!auth.currentUser) return {};

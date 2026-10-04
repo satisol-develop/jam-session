@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { api } from "@/lib/api/client";
+import { DEMO_MODE } from "@/lib/demo";
 import { FirebaseError } from "firebase/app";
 
 export default function RegistroPage() {
@@ -58,6 +59,13 @@ export default function RegistroPage() {
         <p className="mb-6 text-sm text-neutral-500">
           Regístrate para inscribirte en la Jam Session.
         </p>
+        {DEMO_MODE && (
+          <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            Modo demo: el registro crea un músico <strong>sin roles</strong> (solo
+            «Mi zona» y material). Los paneles de rol se prueban con las cuentas
+            del selector de acceso en «Entrar».
+          </p>
+        )}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
