@@ -60,7 +60,7 @@ export const ROLE_GUIDES: Record<Rol, string[]> = {
   admin: [
     "Revisa la Vista global (solo lectura): estado de la sesión, tareas de todos los roles, escaleta, inscripciones y caja.",
     "Consulta el Historial de sesiones cerradas: participantes, roles del mes, tareas completadas y resultado de caja.",
-    "Antes del día 25 de cada mes, ejecuta la Rotación: asigna titular y apoyo a cada rol y guarda.",
+    "Antes del día 25 de cada mes, ejecuta la Rotación: asigna el titular de cada rol y guarda (los apoyos los eligen los titulares en su panel; el Grupo Base lo elige el General).",
     "Comprueba que cada nuevo titular puede entrar en su panel y que los apoyos solo leen.",
     "En la matriz, da de baja a usuarios inactivos y da de alta a los nuevos.",
     "Tu rol es de observación: no modificas tareas, caja, escaleta ni aprobaciones; deriva cada incidencia al rol responsable.",
@@ -71,6 +71,7 @@ export const ROLE_GUIDES: Record<Rol, string[]> = {
     "Revisa las Propuestas de los músicos (canción + instrumento): aprueba o rechaza cada una; tu decisión es la final para el repertorio.",
     "Aprueba la sesión: se generan automáticamente las tareas de todos los roles.",
     "Crea o confirma el Grupo Base del mes (es tu grupo) y revisa las inscripciones de músicos.",
+    "Elige tus apoyos del mes en «Apoyos de tu rol»: usuarios con acceso de solo lectura para apoyarte.",
     "Tras la Jam, audita los fondos en «Auditoría de fondos» (solo lectura de la caja).",
     "Cuando la caja esté cerrada, cierra el evento: se congelará la operativa y quedará archivado en el historial.",
     "Crea la siguiente sesión (mes, fecha, hora y lugar) cuando toque abrir el próximo ciclo.",
@@ -87,6 +88,7 @@ export const ROLE_GUIDES: Record<Rol, string[]> = {
     "Ve marcando en tu lista las tareas completadas de cada paso.",
   ],
   "stage-manager": [
+    "Elige tus apoyos del mes en «Apoyos de tu rol»: usuarios con acceso de solo lectura para apoyarte.",
     "D-1: monta la escaleta base con turnos y duraciones estimadas.",
     "D-1: confirma intérpretes y cambios con el Grupo Base.",
     "Día de la Jam: briefing con los músicos antes de abrir puertas.",
@@ -94,6 +96,7 @@ export const ROLE_GUIDES: Record<Rol, string[]> = {
     "Al cierre: repasa que todos los turnos quedaron en «terminado» y guarda la escaleta.",
   ],
   tecnico: [
+    "Elige tus apoyos del mes en «Apoyos de tu rol»: usuarios con acceso de solo lectura para apoyarte.",
     "Revisa los Instrumentos confirmados: líneas y músicos por instrumento.",
     "Planifica microfonías, líneas y monitores según esas líneas.",
     "D-1: comprueba amplificadores, consolas y equipo de repuesto.",
@@ -101,6 +104,7 @@ export const ROLE_GUIDES: Record<Rol, string[]> = {
     "Registra incidencias como tareas del rol y ve marcándolas.",
   ],
   caja: [
+    "Elige tus apoyos del mes en «Apoyos de tu rol»: usuarios con acceso de solo lectura para apoyarte.",
     "Prepara el cambio inicial y revisa los precios de los consumos.",
     "Durante la Jam: registra consumos, aportaciones del barra y gastos en el módulo.",
     "Comprueba que los totales cuadran con lo cobrado en mano.",
@@ -108,6 +112,7 @@ export const ROLE_GUIDES: Record<Rol, string[]> = {
     "Entrega el fondo y comunica el beneficio (ingresos − gastos) al rol General.",
   ],
   redes: [
+    "Elige tus apoyos del mes en «Apoyos de tu rol»: usuarios con acceso de solo lectura para apoyarte.",
     "Usa el Kit de difusión: copia el texto base y el enlace de la sesión.",
     "Diseña el cartel y publícalo con antelación (fecha, lugar, #DebarockKolektiboa).",
     "Durante la Jam: cobertura audiovisual (fotos/vídeos con permiso).",

@@ -11,9 +11,12 @@ import type { RoleAssignment, Rol, Usuario } from "@/types";
 
 type AsignacionRol = { titular: string; apoyo: string };
 
+/** El Grupo Base no rota: lo elige el General. */
+const MATRIZ_ROLES = ROLES.filter((r) => r !== "grupo-base");
+
 function emptyAssignments(): Record<Rol, AsignacionRol> {
   const out = {} as Record<Rol, AsignacionRol>;
-  for (const rol of ROLES) out[rol] = { titular: "", apoyo: "" };
+  for (const rol of MATRIZ_ROLES) out[rol] = { titular: "", apoyo: "" };
   return out;
 }
 
@@ -78,12 +81,9 @@ export function RotationPanel() {
     setOk(null);
 
     const lista: RoleAssignment[] = [];
-    for (const rol of ROLES) {
-      const { titular, apoyo } = asignaciones[rol];
+    for (const rol of MATRIZ_ROLES) {
+      const { titular } = asignaciones[rol];
       if (titular) lista.push({ mes, rol, uid: titular, tipo: "titular" });
-      if (apoyo && apoyo !== titular) {
-        lista.push({ mes, rol, uid: apoyo, tipo: "apoyo" });
-      }
     }
     if (lista.length === 0) {
       setError("Asigna al menos un titular.");
@@ -156,25 +156,43 @@ export function RotationPanel() {
           />
         </div>
         <p className="db-muted pb-1.5 text-xs">
-          Titular: permisos completos. Apoyo: solo lectura del panel.
+          Titular: permisos completos. Los apoyos los elige cada titular en su
+          panel; el Grupo Base lo elige el General.
         </p>
       </div>
 
       <div className="space-y-3">
-        {ROLES.map((rol) => (
+        {MATRIZ_ROLES.map((rol) => (
           <div
             key={rol}
             className="grid gap-2 rounded-xl border border-white/12 p-3 sm:grid-cols-[10rem_1fr_1fr]"
           >
             <span className="db-title self-center text-sm">{rol}</span>
-            {(["titular", "apoyo"] as const).map((tipo) => (
-              <div key={tipo}>
-                <span className="db-muted mb-1 block text-xs">{tipo}</span>
-                {selectUser(asignaciones[rol][tipo], (uid) => setRol(rol, tipo, uid))}
-              </div>
-            ))}
+            <div>
+              <span className="db-muted mb-1 block text-xs">titular</span>
+              {selectUser(asignaciones[rol].titular, (uid) =>
+                setRol(rol, "titular", uid),
+              )}
+            </div>
+            <div>
+              <span className="db-muted mb-1 block text-xs">
+                apoyo (en su panel)
+              </span>
+              <p className="db-muted py-2 text-xs">
+                {asignaciones[rol].apoyo
+                  ? usuarios.find((u) => u.uid === asignaciones[rol].apoyo)
+                      ?.nombre ?? asignaciones[rol].apoyo
+                  : "— Sin apoyos —"}
+              </p>
+            </div>
           </div>
         ))}
+        <div className="grid gap-2 rounded-xl border border-dashed border-white/12 p-3 sm:grid-cols-[10rem_1fr]">
+          <span className="db-title self-center text-sm">grupo-base</span>
+          <p className="db-muted self-center text-xs">
+            No rota: lo elige el General desde su panel.
+          </p>
+        </div>
       </div>
 
       {error && <p className="db-error">{error}</p>}

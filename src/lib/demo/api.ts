@@ -1,3 +1,4 @@
+import { ROLES } from "@/types";
 import type {
   Cancion,
   CierreCaja,
@@ -505,16 +506,64 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       validarTitular("admin");
       const mes = String(b.mes ?? "");
       if (!/^\d{4}-\d{2}$/.test(mes)) throw new Error("Mes inválido (usa yyyy-MM).");
-      const nuevas = (Array.isArray(b.asignaciones)
+      const propuestas = (Array.isArray(b.asignaciones)
         ? b.asignaciones
         : []) as RoleAssignment[];
+      // Solo titulares (sin Grupo Base): los apoyos los eligen los titulares.
+      const titulares = propuestas.filter(
+        (a) => a.tipo === "titular" && a.rol !== "grupo-base" && a.uid,
+      );
+      if (titulares.length === 0) throw new Error("Asigna al menos un titular.");
       const anteriores = s.roles.filter((r) => r.mes === mes);
+      const conservadas = anteriores.filter((r) => {
+        if (r.rol === "grupo-base") return true;
+        if (r.tipo !== "apoyo") return false;
+        const nuevoTitular = titulares.find((t) => t.rol === r.rol)?.uid;
+        return r.uid !== nuevoTitular;
+      });
       s.roles = [
         ...s.roles.filter((r) => r.mes !== mes),
-        ...nuevas.map((a) => ({ ...a, mes })),
+        ...titulares.map((a) => ({ ...a, mes })),
+        ...conservadas,
       ];
       bumpDemoVersion(s);
-      return { mes, asignaciones: nuevas, anteriores } as T;
+      return { mes, asignaciones: titulares, anteriores } as T;
+    }
+
+    case "apoyo.set": {
+      const rol = String(b.rol ?? "") as Rol;
+      if (!ROLES.includes(rol)) throw new Error("Rol inválido.");
+      const propios = demoRolesFor(currentDemoAccount());
+      if (propios[rol] !== "titular" && propios.admin !== "titular") {
+        throw new Error(
+          `Permiso denegado: solo el titular del rol ${rol} gestiona sus apoyos.`,
+        );
+      }
+      const mes = s.evento.mes;
+      const uids = [
+        ...new Set((Array.isArray(b.uids) ? b.uids : []).map(String)),
+      ];
+      const titular = s.roles.find(
+        (r) => r.mes === mes && r.rol === rol && r.tipo === "titular",
+      );
+      const validos = uids
+        .filter(
+          (u) =>
+            u &&
+            u !== titular?.uid &&
+            s.usuarios.some((x) => x.uid === u && x.estado === "activo"),
+        )
+        .slice(0, 10);
+      s.roles = [
+        ...s.roles.filter(
+          (r) => !(r.mes === mes && r.rol === rol && r.tipo === "apoyo"),
+        ),
+        ...validos.map((u) => ({ mes, rol, uid: u, tipo: "apoyo" as const })),
+      ];
+      bumpDemoVersion(s);
+      return {
+        roles: s.roles.filter((r) => r.mes === mes && r.rol === rol),
+      } as T;
     }
 
     case "event.update": {

@@ -7,6 +7,7 @@ import { ROLES_META } from "@/lib/constants";
 import { ROLES } from "@/types";
 import type { Rol } from "@/types";
 import { TaskList } from "@/components/panel/task-list";
+import { ApoyosPanel } from "@/components/panel/apoyos-panel";
 import { RotationPanel } from "@/components/admin/rotation-panel";
 import { HistoryReport } from "@/components/admin/history-report";
 import { ApproveCard } from "@/components/panel/approve-card";
@@ -71,6 +72,13 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
           nota="Progreso global del equipo, etiquetado por rol. Solo lectura."
         >
           <TaskList rol="admin" todas soloLectura />
+        </Seccion>
+
+        <Seccion
+          titulo="Apoyos de tu rol"
+          nota="Elige quién apoya el rol Admin este mes: acceso de solo lectura."
+        >
+          <ApoyosPanel rol="admin" />
         </Seccion>
 
         <Seccion
@@ -141,6 +149,15 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       <Seccion titulo="Lista de tareas">
         <TaskList rol={rol} />
       </Seccion>
+
+      {rol !== "grupo-base" && (
+        <Seccion
+          titulo="Apoyos de tu rol"
+          nota="Elige quién apoya tu rol este mes: los apoyos entran a tu panel en modo solo lectura."
+        >
+          <ApoyosPanel rol={rol} />
+        </Seccion>
+      )}
 
       {rol === "general" && (
         <Seccion
