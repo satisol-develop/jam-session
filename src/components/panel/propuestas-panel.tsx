@@ -51,8 +51,8 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
   if (propuestas.length === 0) {
     return (
       <p className="db-muted text-sm">
-        No hay propuestas de repertorio. Los músicos proponen temas desde «Mi
-        zona».
+        No hay propuestas de repertorio. Los músicos proponen canciones desde
+        «Mi zona».
       </p>
     );
   }
@@ -78,7 +78,11 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
                 {p.estado}
               </span>
             </div>
-            <p className="mt-1 text-sm">{p.texto}</p>
+            <p className="mt-1 text-sm">
+              «{p.cancion}»
+              {p.artista ? ` — ${p.artista}` : ""}
+              <span className="db-muted"> · {p.nombre} la tocaría en {p.instrumento}</span>
+            </p>
             <p className="db-muted mt-1 text-xs">{fmt.format(new Date(p.fecha))}</p>
 
             {editable && p.estado === "pendiente" ? (
@@ -101,8 +105,7 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
             ) : (
               !editable && (
                 <p className="db-muted mt-2 text-[11px]">
-                  Solo lectura: el titular del rol General resuelve las
-                  propuestas.
+                  Solo lectura: el repertorio final lo aprueba el rol General.
                 </p>
               )
             )}
@@ -111,8 +114,8 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
       </ul>
 
       <p className="db-muted text-xs">
-        Una propuesta aprobada la recoge el Grupo Base en el repertorio activo
-        del mes.
+        El Grupo Base tiene estas propuestas en cuenta al definir el repertorio;
+        quien aprueba o rechaza es el General.
       </p>
     </div>
   );

@@ -142,7 +142,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {rol === "general" && (
         <Seccion
           titulo="Propuestas de repertorio"
-          nota="Valida las propuestas de los músicos: aprueba o rechaza cada una."
+          nota="Aprueba o rechaza cada propuesta: tu decisión es la final para el repertorio del mes."
         >
           <PropuestasPanel editable={esTitular} />
         </Seccion>
@@ -163,6 +163,15 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
           nota="Instrumentos y temas solicitados. Asigna el estado de cada inscripción."
         >
           <InscripcionesPanel editable={esTitular} />
+        </Seccion>
+      )}
+
+      {rol === "grupo-base" && (
+        <Seccion
+          titulo="Propuestas de la banda"
+          nota="Lectura: las tienes en cuenta para definir el repertorio; quien aprueba es el General."
+        >
+          <PropuestasPanel editable={false} />
         </Seccion>
       )}
 

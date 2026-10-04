@@ -109,13 +109,20 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     }
 
     case "musician.propose": {
-      const texto = String(b.texto ?? "").trim();
-      if (texto.length < 3) throw new Error("La propuesta es demasiado corta.");
+      const cancion = String(b.cancion ?? "").trim();
+      const artista = String(b.artista ?? "").trim();
+      const instrumento = String(b.instrumento ?? "").trim();
+      if (cancion.length < 2) throw new Error("Indica el título de la canción.");
+      if (instrumento.length < 2) {
+        throw new Error("Indica el instrumento con el que la tocarías.");
+      }
       const propuesta = {
         id: demoId(s, "p"),
         uid: DEMO_UID,
-        nombre: s.usuarios[0]?.nombre ?? "",
-        texto,
+        nombre: s.usuarios[0]?.nombre ?? "Músico Demo",
+        cancion,
+        artista,
+        instrumento,
         estado: "pendiente" as const,
         fecha: new Date().toISOString(),
       };

@@ -82,7 +82,9 @@ export interface Propuesta {
   id: string;
   uid: string;
   nombre: string;
-  texto: string;
+  cancion: string;
+  artista: string;
+  instrumento: string;
   estado: EstadoPropuesta;
   fecha: string;
 }

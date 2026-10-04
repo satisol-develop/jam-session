@@ -28,12 +28,12 @@ export const ROLES_META: Record<
   general: {
     label: "General · Coordinador",
     description:
-      "Aprueba la sesión, valida propuestas y audita los fondos recaudados.",
+      "Crea el Grupo Base del mes, aprueba la sesión y el repertorio, y audita los fondos.",
   },
   "grupo-base": {
     label: "Grupo Base · House Band",
     description:
-      "Repertorio activo del mes y asignación final de quién toca cada tema.",
+      "Repertorio activo del mes (grupo que nombra el General), inscripciones y quién toca cada tema.",
   },
   "stage-manager": {
     label: "Stage Manager · Gestión del Día",
@@ -66,16 +66,16 @@ export const ROLE_GUIDES: Record<Rol, string[]> = {
   ],
   general: [
     "Valora la viabilidad logística y económica de la sesión (fecha, lugar, coste) antes de aprobar nada.",
-    "Revisa las Propuestas de repertorio y aprueba o rechaza cada una.",
+    "Revisa las Propuestas de los músicos (canción + instrumento): aprueba o rechaza cada una; tu decisión es la final para el repertorio.",
     "Aprueba la sesión: se generan automáticamente las tareas de todos los roles.",
-    "Confirma la asignación del Grupo Base y revisa las inscripciones de músicos.",
+    "Crea o confirma el Grupo Base del mes (es tu grupo) y revisa las inscripciones de músicos.",
     "Tras la Jam, audita los fondos en «Auditoría de fondos» (solo lectura de la caja).",
     "Ve marcando en tu lista las tareas completadas de cada paso.",
   ],
   "grupo-base": [
+    "Revisa las Propuestas de la banda: las tienes en cuenta para decidir, pero quien aprueba el repertorio es el General.",
     "Define el repertorio activo del mes (temas activos en Drive).",
     "Revisa las Inscripciones: asigna estado a cada músico (asignado / parcial / rechazado).",
-    "Evalúa las propuestas aprobadas por General y añádelas al repertorio.",
     "Monta la escaleta base: orden de apertura y quién toca cada tema.",
     "Comunica el orden y los intérpretes al Stage Manager y al Técnico.",
     "Ve marcando en tu lista las tareas completadas de cada paso.",
