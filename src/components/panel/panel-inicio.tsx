@@ -1,9 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ROLES_META, ROLE_GUIDES } from "@/lib/constants";
-import type { Rol } from "@/types";
+import { diasPara, type PasoSiguiente } from "@/lib/panel/proximo-paso";
 import type { EstadoPanel } from "@/components/panel/use-panel-status";
+import type { Rol } from "@/types";
 
 function Stat({ valor, label }: { valor: string; label: string }) {
   return (
@@ -15,32 +15,36 @@ function Stat({ valor, label }: { valor: string; label: string }) {
 }
 
 /**
- * Pestaña Inicio de cada panel: estado en vivo (qué hay que revisar ahora)
- * + protocolo paso a paso con salto a la pestaña correspondiente.
+ * Pestaña Inicio: resumen de lo que está pasando (estado en vivo) +
+ * el siguiente paso recomendado. El paso a paso completo vive en el
+ * modal «Protocolo».
  */
 export function PanelInicio({
   rol,
   estado,
+  paso,
   irA,
+  onProtocolo,
   consultas,
 }: {
   rol: Rol;
   estado: EstadoPanel;
+  paso: PasoSiguiente;
   irA: (id: string) => void;
+  onProtocolo: () => void;
   consultas?: ReactNode;
 }) {
-  const pasos = ROLE_GUIDES[rol];
   const esAdmin = rol === "admin";
-  const verPropuestas = esAdmin || rol === "general" || rol === "grupo-base";
-  const verInscripciones = verPropuestas;
+  const verCuadrantes = esAdmin || rol === "general" || rol === "grupo-base";
+  const dias = estado.evento ? diasPara(estado.evento.fecha) : null;
 
   return (
     <div className="space-y-3 sm:space-y-4">
       <section className="db-card p-4 sm:p-6">
-        <h2 className="db-title mb-1 text-base">Estado ahora</h2>
+        <h2 className="db-title mb-1 text-base">Resumen</h2>
         <p className="db-muted mb-4 text-sm">
           {esAdmin
-            ? "Resumen de solo lectura de todo el equipo: por aquí empieza tu revisión."
+            ? "Todo el equipo en modo consulta: por aquí empieza tu revisión."
             : "Lo que hay ahora mismo en tu panel."}
         </p>
 
@@ -63,6 +67,15 @@ export function PanelInicio({
                   >
                     {estado.evento.estado}
                   </span>
+                  {dias !== null && estado.evento.estado !== "realizado" && (
+                    <span className="db-badge db-badge-line">
+                      {dias < 0
+                        ? `Hace ${Math.abs(dias)} días`
+                        : dias === 0
+                          ? "¡Hoy!"
+                          : `Faltan ${dias} días`}
+                    </span>
+                  )}
                   <span className="db-muted text-xs">
                     {estado.evento.fecha} · {estado.evento.hora} ·{" "}
                     {estado.evento.lugar}
@@ -86,13 +99,13 @@ export function PanelInicio({
                 valor={`${estado.tareasHechas}/${estado.tareasTotal}`}
                 label={esAdmin ? "tareas del equipo" : "tareas hechas"}
               />
-              {verPropuestas && (
+              {verCuadrantes && (
                 <Stat
                   valor={String(estado.propuestasPendientes)}
                   label="propuestas pendientes"
                 />
               )}
-              {verInscripciones && (
+              {verCuadrantes && (
                 <Stat
                   valor={String(estado.inscripcionesPendientes)}
                   label="inscripciones sin estado"
@@ -111,32 +124,27 @@ export function PanelInicio({
         )}
       </section>
 
-      <section className="db-guide db-card p-4 sm:p-6">
-        <h2 className="db-title mb-1 text-base">
-          {esAdmin ? "Protocolo de revisión" : "Paso a paso"} ·{" "}
-          {ROLES_META[rol].label}
-        </h2>
-        <p className="db-muted mb-4 text-sm">
-          {esAdmin
-            ? "Repasa el panel en este orden: cada paso salta a su sección."
-            : "Trabaja en este orden: cada paso salta a su sección del panel."}
-        </p>
-        <ol className="db-pasos">
-          {pasos.map((paso, i) => (
-            <li key={`${i}-${paso.texto}`}>
-              <span>{paso.texto}</span>
-              {paso.irA && (
-                <button
-                  type="button"
-                  onClick={() => irA(paso.irA as string)}
-                  className="db-paso-ir"
-                >
-                  Ir →
-                </button>
-              )}
-            </li>
-          ))}
-        </ol>
+      <section className="db-card border-[#FFE600]/35 p-4 sm:p-6">
+        <h2 className="db-title mb-1 text-base">Tu siguiente paso</h2>
+        <p className="mb-4 text-sm text-white/85">{paso.texto}</p>
+        <div className="flex flex-wrap gap-2">
+          {paso.irA && (
+            <button
+              type="button"
+              onClick={() => paso.irA && irA(paso.irA)}
+              className="db-btn text-xs!"
+            >
+              Ir a la sección
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onProtocolo}
+            className="db-ghost text-xs!"
+          >
+            Ver protocolo completo
+          </button>
+        </div>
       </section>
     </div>
   );

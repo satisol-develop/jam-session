@@ -55,245 +55,311 @@ export const ROLES_META: Record<
   },
 };
 
-/** Un paso del protocolo de la pestaña Inicio; `irA` salta a esa pestaña. */
+/** Fases del ciclo de una sesión (agrupan el protocolo de cada rol). */
+export type FaseGuia = "preparacion" | "semana" | "dia" | "cierre";
+
+export const FASES: { id: FaseGuia; label: string; desc: string }[] = [
+  { id: "preparacion", label: "Preparación", desc: "Antes de la semana de la Jam" },
+  { id: "semana", label: "Semana de la Jam", desc: "≈1 semana antes" },
+  { id: "dia", label: "Día de la Jam", desc: "Durante el evento" },
+  { id: "cierre", label: "Cierre", desc: "Tras la Jam y fin de mes" },
+];
+
+/** Un paso del protocolo de un rol; `irA` salta a esa pestaña. */
 export interface PasoGuia {
   texto: string;
+  fase: FaseGuia;
   irA?: string;
 }
 
 /**
- * Protocolo paso a paso de cada rol (pestaña «Inicio» de su panel).
- * El orden es el flujo de trabajo real y `irA` enlaza con la pestaña
- * donde se hace cada cosa.
+ * Protocolo de cada rol, agrupado por fases del ciclo de la sesión
+ * (modal «Protocolo» del panel). `irA` enlaza con la pestaña donde se
+ * hace cada cosa.
  */
 export const ROLE_GUIDES: Record<Rol, PasoGuia[]> = {
   admin: [
     {
+      fase: "preparacion",
       texto:
-        "Mira el resumen de arriba: estado de la sesión, tareas del equipo, propuestas, inscripciones y caja.",
+        "Mira tu Inicio: estado de la sesión y pendientes de todo el equipo.",
     },
     {
+      fase: "preparacion",
       texto: "Comprueba el progreso global de tareas de todos los roles.",
       irA: "tareas",
     },
     {
+      fase: "preparacion",
       texto:
         "Revisa las inscripciones pendientes de estado (las asigna el Grupo Base).",
       irA: "inscripciones",
     },
     {
-      texto:
-        "Consulta las propuestas y cómo las ha resuelto el General.",
+      fase: "preparacion",
+      texto: "Consulta las propuestas y cómo las resuelve el General.",
       irA: "propuestas",
     },
     {
+      fase: "preparacion",
       texto:
         "Verifica los instrumentos confirmados para la planificación técnica.",
       irA: "instrumentos",
     },
     {
-      texto: "Comprueba la caja: movimientos y si está cerrada.",
+      fase: "dia",
+      texto:
+        "Durante la Jam: comprueba que la caja registra movimientos y que nadie está bloqueado.",
       irA: "caja",
     },
     {
+      fase: "cierre",
+      texto: "Tras la Jam: revisa la caja y el resultado del evento.",
+      irA: "caja",
+    },
+    {
+      fase: "cierre",
       texto: "Repasa el historial de sesiones cerradas.",
       irA: "historial",
     },
     {
+      fase: "cierre",
       texto:
-        "Antes del día 25 de cada mes, ejecuta la Rotación: titulares del mes, altas y bajas de usuarios.",
+        "Antes del día 25: ejecuta la Rotación (titulares, altas y bajas).",
       irA: "rotacion",
     },
     {
+      fase: "cierre",
       texto:
         "Comprueba que los nuevos titulares entran en su panel y que los apoyos solo leen.",
       irA: "rotacion",
     },
-    {
-      texto:
-        "Tu rol no admite apoyos y no modifica tareas, caja ni escaleta: deriva cada incidencia al rol responsable.",
-    },
   ],
   general: [
     {
+      fase: "preparacion",
       texto: "Define los datos de la sesión: título, fecha, hora y lugar.",
       irA: "sesion",
     },
     {
-      texto:
-        "Valora la viabilidad logística y económica antes de aprobar nada.",
+      fase: "preparacion",
+      texto: "Valora la viabilidad logística y económica antes de aprobar nada.",
     },
     {
+      fase: "preparacion",
       texto:
-        "Valida en bloque las propuestas de los músicos: las aprobadas entran al repertorio informativo; el repertorio activo lo decide el Grupo Base.",
+        "Valida en bloque las propuestas: las aprobadas entran al repertorio informativo; el activo lo decide el Grupo Base.",
       irA: "propuestas",
     },
     {
-      texto:
-        "Aprueba la sesión: se generan automáticamente las tareas de todos los roles.",
+      fase: "preparacion",
+      texto: "Aprueba la sesión: se generan las tareas de todos los roles.",
       irA: "sesion",
     },
     {
-      texto:
-        "Elige quiénes forman el Grupo Base del mes (no rota en la matriz).",
+      fase: "preparacion",
+      texto: "Elige el Grupo Base del mes (no rota en la matriz).",
       irA: "grupo-base",
     },
     {
-      texto:
-        "Audita los fondos tras la Jam; si hace falta cerrar la caja antes que Caja, puedes hacerlo tú (quedará a tu nombre).",
-      irA: "auditoria",
-    },
-    {
-      texto:
-        "Cuando la caja esté cerrada, cierra el evento y crea la siguiente sesión.",
-      irA: "sesion",
-    },
-    {
+      fase: "preparacion",
       texto: "Elige tus apoyos del mes.",
       irA: "apoyos",
     },
     {
+      fase: "semana",
+      texto: "Revisa que GB ha fijado el ensayo y que Redes difunde la fecha.",
+      irA: "sesion",
+    },
+    {
+      fase: "dia",
       texto:
-        "Ve marcando en tu lista las tareas completadas de cada paso.",
+        "Día de la Jam: coordina imprevistos con Stage Manager y Técnico.",
+    },
+    {
+      fase: "cierre",
+      texto:
+        "Tras la Jam: audita los fondos; si hace falta, cierra la caja tú (quedará a tu nombre).",
+      irA: "auditoria",
+    },
+    {
+      fase: "cierre",
+      texto: "Con la caja cerrada: cierra el evento y crea la siguiente sesión.",
+      irA: "sesion",
+    },
+    {
+      fase: "cierre",
+      texto: "Ve marcando en tu lista las tareas completadas.",
       irA: "tareas",
     },
   ],
   "grupo-base": [
     {
-      texto:
-        "Revisa las propuestas de la banda: las tienes en cuenta para decidir, pero quien aprueba es el General.",
+      fase: "preparacion",
+      texto: "Revisa las propuestas: las tienes en cuenta; aprueba el General.",
       irA: "propuestas",
     },
     {
-      texto: "Define el repertorio activo del mes (temas activos en Drive).",
+      fase: "preparacion",
+      texto: "Define el repertorio activo del mes (temas en Drive).",
     },
     {
+      fase: "preparacion",
       texto:
-        "Revisa las inscripciones y asigna el estado de cada músico (asignado / parcial / rechazado).",
+        "Asigna el estado de cada inscripción (asignado / parcial / rechazado).",
       irA: "inscripciones",
     },
     {
-      texto:
-        "≈1 semana antes: fija el ensayo general y cierra las inscripciones para anunciar la fecha.",
+      fase: "semana",
+      texto: "≈1 semana antes: fija el ensayo general.",
       irA: "ensayo",
     },
     {
+      fase: "semana",
+      texto: "Cierra las inscripciones y pide a Redes que difunda la fecha.",
+      irA: "ensayo",
+    },
+    {
+      fase: "semana",
       texto:
-        "Monta la escaleta base (orden de apertura y quién toca cada tema) y comunica el orden al Stage Manager y al Técnico.",
+        "Monta la escaleta base y comunica orden e intérpretes a SM y Técnico.",
       irA: "escaleta",
     },
     {
-      texto: "Ve marcando en tu lista las tareas completadas de cada paso.",
+      fase: "dia",
+      texto:
+        "Día de la Jam: resuelve cambios de última hora con el Stage Manager.",
+      irA: "escaleta",
+    },
+    {
+      fase: "cierre",
+      texto:
+        "Tras la Jam: marca las tareas completadas y revisa propuestas pendientes.",
       irA: "tareas",
     },
   ],
   "stage-manager": [
+    { fase: "preparacion", texto: "Elige tus apoyos del mes.", irA: "apoyos" },
     {
-      texto: "Elige tus apoyos del mes.",
-      irA: "apoyos",
-    },
-    {
+      fase: "semana",
       texto: "D-1: monta la escaleta base con turnos y duraciones estimadas.",
       irA: "escaleta",
     },
     {
+      fase: "semana",
       texto: "D-1: confirma intérpretes y cambios con el Grupo Base.",
       irA: "escaleta",
     },
     {
-      texto: "Día de la Jam: briefing con los músicos antes de abrir puertas.",
+      fase: "dia",
+      texto: "Briefing con los músicos antes de abrir puertas.",
     },
     {
+      fase: "dia",
       texto:
-        "En directo: opera la escaleta desde el móvil (en espera → en escena → terminado).",
+        "En directo: opera la escaleta (en espera → en escena → terminado).",
       irA: "escaleta",
     },
     {
-      texto:
-        "Al cierre: repasa que todos los turnos quedaron en «terminado».",
+      fase: "dia",
+      texto: "Al cierre: repasa que todos los turnos están en «terminado».",
       irA: "escaleta",
     },
     {
-      texto: "Registra incidencias y pendientes en tu lista de tareas.",
+      fase: "cierre",
+      texto: "Registra incidencias como tareas y déjalas marcadas.",
       irA: "tareas",
     },
   ],
   tecnico: [
+    { fase: "preparacion", texto: "Elige tus apoyos del mes.", irA: "apoyos" },
     {
-      texto: "Elige tus apoyos del mes.",
-      irA: "apoyos",
-    },
-    {
-      texto:
-        "Revisa los instrumentos confirmados: líneas y músicos por instrumento.",
+      fase: "preparacion",
+      texto: "Revisa los instrumentos confirmados: líneas y músicos.",
       irA: "instrumentos",
     },
     {
-      texto: "Planifica microfonías, líneas y monitores según esas líneas.",
+      fase: "preparacion",
+      texto: "Planifica microfonías, líneas y monitores.",
     },
     {
+      fase: "semana",
       texto: "D-1: comprueba amplificadores, consolas y equipo de repuesto.",
     },
     {
-      texto: "Día de la Jam: soundcheck por turnos coordinado con el SM.",
+      fase: "dia",
+      texto: "Soundcheck por turnos coordinado con el Stage Manager.",
     },
     {
+      fase: "cierre",
       texto: "Registra incidencias como tareas y ve marcándolas.",
       irA: "tareas",
     },
   ],
   caja: [
+    { fase: "preparacion", texto: "Elige tus apoyos del mes.", irA: "apoyos" },
     {
-      texto: "Elige tus apoyos del mes.",
-      irA: "apoyos",
-    },
-    {
-      texto: "Prepara el cambio inicial y revisa los precios de los consumos.",
+      fase: "preparacion",
+      texto: "Prepara el cambio inicial y revisa los precios de consumos.",
       irA: "caja",
     },
     {
+      fase: "dia",
       texto:
-        "Durante la Jam: registra consumos, aportaciones del barra y gastos en el módulo.",
+        "Durante la Jam: registra consumos, aportaciones del barra y gastos.",
       irA: "caja",
     },
     {
-      texto:
-        "Al cierre: introduce fondo inicial y efectivo contado, cuadra y cierra la caja.",
+      fase: "dia",
+      texto: "Comprueba que los totales cuadran con lo cobrado en mano.",
+    },
+    {
+      fase: "cierre",
+      texto: "Al cierre: fondo inicial, efectivo contado y cierra la caja.",
       irA: "caja",
     },
     {
-      texto:
-        "Entrega el fondo y comunica el beneficio (ingresos − gastos) al General.",
+      fase: "cierre",
+      texto: "Entrega el fondo y comunica el beneficio al General.",
+      irA: "caja",
     },
     {
-      texto: "Ve marcando en tu lista las tareas completadas.",
+      fase: "cierre",
+      texto: "Ve marcando las tareas completadas.",
       irA: "tareas",
     },
   ],
   redes: [
+    { fase: "preparacion", texto: "Elige tus apoyos del mes.", irA: "apoyos" },
     {
-      texto: "Elige tus apoyos del mes.",
-      irA: "apoyos",
-    },
-    {
-      texto:
-        "Usa el Kit de difusión: copia el texto base y el enlace de la sesión.",
+      fase: "preparacion",
+      texto: "Usa el Kit de difusión: texto base y enlace de la sesión.",
       irA: "difusion",
     },
     {
+      fase: "semana",
       texto:
-        "Diseña el cartel y publícalo con antelación (fecha, lugar, #DebarockKolektiboa).",
+        "Publica el cartel con antelación (fecha, lugar, #DebarockKolektiboa).",
       irA: "difusion",
     },
     {
-      texto: "Durante la Jam: cobertura audiovisual (fotos/vídeos con permiso).",
+      fase: "dia",
+      texto: "Cobertura audiovisual durante la Jam (fotos/vídeos con permiso).",
     },
     {
+      fase: "cierre",
       texto: "Post-evento: publica agradecimientos, material y resultados.",
+      irA: "difusion",
     },
     {
-      texto: "Ve marcando en tu lista las tareas completadas.",
+      fase: "cierre",
+      texto: "Ve marcando las tareas completadas.",
       irA: "tareas",
     },
   ],
+};
+
+/** Nota al pie del modal de protocolo (roles con particularidades). */
+export const ROLE_NOTAS: Partial<Record<Rol, string>> = {
+  admin: "Tu rol no admite apoyos y no modifica tareas, caja ni escaleta: deriva cada incidencia al rol responsable.",
 };

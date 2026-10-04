@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { ROLES_META } from "@/lib/constants";
@@ -19,8 +19,10 @@ import { DifusionKit } from "@/components/panel/difusion-kit";
 import { EnsayoPanel } from "@/components/panel/ensayo-panel";
 import { GrupoBasePanel } from "@/components/panel/grupo-base-panel";
 import { PanelInicio } from "@/components/panel/panel-inicio";
+import { ProtocoloModal } from "@/components/panel/protocolo-modal";
 import { usePanelStatus } from "@/components/panel/use-panel-status";
 import { PanelTabs, type PanelTab } from "@/components/panel/panel-tabs";
+import { proximoPaso } from "@/lib/panel/proximo-paso";
 
 function Seccion({
   titulo,
@@ -41,25 +43,49 @@ function Seccion({
 }
 
 /**
- * Plantilla común de todos los paneles:
- * Inicio (estado + protocolo) → módulos de trabajo en orden de flujo →
- * Tareas → Apoyos.
+ * Plantilla común de todos los paneles: cabecera con acceso al
+ * Protocolo, Inicio (resumen + siguiente paso) → módulos de trabajo en
+ * orden de flujo → Tareas → Apoyos. Gestiona el hash, los contadores
+ * y el modal de protocolo.
  */
 function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   const esTitular = tipo === "titular";
   const { recargar, ...estado } = usePanelStatus(rol);
   const pendTareas = Math.max(estado.tareasTotal - estado.tareasHechas, 0);
+  const paso = proximoPaso(rol, estado);
+
+  const [activo, setActivo] = useState(() =>
+    typeof window === "undefined"
+      ? ""
+      : decodeURIComponent(window.location.hash.slice(1)),
+  );
+  const [protocolo, setProtocolo] = useState(false);
+  const cerrarProtocolo = useCallback(() => setProtocolo(false), []);
+  const abrirProtocolo = useCallback(() => setProtocolo(true), []);
+
+  function seleccionar(id: string) {
+    setActivo(id);
+    window.history.replaceState(null, "", `#${id}`);
+    recargar();
+  }
+
+  function irA(id: string) {
+    setProtocolo(false);
+    seleccionar(id);
+  }
 
   const tabs: PanelTab[] = [
     {
       id: "inicio",
       label: "Inicio",
       primaria: true,
-      node: (go) => (
+      node: (
         <PanelInicio
           rol={rol}
           estado={estado}
-          irA={go}
+          paso={paso}
+          irA={seleccionar}
+          onProtocolo={abrirProtocolo}
           consultas={
             rol === "admin" ? (
               <Link
@@ -175,127 +201,143 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         ),
       }
     );
-
-    return <PanelTabs tabs={tabs} onCambio={recargar} />;
-  }
-
-  if (rol === "general") {
-    tabs.push({
-      id: "sesion",
-      label: "Sesión",
-      primaria: true,
-      node: (
-        <Seccion
-          titulo="Datos, aprobación y cierre de la sesión"
-          nota="Edita los datos, aprueba para generar tareas y cierra tras la Jam."
-        >
-          <ApproveCard puedeEditar={esTitular} />
-        </Seccion>
-      ),
-    });
-  }
-
-  if (rol === "caja") {
-    tabs.push({
-      id: "caja",
-      label: "Caja",
-      primaria: true,
-      node: (
-        <Seccion titulo="Caja y Barra">
-          <CashModule puedeEscribir={esTitular} />
-        </Seccion>
-      ),
-    });
-  }
-
-  if (rol === "general") {
-    tabs.push(
-      {
-        id: "propuestas",
-        label: "Propuestas",
+  } else {
+    if (rol === "general") {
+      tabs.push({
+        id: "sesion",
+        label: "Sesión",
         primaria: true,
-        conteo: estado.propuestasPendientes,
         node: (
           <Seccion
-            titulo="Propuestas de repertorio"
-            nota="Valida en bloque: las aprobadas entran al repertorio informativo; el activo lo decide el Grupo Base."
+            titulo="Datos, aprobación y cierre de la sesión"
+            nota="Edita los datos, aprueba para generar tareas y cierra tras la Jam."
           >
-            <PropuestasPanel editable={esTitular} />
+            <ApproveCard puedeEditar={esTitular} />
           </Seccion>
         ),
-      },
-      {
-        id: "grupo-base",
-        label: "Grupo Base",
-        node: (
-          <Seccion
-            titulo="Grupo Base del mes"
-            nota="Tu grupo del mes: no rota y tiene acceso a su panel."
-          >
-            <GrupoBasePanel />
-          </Seccion>
-        ),
-      },
-      {
-        id: "auditoria",
-        label: "Auditoría",
-        node: (
-          <Seccion
-            titulo="Auditoría de fondos"
-            nota="Lectura de la caja; tú puedes cerrarla con aviso (quedará a tu nombre)."
-          >
-            <CashModule puedeEscribir={false} puedeCerrar={esTitular} />
-          </Seccion>
-        ),
-      }
-    );
-  }
+      });
+    }
 
-  if (rol === "grupo-base") {
-    tabs.push(
-      {
-        id: "propuestas",
-        label: "Propuestas",
+    if (rol === "caja") {
+      tabs.push({
+        id: "caja",
+        label: "Caja",
         primaria: true,
-        conteo: estado.propuestasPendientes,
         node: (
-          <Seccion
-            titulo="Propuestas de la banda"
-            nota="Lectura: las tienes en cuenta; aprueba el General."
-          >
-            <PropuestasPanel editable={false} />
+          <Seccion titulo="Caja y Barra">
+            <CashModule puedeEscribir={esTitular} />
           </Seccion>
         ),
-      },
-      {
-        id: "inscripciones",
-        label: "Inscripciones",
-        primaria: true,
-        conteo: estado.inscripcionesPendientes,
-        node: (
-          <Seccion
-            titulo="Inscripciones de músicos"
-            nota="Asigna el estado de cada músico: asignado / parcial / rechazado."
-          >
-            <InscripcionesPanel editable={esTitular} />
-          </Seccion>
-        ),
-      },
-      {
-        id: "ensayo",
-        label: "Ensayo",
-        node: (
-          <Seccion
-            titulo="Ensayo general y cierre de inscripciones"
-            nota="≈1 semana antes: fija el ensayo y cierra las inscripciones."
-          >
-            <EnsayoPanel />
-          </Seccion>
-        ),
-      },
-      {
+      });
+    }
+
+    if (rol === "general") {
+      tabs.push(
+        {
+          id: "propuestas",
+          label: "Propuestas",
+          primaria: true,
+          conteo: estado.propuestasPendientes,
+          node: (
+            <Seccion
+              titulo="Propuestas de repertorio"
+              nota="Valida en bloque: las aprobadas entran al repertorio informativo; el activo lo decide el Grupo Base."
+            >
+              <PropuestasPanel editable={esTitular} />
+            </Seccion>
+          ),
+        },
+        {
+          id: "grupo-base",
+          label: "Grupo Base",
+          node: (
+            <Seccion
+              titulo="Grupo Base del mes"
+              nota="Tu grupo del mes: no rota y tiene acceso a su panel."
+            >
+              <GrupoBasePanel />
+            </Seccion>
+          ),
+        },
+        {
+          id: "auditoria",
+          label: "Auditoría",
+          node: (
+            <Seccion
+              titulo="Auditoría de fondos"
+              nota="Lectura de la caja; tú puedes cerrarla con aviso (quedará a tu nombre)."
+            >
+              <CashModule puedeEscribir={false} puedeCerrar={esTitular} />
+            </Seccion>
+          ),
+        }
+      );
+    }
+
+    if (rol === "grupo-base") {
+      tabs.push(
+        {
+          id: "propuestas",
+          label: "Propuestas",
+          primaria: true,
+          conteo: estado.propuestasPendientes,
+          node: (
+            <Seccion
+              titulo="Propuestas de la banda"
+              nota="Lectura: las tienes en cuenta; aprueba el General."
+            >
+              <PropuestasPanel editable={false} />
+            </Seccion>
+          ),
+        },
+        {
+          id: "inscripciones",
+          label: "Inscripciones",
+          primaria: true,
+          conteo: estado.inscripcionesPendientes,
+          node: (
+            <Seccion
+              titulo="Inscripciones de músicos"
+              nota="Asigna el estado de cada músico: asignado / parcial / rechazado."
+            >
+              <InscripcionesPanel editable={esTitular} />
+            </Seccion>
+          ),
+        },
+        {
+          id: "ensayo",
+          label: "Ensayo",
+          node: (
+            <Seccion
+              titulo="Ensayo general y cierre de inscripciones"
+              nota="≈1 semana antes: fija el ensayo y cierra las inscripciones."
+            >
+              <EnsayoPanel />
+            </Seccion>
+          ),
+        },
+        {
+          id: "escaleta",
+          label: "Escaleta",
+          node: (
+            <Seccion
+              titulo="Escaleta en directo"
+              nota="Orden de actuación operable desde el móvil durante la Jam."
+            >
+              <Link href="/panel/stage-manager/escaleta" className="db-btn">
+                Abrir escaleta
+              </Link>
+            </Seccion>
+          ),
+        }
+      );
+    }
+
+    if (rol === "stage-manager") {
+      tabs.push({
         id: "escaleta",
         label: "Escaleta",
+        primaria: true,
         node: (
           <Seccion
             titulo="Escaleta en directo"
@@ -306,92 +348,110 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
             </Link>
           </Seccion>
         ),
-      }
-    );
-  }
+      });
+    }
 
-  if (rol === "stage-manager") {
+    if (rol === "tecnico") {
+      tabs.push({
+        id: "instrumentos",
+        label: "Instrumentos",
+        primaria: true,
+        node: (
+          <Seccion
+            titulo="Instrumentos confirmados"
+            nota="Líneas confirmadas: base para microfonías y monitores."
+          >
+            <InstrumentosPanel />
+          </Seccion>
+        ),
+      });
+    }
+
+    if (rol === "redes") {
+      tabs.push({
+        id: "difusion",
+        label: "Difusión",
+        primaria: true,
+        node: (
+          <Seccion
+            titulo="Kit de difusión"
+            nota="Datos del evento y textos base para cartel y publicaciones."
+          >
+            <DifusionKit />
+          </Seccion>
+        ),
+      });
+    }
+
     tabs.push({
-      id: "escaleta",
-      label: "Escaleta",
+      id: "tareas",
+      label: "Tareas",
       primaria: true,
+      conteo: pendTareas,
       node: (
         <Seccion
-          titulo="Escaleta en directo"
-          nota="Orden de actuación operable desde el móvil durante la Jam."
+          titulo="Lista de tareas"
+          nota="Tus tareas del evento: márcalas y ve añadiendo pasos."
         >
-          <Link href="/panel/stage-manager/escaleta" className="db-btn">
-            Abrir escaleta
-          </Link>
+          <TaskList rol={rol} />
         </Seccion>
       ),
     });
+
+    if (rol !== "grupo-base") {
+      tabs.push({
+        id: "apoyos",
+        label: "Apoyos",
+        primaria: rol !== "general",
+        node: (
+          <Seccion
+            titulo="Apoyos de tu rol"
+            nota="Elige quién apoya tu rol este mes (entra en solo lectura)."
+          >
+            <ApoyosPanel rol={rol} />
+          </Seccion>
+        ),
+      });
+    }
   }
 
-  if (rol === "tecnico") {
-    tabs.push({
-      id: "instrumentos",
-      label: "Instrumentos",
-      primaria: true,
-      node: (
-        <Seccion
-          titulo="Instrumentos confirmados"
-          nota="Líneas confirmadas: base para microfonías y monitores."
-        >
-          <InstrumentosPanel />
-        </Seccion>
-      ),
-    });
-  }
+  return (
+    <>
+      <header className="mb-4">
+        <Link href="/panel" className="db-kicker underline">
+          ← Paneles
+        </Link>
+        <div className="mt-1 flex flex-wrap items-center gap-2.5">
+          <h1 className="db-title text-2xl sm:text-4xl">
+            {ROLES_META[rol].label}
+          </h1>
+          <span
+            className={`db-badge ${
+              tipo === "titular" ? "db-badge-solid" : "db-badge-line"
+            }`}
+          >
+            {tipo}
+          </span>
+          <button
+            type="button"
+            onClick={abrirProtocolo}
+            className="db-ghost ml-auto px-3 py-1.5 text-xs!"
+          >
+            Protocolo
+          </button>
+        </div>
+        <p className="db-muted mt-1 hidden text-sm sm:block">
+          {ROLES_META[rol].description}
+        </p>
+      </header>
 
-  if (rol === "redes") {
-    tabs.push({
-      id: "difusion",
-      label: "Difusión",
-      primaria: true,
-      node: (
-        <Seccion
-          titulo="Kit de difusión"
-          nota="Datos del evento y textos base para cartel y publicaciones."
-        >
-          <DifusionKit />
-        </Seccion>
-      ),
-    });
-  }
+      <PanelTabs tabs={tabs} activo={activo} onSeleccionar={seleccionar} />
 
-  tabs.push({
-    id: "tareas",
-    label: "Tareas",
-    primaria: true,
-    conteo: pendTareas,
-    node: (
-      <Seccion
-        titulo="Lista de tareas"
-        nota="Tus tareas del evento: márcalas y ve añadiendo pasos."
-      >
-        <TaskList rol={rol} />
-      </Seccion>
-    ),
-  });
-
-  if (rol !== "grupo-base") {
-    tabs.push({
-      id: "apoyos",
-      label: "Apoyos",
-      primaria: rol !== "general",
-      node: (
-        <Seccion
-          titulo="Apoyos de tu rol"
-          nota="Elige quién apoya tu rol este mes (entra en solo lectura)."
-        >
-          <ApoyosPanel rol={rol} />
-        </Seccion>
-      ),
-    });
-  }
-
-  return <PanelTabs tabs={tabs} onCambio={recargar} />;
+      {protocolo && (
+        <ProtocoloModal rol={rol} onCerrar={cerrarProtocolo} irA={irA} />
+      )}
+    </>
+  );
 }
 
 export function RolPanelClient({ rol: rolParam }: { rol: string }) {
@@ -435,27 +495,6 @@ export function RolPanelClient({ rol: rolParam }: { rol: string }) {
 
   return (
     <div className="mx-auto max-w-4xl px-4 pt-5 pb-16 sm:pt-6">
-      <header className="mb-4">
-        <Link href="/panel" className="db-kicker underline">
-          ← Paneles
-        </Link>
-        <div className="mt-1 flex flex-wrap items-center gap-2.5">
-          <h1 className="db-title text-2xl sm:text-4xl">
-            {ROLES_META[rol].label}
-          </h1>
-          <span
-            className={`db-badge ${
-              tipo === "titular" ? "db-badge-solid" : "db-badge-line"
-            }`}
-          >
-            {tipo}
-          </span>
-        </div>
-        <p className="db-muted mt-1 hidden text-sm sm:block">
-          {ROLES_META[rol].description}
-        </p>
-      </header>
-
       <PanelBody rol={rol} tipo={tipo} />
     </div>
   );

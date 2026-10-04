@@ -10,11 +10,11 @@ export interface PanelTab {
   conteo?: number;
   /** Entra en la bottom bar móvil (máx. 4; el resto va a la hoja «Más»). */
   primaria?: boolean;
-  /** Contenido de la pestaña; si es función recibe el salto a otra pestaña. */
-  node: ReactNode | ((go: (id: string) => void) => ReactNode);
+  node: ReactNode;
 }
 
-function idDesdeHash(tabs: PanelTab[]): string {
+/** Id de pestaña desde el hash de la URL (#tareas, #caja…). */
+export function idDesdeHash(tabs: PanelTab[]): string {
   if (typeof window === "undefined") return tabs[0]?.id ?? "";
   const hash = decodeURIComponent(window.location.hash.slice(1));
   return tabs.some((t) => t.id === hash) ? hash : tabs[0]?.id ?? "";
@@ -34,26 +34,24 @@ function Conteo({ n, activa }: { n: number; activa?: boolean }) {
 
 /**
  * Navegación del panel: bottom bar fija con iconos en móvil (zona del
- * pulgar + hoja «Más») y chips sticky en escritorio. Deep-link por hash
- * (#tareas, #caja…) y contadores de pendientes. Solo se renderiza la
- * pestaña activa.
+ * pulgar + hoja «Más») y chips sticky en escritorio. Controlado desde
+ * PanelBody (que gestiona el hash y los contadores). Solo se renderiza
+ * la pestaña activa.
  */
 export function PanelTabs({
   tabs,
-  onCambio,
+  activo,
+  onSeleccionar,
 }: {
   tabs: PanelTab[];
-  /** Se dispara al cambiar de pestaña (p.ej. para refrescar contadores). */
-  onCambio?: (id: string) => void;
+  activo: string;
+  onSeleccionar: (id: string) => void;
 }) {
-  const [activo, setActivo] = useState(() => idDesdeHash(tabs));
   const [masAbierto, setMasAbierto] = useState(false);
 
   function seleccionar(id: string) {
-    setActivo(id);
     setMasAbierto(false);
-    window.history.replaceState(null, "", `#${id}`);
-    onCambio?.(id);
+    onSeleccionar(id);
   }
 
   const actual = tabs.find((t) => t.id === activo) ?? tabs[0];
@@ -92,9 +90,7 @@ export function PanelTabs({
 
       {/* Contenido de la pestaña activa */}
       <div key={actual?.id} className="db-fade">
-        {typeof actual?.node === "function"
-          ? actual.node(seleccionar)
-          : actual?.node}
+        {actual?.node}
       </div>
 
       {/* Bottom bar (móvil) */}

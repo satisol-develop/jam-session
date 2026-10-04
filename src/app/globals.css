@@ -166,6 +166,53 @@ body {
   }
 }
 
+/* Modal de protocolo (móvil: hoja; escritorio: centrado) */
+.db-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.db-modal {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 61;
+  max-height: 85dvh;
+  overflow-y: auto;
+  background: #141414;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem 1rem 0 0;
+  padding: 1.1rem 1.1rem calc(1.1rem + env(safe-area-inset-bottom));
+  box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.55);
+  animation: db-modal-in 0.18s ease-out;
+}
+
+@keyframes db-modal-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 640px) {
+  .db-modal {
+    inset: auto;
+    left: 50%;
+    top: 50%;
+    width: min(34rem, calc(100vw - 2rem));
+    max-height: 80dvh;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1rem;
+    padding: 1.4rem;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+  }
+}
+
 .db-fade {
   animation: db-fade-in 0.18s ease-out;
 }
@@ -187,6 +234,10 @@ body {
   }
 
   .db-sheet {
+    animation: none;
+  }
+
+  .db-modal {
     animation: none;
   }
 
