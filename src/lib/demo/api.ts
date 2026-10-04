@@ -232,6 +232,22 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         throw new Error("Estado inválido.");
       }
       propuesta.estado = estado;
+      if (
+        estado === "aprobada" &&
+        !s.catalogo.some(
+          (c) => c.titulo.toLowerCase() === propuesta.cancion.toLowerCase(),
+        )
+      ) {
+        s.catalogo.push({
+          id: demoId(s, "c"),
+          titulo: propuesta.cancion,
+          artista: propuesta.artista,
+          tonalidad: "",
+          carpetaDriveId: `folder-demo-${s.catalogo.length + 1}`,
+          estado: "activo",
+          origen: "propuesta",
+        });
+      }
       bumpDemoVersion(s);
       return propuesta as T;
     }
@@ -326,7 +342,6 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     case "task.subtask.toggle": {
       const tarea = s.tareas.find((t) => t.id === String(b.taskId ?? ""));
       if (!tarea) throw new Error("Tarea no encontrada.");
-      requiereEventoAbierto(s);
       validarTitular(tarea.rol);
       const subtarea = (tarea.subtareas ?? []).find(
         (st) => st.id === String(b.subtaskId ?? ""),
@@ -340,7 +355,6 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     case "task.toggle": {
       const tarea = s.tareas.find((t) => t.id === String(b.taskId ?? ""));
       if (!tarea) throw new Error("Tarea no encontrada.");
-      requiereEventoAbierto(s);
       validarTitular(tarea.rol);
       if (tarea.estado === "hecha") {
         tarea.estado = "pendiente";
@@ -590,7 +604,11 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
 
     case "event.setEnsayo": {
       validarTitular("grupo-base");
-      requiereEventoAbierto(s);
+      if (s.evento.estado !== "aprobado") {
+        throw new Error(
+          "El evento debe estar aprobado para fijar el ensayo general.",
+        );
+      }
       s.evento.ensayo = String(b.ensayo ?? "").slice(0, 40);
       bumpDemoVersion(s);
       return { evento: s.evento } as T;
@@ -598,7 +616,11 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
 
     case "event.setInscripciones": {
       validarTitular("grupo-base");
-      requiereEventoAbierto(s);
+      if (s.evento.estado !== "aprobado") {
+        throw new Error(
+          "El evento debe estar aprobado para cerrar las inscripciones.",
+        );
+      }
       s.evento.inscripcionesCerradas = b.cerradas === true;
       bumpDemoVersion(s);
       return { evento: s.evento } as T;

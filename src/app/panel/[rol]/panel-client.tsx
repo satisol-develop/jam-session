@@ -154,7 +154,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {rol === "general" && (
         <Seccion
           titulo="Propuestas de repertorio"
-          nota="Aprueba o rechaza cada propuesta: tu decisión es la final para el repertorio del mes."
+          nota="Aprueba o rechaza cada propuesta: tu decisión es la final. Las aprobadas entran en el repertorio del mes. Siguen abiertas hasta que cierres el evento."
         >
           <PropuestasPanel editable={esTitular} />
         </Seccion>

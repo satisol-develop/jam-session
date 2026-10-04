@@ -156,8 +156,9 @@ export function EnsayoPanel() {
       )}
 
       <p className="db-muted text-xs">
-        ≈1 semana antes: fija el ensayo general, cierra las inscripciones y pide
-        a Redes que anuncie la fecha.
+        ≈1 semana antes: fija el ensayo general y cierra las inscripciones
+        cuando quieras anunciarlo (recomendado: unos días antes de la Jam);
+        después pide a Redes que difunda la fecha.
       </p>
 
       {ok && <p className="db-ok">{ok}</p>}
