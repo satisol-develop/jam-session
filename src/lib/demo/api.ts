@@ -275,8 +275,34 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         creadaPor: uid,
         marcadaPor: "",
         marcadaAt: "",
+        subtareas: [],
       };
       s.tareas.push(tarea);
+      bumpDemoVersion(s);
+      return tarea as T;
+    }
+
+    case "task.subtask.add": {
+      const tarea = s.tareas.find((t) => t.id === String(b.taskId ?? ""));
+      if (!tarea) throw new Error("Tarea no encontrada.");
+      validarTitular(tarea.rol);
+      const titulo = String(b.titulo ?? "").trim();
+      if (titulo.length < 3) throw new Error("La subtarea es demasiado corta.");
+      const subtarea = { id: demoId(s, "sub"), titulo, hecha: false };
+      tarea.subtareas = [...(tarea.subtareas ?? []), subtarea];
+      bumpDemoVersion(s);
+      return tarea as T;
+    }
+
+    case "task.subtask.toggle": {
+      const tarea = s.tareas.find((t) => t.id === String(b.taskId ?? ""));
+      if (!tarea) throw new Error("Tarea no encontrada.");
+      validarTitular(tarea.rol);
+      const subtarea = (tarea.subtareas ?? []).find(
+        (st) => st.id === String(b.subtaskId ?? ""),
+      );
+      if (!subtarea) throw new Error("Subtarea no encontrada.");
+      subtarea.hecha = !subtarea.hecha;
       bumpDemoVersion(s);
       return tarea as T;
     }

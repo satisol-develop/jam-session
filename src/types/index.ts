@@ -107,6 +107,12 @@ export interface Turno {
 export type EstadoTarea = "pendiente" | "hecha";
 export type OrigenTarea = "auto" | "personal";
 
+export interface Subtarea {
+  id: string;
+  titulo: string;
+  hecha: boolean;
+}
+
 export interface Tarea {
   id: string;
   eventoId: string;
@@ -117,6 +123,8 @@ export interface Tarea {
   creadaPor: string;
   marcadaPor: string;
   marcadaAt: string;
+  /** Pasos opcionales para completar la tarea. */
+  subtareas?: Subtarea[];
 }
 
 export type TipoMovimiento = "entrada" | "consumible" | "otro";

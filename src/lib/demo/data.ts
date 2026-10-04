@@ -107,44 +107,140 @@ export function ensureDemoUsuario(store: DemoStore, account: DemoAccount): void 
   });
 }
 
-export const DEMO_TASK_TEMPLATES: Record<string, string[]> = {
+interface DemoTaskTemplate {
+  titulo: string;
+  subtareas?: string[];
+}
+
+export const DEMO_TASK_TEMPLATES: Record<string, DemoTaskTemplate[]> = {
   admin: [
-    "Ejecutar la rotación mensual de roles",
-    "Revisar la matriz de usuarios y dar de baja inactivos",
+    {
+      titulo: "Ejecutar la rotación mensual de roles",
+      subtareas: [
+        "Revisar los titulares salientes",
+        "Asignar los titulares del nuevo mes",
+        "Comprobar que cada nuevo titular entra en su panel",
+      ],
+    },
+    { titulo: "Revisar la matriz de usuarios y dar de baja inactivos" },
   ],
   general: [
-    "Evaluar viabilidad logística y económica de la sesión",
-    "Aprobar o rechazar las propuestas de repertorio de los músicos",
-    "Crear el Grupo Base del mes y asignar quiénes lo forman",
-    "Auditar y recibir los fondos recaudados",
+    {
+      titulo: "Evaluar viabilidad logística y económica de la sesión",
+      subtareas: [
+        "Confirmar fecha y lugar",
+        "Estimar costes e ingresos",
+        "Decidir si se aprueba la sesión",
+      ],
+    },
+    { titulo: "Aprobar o rechazar las propuestas de repertorio de los músicos" },
+    { titulo: "Crear el Grupo Base del mes y asignar quiénes lo forman" },
+    {
+      titulo: "Auditar y recibir los fondos recaudados",
+      subtareas: [
+        "Pedir el cierre de caja al rol Caja",
+        "Contar el efectivo y compararlo con el total",
+        "Registrar cualquier diferencia",
+      ],
+    },
   ],
   "grupo-base": [
-    "Revisar las propuestas de la banda para definir el repertorio",
-    "Definir el repertorio de apertura y el orden de actuación",
-    "Seleccionar el repertorio activo del mes en Drive",
-    "Evaluar las solicitudes de los músicos inscritos",
-    "Asignar quién toca cada tema en la escaleta",
+    {
+      titulo: "Revisar las propuestas de la banda para definir el repertorio",
+      subtareas: [
+        "Leer las propuestas pendientes",
+        "Valorar la canción y el instrumento propuestos",
+        "Dejar la lista valorada para el General",
+      ],
+    },
+    {
+      titulo: "Definir el repertorio de apertura y el orden de actuación",
+      subtareas: [
+        "Elegir el tema de apertura",
+        "Ordenar el resto de temas",
+        "Enviar el orden al Stage Manager",
+      ],
+    },
+    { titulo: "Seleccionar el repertorio activo del mes en Drive" },
+    {
+      titulo: "Evaluar las solicitudes de los músicos inscritos",
+      subtareas: [
+        "Revisar los instrumentos solicitados",
+        "Asignar estado a cada inscripción",
+        "Avisar de los cambios a los músicos",
+      ],
+    },
+    { titulo: "Asignar quién toca cada tema en la escaleta" },
   ],
   "stage-manager": [
-    "Preparar la escaleta base con los turnos",
-    "Verificar horarios y duraciones con el Grupo Base",
-    "Briefing con los músicos antes de abrir puertas",
+    {
+      titulo: "Preparar la escaleta base con los turnos",
+      subtareas: [
+        "Crear los turnos iniciales",
+        "Estimar la duración de cada tema",
+        "Asignar intérpretes a cada turno",
+      ],
+    },
+    { titulo: "Verificar horarios y duraciones con el Grupo Base" },
+    { titulo: "Briefing con los músicos antes de abrir puertas" },
   ],
   tecnico: [
-    "Revisar la lista de instrumentos confirmados",
-    "Planificar micrófonos, líneas y monitores",
-    "Comprobar amplificadores y equipo antes del directo",
+    { titulo: "Revisar la lista de instrumentos confirmados" },
+    {
+      titulo: "Planificar micrófonos, líneas y monitores",
+      subtareas: [
+        "Micrófonos por voz e instrumento",
+        "Líneas de instrumentos",
+        "Monitores por posición en escena",
+      ],
+    },
+    {
+      titulo: "Comprobar amplificadores y equipo antes del directo",
+      subtareas: [
+        "Revisar amplificadores y cabezales",
+        "Comprobar micros y cables",
+        "Dejar equipo de repuesto listo",
+      ],
+    },
   ],
   caja: [
-    "Preparar el cambio inicial y los precios",
-    "Configurar el punto de venta/entrada",
-    "Realizar el cuadre de caja al cierre",
+    {
+      titulo: "Preparar el cambio inicial y los precios",
+      subtareas: [
+        "Contar el fondo inicial",
+        "Fijar los precios de consumos",
+        "Tener cambio pequeño preparado",
+      ],
+    },
+    { titulo: "Configurar el punto de cobro" },
+    {
+      titulo: "Realizar el cuadre de caja al cierre",
+      subtareas: [
+        "Introducir el fondo inicial",
+        "Contar el efectivo contado",
+        "Revisar las diferencias",
+      ],
+    },
   ],
   redes: [
-    "Diseñar cartel y portada del mes",
-    "Lanzar la campaña de difusión",
-    "Cobertura audiovisual durante el evento",
-    "Publicar agradecimientos y material post-evento",
+    {
+      titulo: "Diseñar cartel y portada del mes",
+      subtareas: [
+        "Recoger fecha, lugar y datos",
+        "Diseñar el cartel",
+        "Revisarlo con el equipo",
+      ],
+    },
+    {
+      titulo: "Lanzar la campaña de difusión",
+      subtareas: [
+        "Publicar el cartel en redes",
+        "Programar Stories de recordatorio",
+        "Compartir con grupos y colaboradores",
+      ],
+    },
+    { titulo: "Cobertura audiovisual durante el evento" },
+    { titulo: "Publicar agradecimientos y material post-evento" },
   ],
 };
 
@@ -175,23 +271,35 @@ export function bumpDemoVersion(store: DemoStore): string {
 
 export function generarTareasDemo(store: DemoStore): number {
   let n = 0;
-  for (const [rol, titulos] of Object.entries(DEMO_TASK_TEMPLATES)) {
-    for (const titulo of titulos) {
+  for (const [rol, plantillas] of Object.entries(DEMO_TASK_TEMPLATES)) {
+    for (const plantilla of plantillas) {
       store.tareas.push({
         id: demoId(store, "t"),
         eventoId: DEMO_EVENTO_ID,
         rol: rol as Tarea["rol"],
-        titulo,
+        titulo: plantilla.titulo,
         origen: "auto",
         estado: "pendiente",
         creadaPor: "sistema",
         marcadaPor: "",
         marcadaAt: "",
+        subtareas: (plantilla.subtareas ?? []).map((titulo) => ({
+          id: demoId(store, "sub"),
+          titulo,
+          hecha: false,
+        })),
       });
       n += 1;
     }
   }
   return n;
+}
+
+function marcarHechaDemo(tarea: Tarea, fecha: string, uid: string): void {
+  tarea.estado = "hecha";
+  tarea.marcadaPor = uid;
+  tarea.marcadaAt = fecha;
+  for (const st of tarea.subtareas ?? []) st.hecha = true;
 }
 
 export function createDemoStore(): DemoStore {
@@ -374,12 +482,8 @@ export function createDemoStore(): DemoStore {
   ];
 
   generarTareasDemo(store);
-  store.tareas[0].estado = "hecha";
-  store.tareas[0].marcadaPor = "demo-admin";
-  store.tareas[0].marcadaAt = "2026-10-02T09:00:00.000Z";
-  store.tareas[3].estado = "hecha";
-  store.tareas[3].marcadaPor = "demo-general";
-  store.tareas[3].marcadaAt = "2026-10-04T11:00:00.000Z";
+  marcarHechaDemo(store.tareas[0], "2026-10-02T09:00:00.000Z", "demo-admin");
+  marcarHechaDemo(store.tareas[3], "2026-10-04T11:00:00.000Z", "demo-general");
   store.tareas.push({
     id: demoId(store, "t"),
     eventoId: DEMO_EVENTO_ID,
@@ -390,6 +494,7 @@ export function createDemoStore(): DemoStore {
     creadaPor: "demo-redes",
     marcadaPor: "",
     marcadaAt: "",
+    subtareas: [],
   });
 
   const turno = (

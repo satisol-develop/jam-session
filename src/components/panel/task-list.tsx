@@ -18,6 +18,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
   const esTitular = !soloLectura && roles[rol] === "titular";
   const [tareas, setTareas] = useState<Tarea[] | null>(null);
   const [nueva, setNueva] = useState("");
+  const [nuevasSub, setNuevasSub] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,15 +33,36 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
       });
   }, [rol, todas]);
 
+  function aplicar(actualizada: Tarea) {
+    setTareas((prev) =>
+      (prev ?? []).map((t) => (t.id === actualizada.id ? actualizada : t)),
+    );
+  }
+
   async function onToggle(tarea: Tarea) {
     if (!esTitular || busy) return;
     setBusy(true);
     setError(null);
     try {
       const actualizada = await api<Tarea>("task.toggle", { taskId: tarea.id });
-      setTareas((prev) =>
-        (prev ?? []).map((t) => (t.id === actualizada.id ? actualizada : t)),
-      );
+      aplicar(actualizada);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo actualizar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onToggleSub(tarea: Tarea, subtaskId: string) {
+    if (!esTitular || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const actualizada = await api<Tarea>("task.subtask.toggle", {
+        taskId: tarea.id,
+        subtaskId,
+      });
+      aplicar(actualizada);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo actualizar.");
     } finally {
@@ -57,6 +79,26 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
       const tarea = await api<Tarea>("task.add", { rol, titulo: nueva });
       setTareas((prev) => [...(prev ?? []), tarea]);
       setNueva("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo añadir.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onAddSub(e: FormEvent, tarea: Tarea) {
+    e.preventDefault();
+    const titulo = (nuevasSub[tarea.id] ?? "").trim();
+    if (!esTitular || busy || titulo.length < 3) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const actualizada = await api<Tarea>("task.subtask.add", {
+        taskId: tarea.id,
+        titulo,
+      });
+      aplicar(actualizada);
+      setNuevasSub((prev) => ({ ...prev, [tarea.id]: "" }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo añadir.");
     } finally {
@@ -97,47 +139,118 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
         </p>
       ) : (
         <ul className="space-y-2">
-          {tareas.map((t) => (
-            <li key={t.id}>
-              <button
-                type="button"
-                onClick={() => onToggle(t)}
-                disabled={!esTitular || busy}
-                className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left text-sm transition ${
-                  esTitular
-                    ? "border-white/15 hover:border-[#FFE600]"
-                    : "border-white/15"
+          {tareas.map((t) => {
+            const subtareas = t.subtareas ?? [];
+            const hechasSub = subtareas.filter((st) => st.hecha).length;
+            return (
+              <li
+                key={t.id}
+                className={`rounded-xl border transition ${
+                  esTitular ? "border-white/15 hover:border-[#FFE600]" : "border-white/15"
                 } ${t.estado === "hecha" ? "bg-white/5" : ""}`}
               >
-                <span
-                  className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border text-xs ${
-                    t.estado === "hecha"
-                      ? "border-[#FFE600] bg-[#FFE600] text-black"
-                      : "border-white/40"
-                  }`}
+                <button
+                  type="button"
+                  onClick={() => onToggle(t)}
+                  disabled={!esTitular || busy}
+                  className="flex w-full items-start gap-3 px-4 pt-3 text-left text-sm"
                 >
-                  {t.estado === "hecha" ? "✓" : ""}
-                </span>
-                <span className="flex-1">
                   <span
-                    className={t.estado === "hecha" ? "line-through opacity-60" : ""}
+                    className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border text-xs ${
+                      t.estado === "hecha"
+                        ? "border-[#FFE600] bg-[#FFE600] text-black"
+                        : "border-white/40"
+                    }`}
                   >
-                    {t.titulo}
+                    {t.estado === "hecha" ? "✓" : ""}
                   </span>
-                  {todas && (
-                    <span className="ml-2 rounded bg-[#FFE600]/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[#FFE600]">
-                      {t.rol}
+                  <span className="flex-1">
+                    <span
+                      className={
+                        t.estado === "hecha" ? "line-through opacity-60" : ""
+                      }
+                    >
+                      {t.titulo}
                     </span>
-                  )}
-                  {t.origen === "personal" && (
-                    <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white/60">
-                      personal
-                    </span>
-                  )}
-                </span>
-              </button>
-            </li>
-          ))}
+                    {todas && (
+                      <span className="ml-2 rounded bg-[#FFE600]/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[#FFE600]">
+                        {t.rol}
+                      </span>
+                    )}
+                    {t.origen === "personal" && (
+                      <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white/60">
+                        personal
+                      </span>
+                    )}
+                    {subtareas.length > 0 && (
+                      <span className="ml-2 text-[10px] uppercase text-white/45">
+                        {hechasSub}/{subtareas.length} pasos
+                      </span>
+                    )}
+                  </span>
+                </button>
+
+                {subtareas.length > 0 && (
+                  <ul className="ml-12 mr-4 mb-1 space-y-0.5 border-l border-white/10 pl-3">
+                    {subtareas.map((st) => (
+                      <li key={st.id}>
+                        <button
+                          type="button"
+                          onClick={() => onToggleSub(t, st.id)}
+                          disabled={!esTitular || busy}
+                          className={`flex w-full items-center gap-2 rounded px-1 py-0.5 text-left text-xs ${
+                            esTitular ? "hover:bg-white/5" : "cursor-default"
+                          }`}
+                        >
+                          <span
+                            className={`flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border text-[9px] ${
+                              st.hecha
+                                ? "border-[#FFE600] bg-[#FFE600] text-black"
+                                : "border-white/30"
+                            }`}
+                          >
+                            {st.hecha ? "✓" : ""}
+                          </span>
+                          <span
+                            className={
+                              st.hecha ? "line-through opacity-60" : "text-white/75"
+                            }
+                          >
+                            {st.titulo}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {esTitular && (
+                  <form
+                    onSubmit={(e) => onAddSub(e, t)}
+                    className="ml-12 mr-4 mb-3 flex gap-1.5"
+                  >
+                    <input
+                      type="text"
+                      value={nuevasSub[t.id] ?? ""}
+                      onChange={(e) =>
+                        setNuevasSub((prev) => ({ ...prev, [t.id]: e.target.value }))
+                      }
+                      maxLength={120}
+                      placeholder="+ subtarea…"
+                      className="db-input flex-1 text-xs!"
+                    />
+                    <button
+                      type="submit"
+                      disabled={busy || (nuevasSub[t.id] ?? "").trim().length < 3}
+                      className="db-btn text-xs! px-2!"
+                    >
+                      Añadir
+                    </button>
+                  </form>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
 
