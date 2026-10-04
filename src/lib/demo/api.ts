@@ -4,6 +4,7 @@ import type {
   Evento,
   Inscripcion,
   MovimientoCaja,
+  ResumenCaja,
   RoleAssignment,
   RolesMap,
   Rol,
@@ -25,10 +26,18 @@ import {
   ensureDemoUsuario,
   generarTareasDemo,
   readDemoSession,
+  type DemoStore,
 } from "./data";
 
 function delay(ms = 180): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** El evento cerrado (realizado) congela la operativa. */
+function requiereEventoAbierto(s: DemoStore): void {
+  if (s.evento.estado === "realizado") {
+    throw new Error("El evento está cerrado (realizado): operativa congelada.");
+  }
 }
 
 function validarTitular(rol: Rol): void {
@@ -47,13 +56,14 @@ function validarTitularAlguno(listado: Rol[]): void {
   }
 }
 
-function totalesDemo(movimientos: MovimientoCaja[]) {
-  const totales = { entradas: 0, consumibles: 0, otros: 0 };
+function totalesDemo(movimientos: MovimientoCaja[]): ResumenCaja["totales"] {
+  const totales = { consumibles: 0, otros: 0, gastos: 0, beneficio: 0 };
   for (const m of movimientos) {
-    if (m.tipo === "entrada") totales.entradas += m.importe;
-    else if (m.tipo === "consumible") totales.consumibles += m.importe;
+    if (m.tipo === "consumible") totales.consumibles += m.importe;
+    else if (m.tipo === "gasto") totales.gastos += m.importe;
     else totales.otros += m.importe;
   }
+  totales.beneficio = totales.consumibles + totales.otros - totales.gastos;
   return totales;
 }
 
@@ -106,6 +116,14 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       } as T;
 
     case "musician.subscribe": {
+      requiereEventoAbierto(s);
+      if (s.evento.inscripcionesCerradas) {
+        throw new Error(
+          s.evento.ensayo
+            ? `Inscripciones cerradas. Ensayo general: ${s.evento.ensayo}`
+            : "Inscripciones cerradas por el Grupo Base.",
+        );
+      }
       const instrumentos = Array.isArray(b.instrumentos)
         ? (b.instrumentos as string[])
         : [];
@@ -139,6 +157,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     }
 
     case "musician.propose": {
+      requiereEventoAbierto(s);
       const cancion = String(b.cancion ?? "").trim();
       const artista = String(b.artista ?? "").trim();
       const instrumento = String(b.instrumento ?? "").trim();
@@ -184,6 +203,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       } as T;
 
     case "musician.setEstado": {
+      requiereEventoAbierto(s);
       validarTitular("grupo-base");
       const ins = s.inscripciones.find((i) => i.id === String(b.id ?? ""));
       if (!ins) throw new Error("Inscripción no encontrada.");
@@ -200,6 +220,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       return { propuestas: s.propuestas } as T;
 
     case "proposal.resolve": {
+      requiereEventoAbierto(s);
       validarTitular("general");
       const propuesta = s.propuestas.find((x) => x.id === String(b.id ?? ""));
       if (!propuesta) throw new Error("Propuesta no encontrada.");
@@ -262,6 +283,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         "redes",
       ];
       if (!rolesValidos.includes(rol)) throw new Error("Rol inválido.");
+      requiereEventoAbierto(s);
       validarTitular(rol);
       const titulo = String(b.titulo ?? "").trim();
       if (titulo.length < 3) throw new Error("La tarea es demasiado corta.");
@@ -285,6 +307,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     case "task.subtask.add": {
       const tarea = s.tareas.find((t) => t.id === String(b.taskId ?? ""));
       if (!tarea) throw new Error("Tarea no encontrada.");
+      requiereEventoAbierto(s);
       validarTitular(tarea.rol);
       const titulo = String(b.titulo ?? "").trim();
       if (titulo.length < 3) throw new Error("La subtarea es demasiado corta.");
@@ -297,6 +320,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     case "task.subtask.toggle": {
       const tarea = s.tareas.find((t) => t.id === String(b.taskId ?? ""));
       if (!tarea) throw new Error("Tarea no encontrada.");
+      requiereEventoAbierto(s);
       validarTitular(tarea.rol);
       const subtarea = (tarea.subtareas ?? []).find(
         (st) => st.id === String(b.subtaskId ?? ""),
@@ -310,6 +334,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     case "task.toggle": {
       const tarea = s.tareas.find((t) => t.id === String(b.taskId ?? ""));
       if (!tarea) throw new Error("Tarea no encontrada.");
+      requiereEventoAbierto(s);
       validarTitular(tarea.rol);
       if (tarea.estado === "hecha") {
         tarea.estado = "pendiente";
@@ -332,6 +357,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       } as T;
 
     case "escaleta.save": {
+      requiereEventoAbierto(s);
       validarTitularAlguno(["stage-manager", "grupo-base"]);
       const turnos = Array.isArray(b.turnos) ? (b.turnos as Turno[]) : [];
       if (turnos.length > 100) throw new Error("Demasiados turnos.");
@@ -362,9 +388,10 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       } as T;
 
     case "cash.add": {
+      requiereEventoAbierto(s);
       validarTitular("caja");
       const tipo = String(b.tipo ?? "");
-      if (!["entrada", "consumible", "otro"].includes(tipo)) {
+      if (!["consumible", "otro", "gasto"].includes(tipo)) {
         throw new Error("Tipo de movimiento inválido.");
       }
       const importe = Number(
@@ -389,6 +416,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     }
 
     case "cash.delete": {
+      requiereEventoAbierto(s);
       validarTitular("caja");
       const idx = s.movimientos.findIndex((m) => m.id === String(b.id ?? ""));
       if (idx < 0) throw new Error("Movimiento no encontrado.");
@@ -414,8 +442,12 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         ) || 0;
       const cobradoEfectivo = s.movimientos
         .filter((m) => m.metodo === "efectivo")
-        .reduce((sum, m) => sum + m.importe, 0);
+        .reduce(
+          (sum, m) => sum + (m.tipo === "gasto" ? -m.importe : m.importe),
+          0,
+        );
       const cierre: CierreCaja = {
+        eventoId: DEMO_EVENTO_ID,
         fondoInicial,
         efectivoContado,
         cobradoEfectivo,
@@ -452,10 +484,47 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       return { mes, asignaciones: nuevas, anteriores } as T;
     }
 
+    case "event.update": {
+      validarTitular("general");
+      requiereEventoAbierto(s);
+      if (b.titulo !== undefined) s.evento.titulo = String(b.titulo).slice(0, 120);
+      if (b.fecha !== undefined) s.evento.fecha = String(b.fecha).slice(0, 40);
+      if (b.hora !== undefined) s.evento.hora = String(b.hora).slice(0, 20);
+      if (b.lugar !== undefined) s.evento.lugar = String(b.lugar).slice(0, 160);
+      bumpDemoVersion(s);
+      return { evento: s.evento } as T;
+    }
+
+    case "event.close": {
+      validarTitular("general");
+      if (s.evento.estado !== "aprobado") {
+        throw new Error("Solo se puede cerrar un evento aprobado.");
+      }
+      s.evento = { ...s.evento, estado: "realizado" };
+      bumpDemoVersion(s);
+      return { evento: s.evento } as T;
+    }
+
+    case "event.setEnsayo": {
+      validarTitular("grupo-base");
+      requiereEventoAbierto(s);
+      s.evento.ensayo = String(b.ensayo ?? "").slice(0, 40);
+      bumpDemoVersion(s);
+      return { evento: s.evento } as T;
+    }
+
+    case "event.setInscripciones": {
+      validarTitular("grupo-base");
+      requiereEventoAbierto(s);
+      s.evento.inscripcionesCerradas = b.cerradas === true;
+      bumpDemoVersion(s);
+      return { evento: s.evento } as T;
+    }
+
     case "general.approve": {
       validarTitular("general");
-      if (s.evento.estado === "aprobado") {
-        throw new Error("El evento ya está aprobado.");
+      if (s.evento.estado !== "borrador") {
+        throw new Error("El evento no está en borrador (ya aprobado o cerrado).");
       }
       s.evento = {
         ...s.evento,

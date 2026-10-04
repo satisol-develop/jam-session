@@ -15,6 +15,12 @@ function formatFecha(fecha: string): string {
   return fecha;
 }
 
+function formatEnsayo(valor: string): string {
+  const d = new Date(valor);
+  if (Number.isNaN(d.getTime())) return valor;
+  return `${d.toLocaleDateString("es-ES", { day: "numeric", month: "long" })} · ${d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
 export default async function Home() {
   const data = await fetchPublicEvent();
   const evento = data?.evento ?? null;
@@ -42,6 +48,11 @@ export default async function Home() {
             {evento.lugar && (
               <span className="rounded-full border border-neutral-300 px-4 py-1.5 font-medium dark:border-neutral-700">
                 {evento.lugar}
+              </span>
+            )}
+            {evento.ensayo && (
+              <span className="rounded-full border border-red-500 px-4 py-1.5 font-medium text-red-500">
+                Ensayo general: {formatEnsayo(evento.ensayo)}
               </span>
             )}
           </div>

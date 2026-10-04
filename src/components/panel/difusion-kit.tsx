@@ -41,6 +41,9 @@ export function DifusionKit() {
   const fecha = evento.fecha
     ? fmtFecha.format(new Date(evento.fecha))
     : "Fecha por confirmar";
+  const ensayo = evento.ensayo
+    ? `${fmtFecha.format(new Date(evento.ensayo))} · ${new Date(evento.ensayo).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`
+    : "";
   const url = typeof window !== "undefined" ? window.location.origin : "";
 
   async function copiar(texto: string) {
@@ -53,17 +56,18 @@ export function DifusionKit() {
     }
   }
 
+  const datos: [string, string][] = [
+    ["Título", evento.titulo],
+    ["Fecha", fecha],
+    ["Hora", evento.hora || "—"],
+    ["Lugar", evento.lugar || "—"],
+  ];
+  if (ensayo) datos.push(["Ensayo general", ensayo]);
+
   return (
     <div className="space-y-4">
       <dl className="grid gap-3 sm:grid-cols-2">
-        {(
-          [
-            ["Título", evento.titulo],
-            ["Fecha", fecha],
-            ["Hora", evento.hora || "—"],
-            ["Lugar", evento.lugar || "—"],
-          ] as const
-        ).map(([k, v]) => (
+        {datos.map(([k, v]) => (
           <div key={k} className="rounded-xl border border-white/12 p-3">
             <dt className="db-kicker mb-1">{k}</dt>
             <dd className="text-sm font-semibold">{v}</dd>
@@ -74,8 +78,9 @@ export function DifusionKit() {
       <div className="rounded-xl border border-white/12 p-3">
         <p className="db-kicker mb-1">Texto base para el cartel</p>
         <p className="text-sm">
-          {evento.titulo} — {fecha} · {evento.hora} · {evento.lugar}. ¡Toca con
-          nosotros! #DebarockKolektiboa
+          {evento.titulo} — {fecha} · {evento.hora} · {evento.lugar}.
+          {ensayo && ` Ensayo general: ${ensayo}.`} ¡Toca con nosotros!
+          #DebarockKolektiboa
         </p>
       </div>
 
@@ -86,7 +91,7 @@ export function DifusionKit() {
         <button
           onClick={() =>
             copiar(
-              `${evento.titulo} — ${fecha} · ${evento.hora} · ${evento.lugar}. ¡Toca con nosotros! #DebarockKolektiboa`,
+              `${evento.titulo} — ${fecha} · ${evento.hora} · ${evento.lugar}. ${ensayo ? `Ensayo general: ${ensayo}. ` : ""}¡Toca con nosotros! #DebarockKolektiboa`,
             )
           }
           className="db-ghost text-xs!"

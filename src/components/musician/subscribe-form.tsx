@@ -8,6 +8,9 @@ import type { Cancion, Inscripcion, SolicitudTema } from "@/types";
 interface Props {
   inscripcion: Inscripcion | null;
   onSaved: (inscripcion: Inscripcion) => void;
+  /** El Grupo Base ha cerrado las inscripciones. */
+  cerradas?: boolean;
+  ensayo?: string;
 }
 
 function initialSelection(inscripcion: Inscripcion | null): Record<string, string> {
@@ -18,7 +21,7 @@ function initialSelection(inscripcion: Inscripcion | null): Record<string, strin
   return map;
 }
 
-export function SubscribeForm({ inscripcion, onSaved }: Props) {
+export function SubscribeForm({ inscripcion, onSaved, cerradas, ensayo }: Props) {
   const [catalogo, setCatalogo] = useState<Cancion[] | null>(null);
   const [instrumentos, setInstrumentos] = useState<string[]>(
     inscripcion?.instrumentos ?? [],
@@ -105,6 +108,26 @@ export function SubscribeForm({ inscripcion, onSaved }: Props) {
 
   const opcionesInstrumento =
     instrumentos.length > 0 ? instrumentos : [...INSTRUMENTOS];
+
+  if (cerradas) {
+    return (
+      <div className="space-y-2 rounded-xl border border-neutral-200 p-4 text-sm dark:border-neutral-800">
+        <p className="font-semibold">Inscripciones cerradas</p>
+        <p className="text-neutral-500">
+          El Grupo Base ha cerrado la inscripción de esta sesión.
+          {ensayo && ` Ensayo general: ${ensayo}.`}
+        </p>
+        {inscripcion && (
+          <p className="text-neutral-500">
+            Tu inscripción enviada se conserva (solo lectura):{" "}
+            {inscripcion.instrumentos.join(", ") || "—"} ·{" "}
+            {inscripcion.temas.length}{" "}
+            {inscripcion.temas.length === 1 ? "tema" : "temas"}.
+          </p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">

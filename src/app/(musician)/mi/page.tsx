@@ -56,7 +56,11 @@ export default function MiZonaPage() {
         <h1 className="text-2xl font-bold">Mi zona</h1>
         <p className="mt-1 text-neutral-500">
           Hola, {user?.displayName ?? user?.email ?? "músico"}.
-          {evento ? ` Inscripción abierta: ${evento.titulo || "Jam Session"}.` : ""}
+          {evento
+            ? evento.inscripcionesCerradas
+              ? ` Inscripciones cerradas: ${evento.titulo || "Jam Session"}.`
+              : ` Inscripción abierta: ${evento.titulo || "Jam Session"}.`
+            : ""}
         </p>
         {!cargado && <p className="mt-2 text-sm text-neutral-400">Cargando…</p>}
         {cargado && !evento && (
@@ -85,12 +89,18 @@ export default function MiZonaPage() {
 
       <Section
         title="Inscripción"
-        description="Elige instrumentos y temas en los que quieres tocar."
+        description={
+          evento?.inscripcionesCerradas
+            ? "Inscripciones cerradas por el Grupo Base."
+            : "Elige instrumentos y temas en los que quieres tocar."
+        }
       >
         <SubscribeForm
           key={inscripcion?.id ?? "sin-inscripcion"}
           inscripcion={inscripcion}
           onSaved={setInscripcion}
+          cerradas={evento?.inscripcionesCerradas ?? false}
+          ensayo={evento?.ensayo || undefined}
         />
       </Section>
 

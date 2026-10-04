@@ -31,6 +31,10 @@ export interface Evento {
   estado: EstadoEvento;
   aprobadoPor: string;
   cartelUrl: string;
+  /** Fecha y hora del ensayo general (lo decide el Grupo Base). */
+  ensayo?: string;
+  /** El Grupo Base cierra las inscripciones al anunciar el ensayo. */
+  inscripcionesCerradas?: boolean;
 }
 
 export type EstadoCancion = "activo" | "inactivo";
@@ -127,7 +131,7 @@ export interface Tarea {
   subtareas?: Subtarea[];
 }
 
-export type TipoMovimiento = "entrada" | "consumible" | "otro";
+export type TipoMovimiento = "consumible" | "otro" | "gasto";
 
 export interface MovimientoCaja {
   id: string;
@@ -142,6 +146,7 @@ export interface MovimientoCaja {
 }
 
 export interface CierreCaja {
+  eventoId: string;
   fondoInicial: number;
   efectivoContado: number;
   esperadoEnCaja: number;
@@ -154,7 +159,7 @@ export interface CierreCaja {
 export interface ResumenCaja {
   eventoId: string;
   movimientos: MovimientoCaja[];
-  totales: { entradas: number; consumibles: number; otros: number };
+  totales: { consumibles: number; otros: number; gastos: number; beneficio: number };
   cierre: CierreCaja | null;
 }
 

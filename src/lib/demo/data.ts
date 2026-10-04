@@ -314,6 +314,8 @@ export function createDemoStore(): DemoStore {
       estado: "aprobado",
       aprobadoPor: "demo-general",
       cartelUrl: "",
+      ensayo: "",
+      inscripcionesCerradas: false,
     },
     dataVersion: 1,
     catalogo: [],
@@ -539,15 +541,14 @@ export function createDemoStore(): DemoStore {
     nota: "",
   });
   store.movimientos = [
-    mov("entrada", "Entrada anticipada", 5, "efectivo"),
-    mov("entrada", "Entrada en taquilla", 5, "efectivo"),
-    mov("entrada", "Entrada en taquilla", 5, "tarjeta"),
-    mov("entrada", "Entrada anticipada", 5, "efectivo"),
     mov("consumible", "Cerveza", 2.5, "efectivo"),
     mov("consumible", "Refresco", 1.5, "efectivo"),
     mov("consumible", "Cerveza", 2.5, "efectivo"),
     mov("consumible", "Agua", 1, "tarjeta"),
+    mov("otro", "Aportación barra — acuerdo entidades", 60, "efectivo"),
     mov("otro", "Propina banda", 8, "efectivo"),
+    mov("gasto", "Reposición de bebidas para el bar", 35, "efectivo"),
+    mov("gasto", "Impresión de carteles", 6, "efectivo"),
   ];
 
   return store;

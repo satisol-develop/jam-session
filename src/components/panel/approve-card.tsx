@@ -1,20 +1,71 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { api } from "@/lib/api/client";
 import type { Evento } from "@/types";
 
-export function ApproveCard({ puedeAprobar }: { puedeAprobar: boolean }) {
+export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
   const [evento, setEvento] = useState<Evento | null | undefined>(undefined);
+  const [form, setForm] = useState({ titulo: "", fecha: "", hora: "", lugar: "" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
 
+  function aplicar(ev: Evento | null) {
+    setEvento(ev);
+    if (ev) {
+      setForm({
+        titulo: ev.titulo,
+        fecha: ev.fecha,
+        hora: ev.hora,
+        lugar: ev.lugar,
+      });
+    }
+  }
+
+  function recargar() {
+    return api<{ evento: Evento | null }>("public.event")
+      .then((res) => aplicar(res.evento ?? null))
+      .catch(() => aplicar(null));
+  }
+
   useEffect(() => {
     api<{ evento: Evento | null }>("public.event")
-      .then((res) => setEvento(res.evento ?? null))
+      .then((res) => {
+        const ev = res.evento ?? null;
+        setEvento(ev);
+        if (ev) {
+          setForm({
+            titulo: ev.titulo,
+            fecha: ev.fecha,
+            hora: ev.hora,
+            lugar: ev.lugar,
+          });
+        }
+      })
       .catch(() => setEvento(null));
   }, []);
+
+  function set(campo: keyof typeof form, valor: string) {
+    setForm((prev) => ({ ...prev, [campo]: valor }));
+    setOk(null);
+  }
+
+  async function guardarDatos(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    setOk(null);
+    try {
+      await api("event.update", form);
+      setOk("Datos de la sesión guardados.");
+      await recargar();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function aprobar() {
     setBusy(true);
@@ -23,10 +74,31 @@ export function ApproveCard({ puedeAprobar }: { puedeAprobar: boolean }) {
     try {
       const res = await api<{ tareasGeneradas: number }>("general.approve", {});
       setOk(`Sesión aprobada. ${res.tareasGeneradas} tareas generadas para los roles.`);
-      const ev = await api<{ evento: Evento | null }>("public.event");
-      setEvento(ev.evento ?? null);
+      await recargar();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo aprobar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function cerrarEvento() {
+    if (
+      !window.confirm(
+        "¿Cerrar el evento? Se congelará la operativa y pasará al historial del admin.",
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setOk(null);
+    try {
+      await api("event.close", {});
+      setOk("Evento cerrado y enviado al historial.");
+      await recargar();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo cerrar.");
     } finally {
       setBusy(false);
     }
@@ -49,7 +121,7 @@ export function ApproveCard({ puedeAprobar }: { puedeAprobar: boolean }) {
         <span className="font-semibold">{evento.titulo || "Evento sin título"}</span>
         <span
           className={`db-badge ${
-            evento.estado === "aprobado" ? "db-badge-solid" : "db-badge-line"
+            evento.estado !== "borrador" ? "db-badge-solid" : "db-badge-line"
           }`}
         >
           {evento.estado}
@@ -57,20 +129,89 @@ export function ApproveCard({ puedeAprobar }: { puedeAprobar: boolean }) {
         <span className="db-muted text-xs">
           {evento.fecha} · {evento.hora} · {evento.lugar}
         </span>
+        {evento.inscripcionesCerradas && (
+          <span className="db-badge db-badge-line">Inscripciones cerradas</span>
+        )}
+        {evento.ensayo && (
+          <span className="db-muted text-xs">Ensayo general: {evento.ensayo}</span>
+        )}
       </div>
 
+      {evento.estado === "realizado" && (
+        <p className="db-muted text-xs">
+          Evento cerrado: la operativa está congelada y sus datos se consultan en
+          el historial del admin.
+        </p>
+      )}
+
+      {puedeEditar && evento.estado !== "realizado" && (
+        <form
+          onSubmit={guardarDatos}
+          className="grid gap-3 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800 sm:grid-cols-2"
+        >
+          <label className="text-xs font-semibold">
+            Título
+            <input
+              value={form.titulo}
+              onChange={(e) => set("titulo", e.target.value)}
+              maxLength={120}
+              className="db-input mt-1 w-full"
+            />
+          </label>
+          <label className="text-xs font-semibold">
+            Lugar
+            <input
+              value={form.lugar}
+              onChange={(e) => set("lugar", e.target.value)}
+              maxLength={160}
+              className="db-input mt-1 w-full"
+            />
+          </label>
+          <label className="text-xs font-semibold">
+            Fecha
+            <input
+              type="date"
+              value={form.fecha}
+              onChange={(e) => set("fecha", e.target.value)}
+              className="db-input mt-1 w-full"
+            />
+          </label>
+          <label className="text-xs font-semibold">
+            Hora
+            <input
+              type="time"
+              value={form.hora}
+              onChange={(e) => set("hora", e.target.value)}
+              className="db-input mt-1 w-full"
+            />
+          </label>
+          <div className="sm:col-span-2">
+            <button type="submit" disabled={busy} className="db-btn">
+              {busy ? "Guardando…" : "Guardar datos de la sesión"}
+            </button>
+          </div>
+        </form>
+      )}
+
       {evento.estado === "borrador" &&
-        (puedeAprobar ? (
-          <button
-            onClick={aprobar}
-            disabled={busy}
-            className="db-btn"
-          >
+        (puedeEditar ? (
+          <button onClick={aprobar} disabled={busy} className="db-btn">
             {busy ? "Aprobando…" : "Aprobar sesión y generar tareas"}
           </button>
         ) : (
           <p className="db-muted text-xs">
             Solo el titular del rol General puede aprobar la sesión.
+          </p>
+        ))}
+
+      {evento.estado === "aprobado" &&
+        (puedeEditar ? (
+          <button onClick={cerrarEvento} disabled={busy} className="db-ghost">
+            {busy ? "Cerrando…" : "Cerrar evento y enviar al historial"}
+          </button>
+        ) : (
+          <p className="db-muted text-xs">
+            El cierre del evento corresponde al titular del rol General.
           </p>
         ))}
 

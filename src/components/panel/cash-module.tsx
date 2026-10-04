@@ -18,7 +18,7 @@ export function CashModule({ puedeEscribir }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const [tipo, setTipo] = useState<TipoMovimiento>("entrada");
+  const [tipo, setTipo] = useState<TipoMovimiento>("consumible");
   const [concepto, setConcepto] = useState("");
   const [importe, setImporte] = useState("");
   const [metodo, setMetodo] = useState("efectivo");
@@ -99,7 +99,7 @@ export function CashModule({ puedeEscribir }: Props) {
 
   const cobradoEfectivo = data.movimientos
     .filter((m) => m.metodo === "efectivo")
-    .reduce((s, m) => s + m.importe, 0);
+    .reduce((s, m) => s + (m.tipo === "gasto" ? -m.importe : m.importe), 0);
   const fondo =
     data.cierre?.fondoInicial ?? (Number(fondoInicial.replace(",", ".")) || 0);
   const esperado = data.cierre?.esperadoEnCaja ?? fondo + cobradoEfectivo;
@@ -108,17 +108,26 @@ export function CashModule({ puedeEscribir }: Props) {
     <div className="space-y-6">
       {error && <p className="db-error">{error}</p>}
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {(
           [
-            ["Entradas", data.totales.entradas],
-            ["Consumos", data.totales.consumibles],
-            ["Otros", data.totales.otros],
+            ["Consumos", data.totales.consumibles, false],
+            ["Otros ingresos", data.totales.otros, false],
+            ["Gastos", data.totales.gastos, false],
+            ["Beneficio", data.totales.beneficio, true],
           ] as const
-        ).map(([label, valor]) => (
+        ).map(([label, valor, destacado]) => (
           <div key={label} className="db-card p-3 text-center">
             <p className="db-muted text-xs uppercase tracking-wider">{label}</p>
-            <p className="mt-1 text-lg font-bold tabular-nums text-[#FFE600]">
+            <p
+              className={`mt-1 text-lg font-bold tabular-nums ${
+                destacado
+                  ? valor < 0
+                    ? "text-red-400"
+                    : "text-[#FFE600]"
+                  : "text-white"
+              }`}
+            >
               {eur.format(valor)}
             </p>
           </div>
@@ -133,9 +142,9 @@ export function CashModule({ puedeEscribir }: Props) {
               onChange={(e) => setTipo(e.target.value as TipoMovimiento)}
               className="db-input"
             >
-              <option value="entrada">Entrada</option>
               <option value="consumible">Consumición</option>
-              <option value="otro">Otro</option>
+              <option value="otro">Otro ingreso (barra/bar)</option>
+              <option value="gasto">Gasto</option>
             </select>
             <select
               value={metodo}
@@ -149,7 +158,7 @@ export function CashModule({ puedeEscribir }: Props) {
               type="text"
               value={concepto}
               onChange={(e) => setConcepto(e.target.value)}
-              placeholder="Concepto (ej. Cerveza, Entrada)"
+              placeholder="Concepto (ej. Cerveza, Aportación barra)"
               maxLength={120}
               className="db-input"
             />
@@ -182,6 +191,17 @@ export function CashModule({ puedeEscribir }: Props) {
             <li key={m.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
               <span className="flex-1">
                 <span className="font-medium">{m.concepto || m.tipo}</span>
+                <span
+                  className={`ml-2 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
+                    m.tipo === "gasto"
+                      ? "bg-red-500/15 text-red-300"
+                      : m.tipo === "otro"
+                        ? "bg-[#FFE600]/15 text-[#FFE600]"
+                        : "bg-white/10 text-white/60"
+                  }`}
+                >
+                  {m.tipo}
+                </span>
                 <span className="db-muted ml-2 text-xs">{m.metodo}</span>
               </span>
               <span className="tabular-nums">{eur.format(m.importe)}</span>

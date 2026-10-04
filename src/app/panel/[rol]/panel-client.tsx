@@ -14,6 +14,7 @@ import { InscripcionesPanel } from "@/components/panel/inscripciones-panel";
 import { InstrumentosPanel } from "@/components/panel/instrumentos-panel";
 import { PropuestasPanel } from "@/components/panel/propuestas-panel";
 import { DifusionKit } from "@/components/panel/difusion-kit";
+import { EnsayoPanel } from "@/components/panel/ensayo-panel";
 import { RoleGuide } from "@/components/panel/role-guide";
 
 function Seccion({
@@ -59,9 +60,9 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
 
         <Seccion
           titulo="Estado de la sesión"
-          nota="Solo lectura: la aprobación corresponde al rol General."
+          nota="Solo lectura: la edición, aprobación y cierre corresponden al rol General."
         >
-          <ApproveCard puedeAprobar={false} />
+          <ApproveCard puedeEditar={false} />
         </Seccion>
 
         <Seccion
@@ -134,8 +135,11 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       </Seccion>
 
       {rol === "general" && (
-        <Seccion titulo="Aprobación de la sesión">
-          <ApproveCard puedeAprobar={esTitular} />
+        <Seccion
+          titulo="Datos, aprobación y cierre de la sesión"
+          nota="Edita título, fecha, hora y lugar; aprueba para generar tareas; cierra tras la Jam para pasarlo al historial."
+        >
+          <ApproveCard puedeEditar={esTitular} />
         </Seccion>
       )}
 
@@ -163,6 +167,15 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
           nota="Instrumentos y temas solicitados. Asigna el estado de cada inscripción."
         >
           <InscripcionesPanel editable={esTitular} />
+        </Seccion>
+      )}
+
+      {rol === "grupo-base" && (
+        <Seccion
+          titulo="Ensayo general y cierre de inscripciones"
+          nota="≈1 semana antes: decide el ensayo, cierra las inscripciones y anuncia la fecha."
+        >
+          <EnsayoPanel />
         </Seccion>
       )}
 
