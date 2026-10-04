@@ -17,9 +17,23 @@ export function SiteHeader() {
   }
 
   const isActive = (href: string) => pathname === href;
+  const enPanel = pathname.startsWith("/panel");
+
+  const headerCls = enPanel
+    ? "border-white/10 bg-[#0d0d0d]/95 text-[#f2f2f2]"
+    : "border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-black/80";
+  const linkCls = enPanel
+    ? "rounded-lg px-3 py-2 font-medium transition hover:bg-white/10"
+    : "rounded-lg px-3 py-2 font-medium transition hover:bg-neutral-100 dark:hover:bg-neutral-900";
+  const linkActivo = enPanel
+    ? "bg-white/10"
+    : "bg-neutral-100 dark:bg-neutral-900";
+  const mutedCls = enPanel
+    ? "hidden max-w-[10rem] truncate px-2 text-white/50 sm:inline"
+    : "hidden max-w-[10rem] truncate px-2 text-neutral-500 sm:inline";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-black/80">
+    <header className={`sticky top-0 z-40 border-b ${headerCls}`}>
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <Link href="/" className="text-lg font-black tracking-tight">
@@ -37,30 +51,28 @@ export function SiteHeader() {
             <>
               <Link
                 href="/mi"
-                className={`rounded-lg px-3 py-2 font-medium transition hover:bg-neutral-100 dark:hover:bg-neutral-900 ${
-                  isActive("/mi") ? "bg-neutral-100 dark:bg-neutral-900" : ""
-                }`}
+                className={`${linkCls} ${isActive("/mi") ? linkActivo : ""}`}
               >
                 Mi zona
               </Link>
               {tieneRoles && (
                 <Link
                   href="/panel"
-                  className={`rounded-lg px-3 py-2 font-medium transition hover:bg-neutral-100 dark:hover:bg-neutral-900 ${
-                    pathname.startsWith("/panel")
-                      ? "bg-neutral-100 dark:bg-neutral-900"
-                      : ""
+                  className={`${linkCls} ${
+                    pathname.startsWith("/panel") ? linkActivo : ""
                   }`}
                 >
                   Panel
                 </Link>
               )}
-              <span className="hidden max-w-[10rem] truncate px-2 text-neutral-500 sm:inline">
+              <span className={mutedCls}>
                 {user.displayName ?? user.email}
               </span>
               <button
                 onClick={onLogout}
-                className="rounded-lg px-3 py-2 font-medium text-neutral-500 transition hover:bg-neutral-100 dark:hover:bg-neutral-900"
+                className={`${linkCls} ${
+                  enPanel ? "text-white/60" : "text-neutral-500"
+                }`}
               >
                 Salir
               </button>
@@ -69,15 +81,16 @@ export function SiteHeader() {
             <span className="px-3 text-neutral-400">…</span>
           ) : (
             <>
-              <Link
-                href="/login"
-                className="rounded-lg px-3 py-2 font-medium transition hover:bg-neutral-100 dark:hover:bg-neutral-900"
-              >
+              <Link href="/login" className={linkCls}>
                 Entrar
               </Link>
               <Link
                 href="/registro"
-                className="rounded-lg bg-neutral-900 px-3 py-2 font-semibold text-white transition hover:bg-neutral-700 dark:bg-white dark:text-black"
+                className={
+                  enPanel
+                    ? "rounded-lg bg-[#FFE600] px-3 py-2 font-semibold text-black transition hover:bg-white"
+                    : "rounded-lg bg-neutral-900 px-3 py-2 font-semibold text-white transition hover:bg-neutral-700 dark:bg-white dark:text-black"
+                }
               >
                 Registro
               </Link>
