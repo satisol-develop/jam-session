@@ -7,11 +7,15 @@ import type { Rol, Tarea } from "@/types";
 
 interface Props {
   rol: Rol;
+  /** Muestra las tareas de todos los roles (vista global del admin). */
+  todas?: boolean;
+  /** Fuerza el modo solo lectura (ignora si el usuario es titular). */
+  soloLectura?: boolean;
 }
 
-export function TaskList({ rol }: Props) {
+export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
   const { roles } = useAuth();
-  const esTitular = roles[rol] === "titular";
+  const esTitular = !soloLectura && roles[rol] === "titular";
   const [tareas, setTareas] = useState<Tarea[] | null>(null);
   const [nueva, setNueva] = useState("");
   const [busy, setBusy] = useState(false);
@@ -19,12 +23,14 @@ export function TaskList({ rol }: Props) {
 
   useEffect(() => {
     api<{ tareas: Tarea[] }>("task.list")
-      .then((res) => setTareas(res.tareas.filter((t) => t.rol === rol)))
+      .then((res) =>
+        setTareas(todas ? res.tareas : res.tareas.filter((t) => t.rol === rol)),
+      )
       .catch((err) => {
         setError(err instanceof Error ? err.message : "No se pudo cargar.");
         setTareas([]);
       });
-  }, [rol]);
+  }, [rol, todas]);
 
   async function onToggle(tarea: Tarea) {
     if (!esTitular || busy) return;
@@ -118,6 +124,11 @@ export function TaskList({ rol }: Props) {
                   >
                     {t.titulo}
                   </span>
+                  {todas && (
+                    <span className="ml-2 rounded bg-[#FFE600]/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[#FFE600]">
+                      {t.rol}
+                    </span>
+                  )}
                   {t.origen === "personal" && (
                     <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white/60">
                       personal
@@ -148,6 +159,11 @@ export function TaskList({ rol }: Props) {
             Añadir
           </button>
         </form>
+      ) : soloLectura ? (
+        <p className="db-muted text-xs">
+          Modo solo lectura: consulta las tareas de todos los roles, pero no
+          las marques ni las edites.
+        </p>
       ) : (
         <p className="db-muted text-xs">
           Modo solo lectura (rol de apoyo): puedes consultar las tareas, pero

@@ -36,7 +36,9 @@ export default function EscaletaPage() {
   const { roles, loading: cargandoAuth } = useAuth();
   const puedeEditar =
     roles["stage-manager"] === "titular" || roles["grupo-base"] === "titular";
-  const puedeVer = Boolean(roles["stage-manager"] || roles["grupo-base"]);
+  const puedeVer = Boolean(
+    roles["stage-manager"] || roles["grupo-base"] || roles["admin"],
+  );
 
   const [turnos, setTurnos] = useState<Turno[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -155,7 +157,8 @@ export default function EscaletaPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
         <p className="db-muted text-sm">
-          Este panel es para Stage Manager y Grupo Base.
+          Este panel es para Stage Manager y Grupo Base (y el administrador en
+          modo lectura).
         </p>
         <Link href="/panel" className="mt-2 text-sm text-[#FFE600] underline">
           Volver a paneles
@@ -168,10 +171,10 @@ export default function EscaletaPage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <header className="mb-6">
         <Link
-          href="/panel/stage-manager"
+          href="/panel"
           className="db-kicker underline"
         >
-          ← Panel Stage Manager
+          ← Paneles
         </Link>
         <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2">
           <h1 className="db-title text-3xl sm:text-4xl">Escaleta en directo</h1>

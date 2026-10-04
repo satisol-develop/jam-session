@@ -37,18 +37,80 @@ function Seccion({
 function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   const esTitular = tipo === "titular";
 
-  return (
-    <div className="space-y-6">
-      <RoleGuide rol={rol} />
+  if (rol === "admin") {
+    return (
+      <div className="space-y-6">
+        <RoleGuide rol="admin" />
 
-      <Seccion titulo="Lista de tareas">
-        <TaskList rol={rol} />
-      </Seccion>
+        <Seccion
+          titulo="Vista global · solo lectura"
+          nota="Todo lo que ocurre en los demás paneles, aquí en modo consulta. Tu única edición posible es la rotación de roles."
+        >
+          <div className="flex flex-wrap gap-2">
+            <span className="db-badge db-badge-solid">Estado</span>
+            <span className="db-badge db-badge-line">Tareas</span>
+            <span className="db-badge db-badge-line">Escaleta</span>
+            <span className="db-badge db-badge-line">Inscripciones</span>
+            <span className="db-badge db-badge-line">Propuestas</span>
+            <span className="db-badge db-badge-line">Instrumentos</span>
+            <span className="db-badge db-badge-line">Caja</span>
+          </div>
+        </Seccion>
 
-      {rol === "admin" && (
+        <Seccion
+          titulo="Estado de la sesión"
+          nota="Solo lectura: la aprobación corresponde al rol General."
+        >
+          <ApproveCard puedeAprobar={false} />
+        </Seccion>
+
+        <Seccion
+          titulo="Tareas de todos los roles"
+          nota="Progreso global del equipo, etiquetado por rol. Solo lectura."
+        >
+          <TaskList rol="admin" todas soloLectura />
+        </Seccion>
+
+        <Seccion
+          titulo="Escaleta"
+          nota="Consulta del orden de actuación. Edición exclusiva de Stage Manager y Grupo Base."
+        >
+          <Link href="/panel/stage-manager/escaleta" className="db-btn">
+            Abrir escaleta (lectura)
+          </Link>
+        </Seccion>
+
+        <Seccion
+          titulo="Inscripciones de músicos"
+          nota="Solicitudes recibidas. Los estados los asigna el Grupo Base."
+        >
+          <InscripcionesPanel editable={false} />
+        </Seccion>
+
+        <Seccion
+          titulo="Propuestas de repertorio"
+          nota="Pendientes y resueltas. Las resuelve el rol General."
+        >
+          <PropuestasPanel editable={false} />
+        </Seccion>
+
+        <Seccion
+          titulo="Instrumentos confirmados"
+          nota="Líneas por instrumento para planificación técnica."
+        >
+          <InstrumentosPanel />
+        </Seccion>
+
+        <Seccion
+          titulo="Caja y fondos"
+          nota="Movimientos, totales y cierre. Escritura exclusiva del rol Caja."
+        >
+          <CashModule puedeEscribir={false} />
+        </Seccion>
+
         <Seccion
           titulo="Rotación mensual de roles"
-          nota="Asigna titulares y apoyos para el mes. Los cambios actualizan los permisos de cada usuario."
+          nota="Tu única edición: asigna titulares y apoyos del mes. Los cambios actualizan los permisos de cada usuario."
         >
           {esTitular ? (
             <RotationPanel />
@@ -59,7 +121,17 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
             </p>
           )}
         </Seccion>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <RoleGuide rol={rol} />
+
+      <Seccion titulo="Lista de tareas">
+        <TaskList rol={rol} />
+      </Seccion>
 
       {rol === "general" && (
         <Seccion titulo="Aprobación de la sesión">
