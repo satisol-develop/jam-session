@@ -14,6 +14,7 @@ import { InscripcionesPanel } from "@/components/panel/inscripciones-panel";
 import { InstrumentosPanel } from "@/components/panel/instrumentos-panel";
 import { PropuestasPanel } from "@/components/panel/propuestas-panel";
 import { DifusionKit } from "@/components/panel/difusion-kit";
+import { RoleGuide } from "@/components/panel/role-guide";
 
 function Seccion({
   titulo,
@@ -38,6 +39,8 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
 
   return (
     <div className="space-y-6">
+      <RoleGuide rol={rol} />
+
       <Seccion titulo="Lista de tareas">
         <TaskList rol={rol} />
       </Seccion>
