@@ -72,7 +72,8 @@ export const ROLE_GUIDES: Record<Rol, string[]> = {
     "Aprueba la sesión: se generan automáticamente las tareas de todos los roles.",
     "Crea o confirma el Grupo Base del mes (es tu grupo) y revisa las inscripciones de músicos.",
     "Tras la Jam, audita los fondos en «Auditoría de fondos» (solo lectura de la caja).",
-    "Cuando la caja esté cerrada, cierra el evento: se congelará la operativa y pasará al historial.",
+    "Cuando la caja esté cerrada, cierra el evento: se congelará la operativa y quedará archivado en el historial.",
+    "Crea la siguiente sesión (mes, fecha, hora y lugar) cuando toque abrir el próximo ciclo.",
     "Ve marcando en tu lista las tareas completadas de cada paso.",
   ],
   "grupo-base": [

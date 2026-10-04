@@ -290,7 +290,7 @@ export function generarTareasDemo(store: DemoStore): number {
     for (const plantilla of plantillas) {
       store.tareas.push({
         id: demoId(store, "t"),
-        eventoId: DEMO_EVENTO_ID,
+        eventoId: store.evento.id,
         rol: rol as Tarea["rol"],
         titulo: plantilla.titulo,
         origen: "auto",

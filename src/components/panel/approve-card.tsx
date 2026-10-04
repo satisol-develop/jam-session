@@ -7,6 +7,13 @@ import type { Evento } from "@/types";
 export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
   const [evento, setEvento] = useState<Evento | null | undefined>(undefined);
   const [form, setForm] = useState({ titulo: "", fecha: "", hora: "", lugar: "" });
+  const [crear, setCrear] = useState({
+    mes: "",
+    titulo: "",
+    fecha: "",
+    hora: "",
+    lugar: "",
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
@@ -85,7 +92,7 @@ export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
   async function cerrarEvento() {
     if (
       !window.confirm(
-        "¿Cerrar el evento? Se congelará la operativa y pasará al historial del admin.",
+        "¿Cerrar el evento? Se congelará la operativa, quedará archivado en el historial y podrás crear el siguiente.",
       )
     ) {
       return;
@@ -95,10 +102,27 @@ export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
     setOk(null);
     try {
       await api("event.close", {});
-      setOk("Evento cerrado y enviado al historial.");
+      setOk("Evento cerrado y archivado en el historial.");
       await recargar();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo cerrar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function crearSiguiente(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    setOk(null);
+    try {
+      await api("event.create", crear);
+      setOk("Siguiente evento creado en borrador.");
+      setCrear({ mes: "", titulo: "", fecha: "", hora: "", lugar: "" });
+      await recargar();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo crear.");
     } finally {
       setBusy(false);
     }
@@ -139,8 +163,8 @@ export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
 
       {evento.estado === "realizado" && (
         <p className="db-muted text-xs">
-          Evento cerrado: la operativa está congelada y sus datos se consultan en
-          el historial del admin.
+          Evento cerrado: operativa congelada y archivado en el historial del
+          admin. Desde aquí puedes crear la siguiente sesión.
         </p>
       )}
 
@@ -206,12 +230,97 @@ export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
 
       {evento.estado === "aprobado" &&
         (puedeEditar ? (
-          <button onClick={cerrarEvento} disabled={busy} className="db-ghost">
-            {busy ? "Cerrando…" : "Cerrar evento y enviar al historial"}
-          </button>
+          <>
+            <button onClick={cerrarEvento} disabled={busy} className="db-ghost">
+              {busy ? "Cerrando…" : "Cerrar evento y enviar al historial"}
+            </button>
+            <p className="db-muted text-xs">
+              Requiere que la caja esté cerrada por el rol Caja.
+            </p>
+          </>
         ) : (
           <p className="db-muted text-xs">
             El cierre del evento corresponde al titular del rol General.
+          </p>
+        ))}
+
+      {evento.estado === "realizado" &&
+        (puedeEditar ? (
+          <form
+            onSubmit={crearSiguiente}
+            className="grid gap-3 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800 sm:grid-cols-2"
+          >
+            <p className="db-kicker sm:col-span-2">
+              Crear la siguiente sesión
+            </p>
+            <label className="text-xs font-semibold">
+              Mes
+              <input
+                type="month"
+                value={crear.mes}
+                onChange={(e) =>
+                  setCrear((prev) => ({ ...prev, mes: e.target.value }))
+                }
+                required
+                className="db-input mt-1 w-full"
+              />
+            </label>
+            <label className="text-xs font-semibold">
+              Título
+              <input
+                value={crear.titulo}
+                onChange={(e) =>
+                  setCrear((prev) => ({ ...prev, titulo: e.target.value }))
+                }
+                maxLength={120}
+                required
+                placeholder="Jam Session de Noviembre"
+                className="db-input mt-1 w-full"
+              />
+            </label>
+            <label className="text-xs font-semibold">
+              Fecha
+              <input
+                type="date"
+                value={crear.fecha}
+                onChange={(e) =>
+                  setCrear((prev) => ({ ...prev, fecha: e.target.value }))
+                }
+                required
+                className="db-input mt-1 w-full"
+              />
+            </label>
+            <label className="text-xs font-semibold">
+              Hora
+              <input
+                type="time"
+                value={crear.hora}
+                onChange={(e) =>
+                  setCrear((prev) => ({ ...prev, hora: e.target.value }))
+                }
+                className="db-input mt-1 w-full"
+              />
+            </label>
+            <label className="text-xs font-semibold sm:col-span-2">
+              Lugar
+              <input
+                value={crear.lugar}
+                onChange={(e) =>
+                  setCrear((prev) => ({ ...prev, lugar: e.target.value }))
+                }
+                maxLength={160}
+                className="db-input mt-1 w-full"
+              />
+            </label>
+            <div className="sm:col-span-2">
+              <button type="submit" disabled={busy} className="db-btn">
+                {busy ? "Creando…" : "Crear evento siguiente (borrador)"}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <p className="db-muted text-xs">
+            El siguiente evento lo crea el titular del rol General.
           </p>
         ))}
 

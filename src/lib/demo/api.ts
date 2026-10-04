@@ -14,8 +14,6 @@ import type {
   Usuario,
 } from "@/types";
 import {
-  DEMO_EVENTO_ID,
-  DEMO_MES,
   bumpDemoVersion,
   currentDemoAccount,
   demoAccountFor,
@@ -111,8 +109,11 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
 
     case "musician.subscription":
       return {
-        eventoId: DEMO_EVENTO_ID,
-        inscripcion: s.inscripciones.find((i) => i.uid === uid) ?? null,
+        eventoId: s.evento.id,
+        inscripcion:
+          s.inscripciones.find(
+            (i) => i.uid === uid && i.eventoId === s.evento.id,
+          ) ?? null,
       } as T;
 
     case "musician.subscribe": {
@@ -135,10 +136,12 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       }
       if (temas.length === 0) throw new Error("Selecciona al menos un tema.");
 
-      const existente = s.inscripciones.find((i) => i.uid === uid);
+      const existente = s.inscripciones.find(
+        (i) => i.uid === uid && i.eventoId === s.evento.id,
+      );
       const guardada: Inscripcion = {
         id: existente?.id ?? demoId(s, "ins"),
-        eventoId: DEMO_EVENTO_ID,
+        eventoId: s.evento.id,
         uid,
         nombre,
         instrumentos,
@@ -188,18 +191,18 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     case "musician.attendees": {
       const vistos = new Map<string, string>();
       for (const i of s.inscripciones) {
-        if (i.eventoId === DEMO_EVENTO_ID) vistos.set(i.uid, i.nombre);
+        if (i.eventoId === s.evento.id) vistos.set(i.uid, i.nombre);
       }
       return {
-        eventoId: DEMO_EVENTO_ID,
+        eventoId: s.evento.id,
         usuarios: Array.from(vistos, ([uid, nombre]) => ({ uid, nombre })),
       } as T;
     }
 
     case "event.inscripciones":
       return {
-        eventoId: DEMO_EVENTO_ID,
-        inscripciones: s.inscripciones,
+        eventoId: s.evento.id,
+        inscripciones: s.inscripciones.filter((i) => i.eventoId === s.evento.id),
       } as T;
 
     case "musician.setEstado": {
@@ -269,7 +272,10 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     }
 
     case "task.list":
-      return { eventoId: DEMO_EVENTO_ID, tareas: s.tareas } as T;
+      return {
+        eventoId: s.evento.id,
+        tareas: s.tareas.filter((t) => t.eventoId === s.evento.id),
+      } as T;
 
     case "task.add": {
       const rol = String(b.rol ?? "") as Rol;
@@ -289,7 +295,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       if (titulo.length < 3) throw new Error("La tarea es demasiado corta.");
       const tarea: Tarea = {
         id: demoId(s, "t"),
-        eventoId: DEMO_EVENTO_ID,
+        eventoId: s.evento.id,
         rol,
         titulo,
         origen: "personal",
@@ -351,9 +357,9 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
 
     case "escaleta.list":
       return {
-        eventoId: DEMO_EVENTO_ID,
+        eventoId: s.evento.id,
         dataVersion: String(s.dataVersion),
-        turnos: s.turnos,
+        turnos: s.turnos.filter((t) => t.eventoId === s.evento.id),
       } as T;
 
     case "escaleta.save": {
@@ -364,7 +370,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       s.turnos = turnos.map((t, i) => ({
         ...t,
         id: t.id.startsWith("local-") ? demoId(s, "sc") : t.id,
-        eventoId: DEMO_EVENTO_ID,
+        eventoId: s.evento.id,
         orden: i + 1,
         estado:
           t.estado === "escena" || t.estado === "fin" ? t.estado : "espera",
@@ -373,7 +379,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       }));
       bumpDemoVersion(s);
       return {
-        eventoId: DEMO_EVENTO_ID,
+        eventoId: s.evento.id,
         dataVersion: String(s.dataVersion),
         turnos: s.turnos,
       } as T;
@@ -381,8 +387,8 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
 
     case "cash.list":
       return {
-        eventoId: DEMO_EVENTO_ID,
-        movimientos: s.movimientos,
+        eventoId: s.evento.id,
+        movimientos: s.movimientos.filter((m) => m.eventoId === s.evento.id),
         totales: totalesDemo(s.movimientos),
         cierre: s.cierre,
       } as T;
@@ -401,7 +407,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       if (s.cierre) throw new Error("La caja ya está cerrada.");
       const movimiento: MovimientoCaja = {
         id: demoId(s, "m"),
-        eventoId: DEMO_EVENTO_ID,
+        eventoId: s.evento.id,
         tipo: tipo as TipoMovimiento,
         concepto: String(b.concepto ?? "").slice(0, 120),
         importe,
@@ -447,7 +453,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
           0,
         );
       const cierre: CierreCaja = {
-        eventoId: DEMO_EVENTO_ID,
+        eventoId: s.evento.id,
         fondoInicial,
         efectivoContado,
         cobradoEfectivo,
@@ -463,9 +469,9 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
 
     case "admin.users":
       return {
-        mes: DEMO_MES,
+        mes: s.evento.mes,
         usuarios: s.usuarios,
-        roles: s.roles.filter((r) => r.mes === DEMO_MES),
+        roles: s.roles.filter((r) => r.mes === s.evento.mes),
       } as T;
 
     case "admin.history": {
@@ -513,9 +519,73 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       if (s.evento.estado !== "aprobado") {
         throw new Error("Solo se puede cerrar un evento aprobado.");
       }
+      if (!s.cierre) {
+        throw new Error(
+          "Cierra la caja (rol Caja) antes de cerrar el evento.",
+        );
+      }
       s.evento = { ...s.evento, estado: "realizado" };
+      s.historial.push({
+        evento: { ...s.evento },
+        roles: s.roles.filter((r) => r.mes === s.evento.mes),
+        inscripciones: s.inscripciones,
+        tareas: s.tareas,
+        movimientos: s.movimientos,
+        cierre: s.cierre,
+      });
       bumpDemoVersion(s);
       return { evento: s.evento } as T;
+    }
+
+    case "event.create": {
+      validarTitular("general");
+      if (s.evento.estado !== "realizado") {
+        throw new Error(
+          "El evento actual debe estar cerrado antes de crear el siguiente.",
+        );
+      }
+      const mes = String(b.mes ?? "");
+      if (!/^\d{4}-\d{2}$/.test(mes)) {
+        throw new Error("Mes inválido (usa yyyy-MM).");
+      }
+      const titulo = String(b.titulo ?? "").trim().slice(0, 120);
+      const fecha = String(b.fecha ?? "").trim().slice(0, 40);
+      if (!titulo) throw new Error("Indica el título de la sesión.");
+      if (!fecha) throw new Error("Indica la fecha de la sesión.");
+      const cerrado = s.historial.find((h) => h.evento.id === s.evento.id);
+      const extras = cerrado
+        ? cerrado.tareas.filter(
+            (t) => t.origen === "personal" && t.estado === "pendiente",
+          )
+        : [];
+      const nuevo: Evento = {
+        id: demoId(s, "ev"),
+        titulo,
+        mes,
+        fecha,
+        hora: String(b.hora ?? "").trim().slice(0, 20),
+        lugar: String(b.lugar ?? "").trim().slice(0, 160),
+        estado: "borrador",
+        aprobadoPor: "",
+        cartelUrl: "",
+        ensayo: "",
+        inscripcionesCerradas: false,
+      };
+      s.evento = nuevo;
+      s.inscripciones = [];
+      s.propuestas = [];
+      s.turnos = [];
+      s.movimientos = [];
+      s.cierre = null;
+      s.tareas = extras.map((t) => ({
+        ...t,
+        id: demoId(s, "t"),
+        eventoId: nuevo.id,
+        marcadaPor: "",
+        marcadaAt: "",
+      }));
+      bumpDemoVersion(s);
+      return { evento: nuevo, tareasArrastradas: extras.length } as T;
     }
 
     case "event.setEnsayo": {
@@ -546,7 +616,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       };
       const generadas = generarTareasDemo(s);
       bumpDemoVersion(s);
-      return { eventoId: DEMO_EVENTO_ID, tareasGeneradas: generadas } as T;
+      return { eventoId: s.evento.id, tareasGeneradas: generadas } as T;
     }
 
     default:

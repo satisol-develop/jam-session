@@ -30,7 +30,7 @@ export default async function Home() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
       <section className="text-center">
         <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-red-500">
-          Próxima sesión
+          {evento?.estado === "realizado" ? "Última sesión" : "Próxima sesión"}
         </p>
         <h1 className="text-4xl font-black tracking-tight sm:text-6xl">
           {evento?.titulo || "Jam Session"}
