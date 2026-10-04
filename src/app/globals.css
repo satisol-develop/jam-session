@@ -265,7 +265,7 @@ body {
   transition: width 0.3s ease;
 }
 
-/* Guía de proceso (pestaña "Guía") */
+/* Protocolo de la pestaña Inicio */
 .db-guide {
   border: 1px dashed rgba(255, 230, 0, 0.45);
   background: rgba(255, 230, 0, 0.05);
@@ -284,4 +284,67 @@ body {
 .db-guide ol::marker {
   color: #ffe600;
   font-weight: 800;
+}
+
+/* Stat-cards de estado en la pestaña Inicio */
+.db-stat {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.875rem;
+  padding: 0.9rem 1rem;
+}
+
+.db-stat-valor {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #ffe600;
+  font-variant-numeric: tabular-nums;
+}
+
+.db-stat-label {
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Protocolo paso a paso con salto a pestañas */
+.db-pasos {
+  list-style: decimal;
+  padding-left: 1.4rem;
+  display: grid;
+  gap: 0.7rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.db-pasos::marker {
+  color: #ffe600;
+  font-weight: 800;
+}
+
+.db-paso-ir {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  border: 1px solid rgba(255, 230, 0, 0.45);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  color: #ffe600;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.db-paso-ir:hover {
+  background: #ffe600;
+  color: #0a0a0a;
 }

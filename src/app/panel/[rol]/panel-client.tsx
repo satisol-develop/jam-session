@@ -18,7 +18,8 @@ import { PropuestasPanel } from "@/components/panel/propuestas-panel";
 import { DifusionKit } from "@/components/panel/difusion-kit";
 import { EnsayoPanel } from "@/components/panel/ensayo-panel";
 import { GrupoBasePanel } from "@/components/panel/grupo-base-panel";
-import { RoleGuide } from "@/components/panel/role-guide";
+import { PanelInicio } from "@/components/panel/panel-inicio";
+import { usePanelStatus } from "@/components/panel/use-panel-status";
 import { PanelTabs, type PanelTab } from "@/components/panel/panel-tabs";
 
 function Seccion({
@@ -39,51 +40,46 @@ function Seccion({
   );
 }
 
+/**
+ * Plantilla común de todos los paneles:
+ * Inicio (estado + protocolo) → módulos de trabajo en orden de flujo →
+ * Tareas → Apoyos.
+ */
 function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   const esTitular = tipo === "titular";
-  const tabs: PanelTab[] = [];
+  const { recargar, ...estado } = usePanelStatus(rol);
+  const pendTareas = Math.max(estado.tareasTotal - estado.tareasHechas, 0);
+
+  const tabs: PanelTab[] = [
+    {
+      id: "inicio",
+      label: "Inicio",
+      node: (go) => (
+        <PanelInicio
+          rol={rol}
+          estado={estado}
+          irA={go}
+          consultas={
+            rol === "admin" ? (
+              <Link
+                href="/panel/stage-manager/escaleta"
+                className="db-ghost text-xs!"
+              >
+                Ver escaleta (consulta)
+              </Link>
+            ) : undefined
+          }
+        />
+      ),
+    },
+  ];
 
   if (rol === "admin") {
     tabs.push(
       {
-        id: "resumen",
-        label: "Resumen",
-        node: (
-          <div className="space-y-6">
-            <Seccion
-              titulo="Vista global · solo lectura"
-              nota="Todo lo que ocurre en los demás paneles, aquí en modo consulta. Tu única edición posible es la rotación de roles."
-            >
-              <div className="flex flex-wrap gap-2">
-                <span className="db-badge db-badge-solid">Estado</span>
-                <span className="db-badge db-badge-line">Tareas</span>
-                <span className="db-badge db-badge-line">Escaleta</span>
-                <span className="db-badge db-badge-line">Inscripciones</span>
-                <span className="db-badge db-badge-line">Propuestas</span>
-                <span className="db-badge db-badge-line">Instrumentos</span>
-                <span className="db-badge db-badge-line">Caja</span>
-              </div>
-            </Seccion>
-            <Seccion
-              titulo="Estado de la sesión"
-              nota="Solo lectura: la edición, aprobación y cierre corresponden al rol General."
-            >
-              <ApproveCard puedeEditar={false} />
-            </Seccion>
-            <Seccion
-              titulo="Escaleta"
-              nota="Consulta del orden de actuación. Edición exclusiva de Stage Manager y Grupo Base."
-            >
-              <Link href="/panel/stage-manager/escaleta" className="db-btn">
-                Abrir escaleta (lectura)
-              </Link>
-            </Seccion>
-          </div>
-        ),
-      },
-      {
         id: "tareas",
         label: "Tareas",
+        conteo: pendTareas,
         node: (
           <Seccion
             titulo="Tareas de todos los roles"
@@ -96,6 +92,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {
         id: "inscripciones",
         label: "Inscripciones",
+        conteo: estado.inscripcionesPendientes,
         node: (
           <Seccion
             titulo="Inscripciones de músicos"
@@ -108,6 +105,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {
         id: "propuestas",
         label: "Propuestas",
+        conteo: estado.propuestasPendientes,
         node: (
           <Seccion
             titulo="Propuestas de repertorio"
@@ -171,11 +169,10 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
             )}
           </Seccion>
         ),
-      },
-      { id: "guia", label: "Guía", node: <RoleGuide rol="admin" /> }
+      }
     );
 
-    return <PanelTabs tabs={tabs} />;
+    return <PanelTabs tabs={tabs} onCambio={recargar} />;
   }
 
   if (rol === "general") {
@@ -205,21 +202,12 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     });
   }
 
-  tabs.push({
-    id: "tareas",
-    label: "Tareas",
-    node: (
-      <Seccion titulo="Lista de tareas">
-        <TaskList rol={rol} />
-      </Seccion>
-    ),
-  });
-
   if (rol === "general") {
     tabs.push(
       {
         id: "propuestas",
         label: "Propuestas",
+        conteo: estado.propuestasPendientes,
         node: (
           <Seccion
             titulo="Propuestas de repertorio"
@@ -259,8 +247,22 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   if (rol === "grupo-base") {
     tabs.push(
       {
+        id: "propuestas",
+        label: "Propuestas",
+        conteo: estado.propuestasPendientes,
+        node: (
+          <Seccion
+            titulo="Propuestas de la banda"
+            nota="Lectura: las tienes en cuenta para definir el repertorio; quien aprueba es el General."
+          >
+            <PropuestasPanel editable={false} />
+          </Seccion>
+        ),
+      },
+      {
         id: "inscripciones",
         label: "Inscripciones",
+        conteo: estado.inscripcionesPendientes,
         node: (
           <Seccion
             titulo="Inscripciones de músicos"
@@ -279,18 +281,6 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
             nota="≈1 semana antes: decide el ensayo, cierra las inscripciones y anuncia la fecha."
           >
             <EnsayoPanel />
-          </Seccion>
-        ),
-      },
-      {
-        id: "propuestas",
-        label: "Propuestas",
-        node: (
-          <Seccion
-            titulo="Propuestas de la banda"
-            nota="Lectura: las tienes en cuenta para definir el repertorio; quien aprueba es el General."
-          >
-            <PropuestasPanel editable={false} />
           </Seccion>
         ),
       },
@@ -358,6 +348,20 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     });
   }
 
+  tabs.push({
+    id: "tareas",
+    label: "Tareas",
+    conteo: pendTareas,
+    node: (
+      <Seccion
+        titulo="Lista de tareas"
+        nota="Tus tareas del evento: márcalas a medida que avanzas; los pasos (subtareas) se generan al aprobar la sesión."
+      >
+        <TaskList rol={rol} />
+      </Seccion>
+    ),
+  });
+
   if (rol !== "grupo-base") {
     tabs.push({
       id: "apoyos",
@@ -373,9 +377,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     });
   }
 
-  tabs.push({ id: "guia", label: "Guía", node: <RoleGuide rol={rol} /> });
-
-  return <PanelTabs tabs={tabs} />;
+  return <PanelTabs tabs={tabs} onCambio={recargar} />;
 }
 
 export function RolPanelClient({ rol: rolParam }: { rol: string }) {
