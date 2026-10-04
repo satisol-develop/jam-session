@@ -15,6 +15,7 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
   const [propuestas, setPropuestas] = useState<Propuesta[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [seleccion, setSeleccion] = useState<string[]>([]);
 
   useEffect(() => {
     api<{ propuestas: Propuesta[] }>("proposal.list")
@@ -25,21 +26,39 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
       });
   }, []);
 
-  async function resolver(id: string, estado: "aprobada" | "rechazada") {
-    if (busy) return;
+  function alternar(id: string) {
+    setSeleccion((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+    setError(null);
+  }
+
+  function marcarTodas() {
+    const pendientes = (propuestas ?? [])
+      .filter((p) => p.estado === "pendiente")
+      .map((p) => p.id);
+    setSeleccion(pendientes);
+  }
+
+  async function resolverLote(estado: "aprobada" | "rechazada") {
+    if (busy || seleccion.length === 0) return;
     setBusy(true);
     setError(null);
+    const resueltas: Propuesta[] = [];
     try {
-      const actualizada = await api<Propuesta>("proposal.resolve", {
-        id,
-        estado,
-      });
-      setPropuestas((prev) =>
-        (prev ?? []).map((p) => (p.id === actualizada.id ? actualizada : p)),
-      );
+      for (const id of seleccion) {
+        resueltas.push(await api<Propuesta>("proposal.resolve", { id, estado }));
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo resolver.");
+      setError(err instanceof Error ? err.message : "No se pudo validar.");
     } finally {
+      if (resueltas.length > 0) {
+        const ids = new Set(resueltas.map((r) => r.id));
+        setPropuestas((prev) =>
+          (prev ?? []).map((p) => resueltas.find((r) => r.id === p.id) ?? p),
+        );
+        setSeleccion((prev) => prev.filter((id) => !ids.has(id)));
+      }
       setBusy(false);
     }
   }
@@ -57,15 +76,53 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
     );
   }
 
+  const pendientes = propuestas.filter((p) => p.estado === "pendiente");
+
   return (
     <div className="space-y-4">
       {error && <p className="db-error">{error}</p>}
+
+      {editable && pendientes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={marcarTodas}
+            type="button"
+            disabled={busy}
+            className="db-muted text-xs underline disabled:opacity-50"
+          >
+            Seleccionar todas
+          </button>
+          <button
+            onClick={() => setSeleccion([])}
+            type="button"
+            disabled={busy}
+            className="db-muted text-xs underline disabled:opacity-50"
+          >
+            Ninguna
+          </button>
+          <span className="db-muted ml-auto text-xs">
+            {seleccion.length} de {pendientes.length} pendientes seleccionadas
+          </span>
+        </div>
+      )}
 
       <ul className="space-y-3">
         {propuestas.map((p) => (
           <li key={p.id} className="rounded-xl border border-white/12 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-sm font-semibold">{p.nombre}</span>
+              <span className="flex items-center gap-2 text-sm font-semibold">
+                {editable && p.estado === "pendiente" && (
+                  <input
+                    type="checkbox"
+                    checked={seleccion.includes(p.id)}
+                    onChange={() => alternar(p.id)}
+                    disabled={busy}
+                    aria-label={`Seleccionar «${p.cancion}» de ${p.nombre}`}
+                    className="h-4 w-4 accent-[#FFE600]"
+                  />
+                )}
+                {p.nombre}
+              </span>
               <span
                 className={`db-badge ${
                   p.estado === "aprobada"
@@ -84,39 +141,37 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
               <span className="db-muted"> · {p.nombre} la tocaría en {p.instrumento}</span>
             </p>
             <p className="db-muted mt-1 text-xs">{fmt.format(new Date(p.fecha))}</p>
-
-            {editable && p.estado === "pendiente" ? (
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={() => resolver(p.id, "aprobada")}
-                  disabled={busy}
-                  className="db-btn text-xs!"
-                >
-                  Aprobar
-                </button>
-                <button
-                  onClick={() => resolver(p.id, "rechazada")}
-                  disabled={busy}
-                  className="rounded-lg border border-red-500/40 px-3 py-1.5 text-xs font-semibold uppercase text-red-300 disabled:opacity-50"
-                >
-                  Rechazar
-                </button>
-              </div>
-            ) : (
-              !editable && (
-                <p className="db-muted mt-2 text-[11px]">
-                  Solo lectura: el repertorio final lo aprueba el rol General.
-                </p>
-              )
-            )}
           </li>
         ))}
       </ul>
 
-      <p className="db-muted text-xs">
-        El Grupo Base tiene estas propuestas en cuenta al definir el repertorio;
-        quien aprueba o rechaza es el General.
-      </p>
+      {editable && (
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => resolverLote("aprobada")}
+            disabled={busy || seleccion.length === 0}
+            className="db-btn text-xs!"
+          >
+            {busy ? "Validando…" : `Aprobar seleccionadas (${seleccion.length})`}
+          </button>
+          <button
+            type="button"
+            onClick={() => resolverLote("rechazada")}
+            disabled={busy || seleccion.length === 0}
+            className="rounded-lg border border-red-500/40 px-3 py-1.5 text-xs font-semibold uppercase text-red-300 disabled:opacity-50"
+          >
+            Rechazar seleccionadas
+          </button>
+        </div>
+      )}
+
+      {!editable && (
+        <p className="db-muted text-xs">
+          Solo lectura: el listado lo valida el rol General y el Grupo Base es
+          quien decide el repertorio activo.
+        </p>
+      )}
     </div>
   );
 }

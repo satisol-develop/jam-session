@@ -76,13 +76,6 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         </Seccion>
 
         <Seccion
-          titulo="Apoyos de tu rol"
-          nota="Elige quién apoya el rol Admin este mes: acceso de solo lectura."
-        >
-          <ApoyosPanel rol="admin" />
-        </Seccion>
-
-        <Seccion
           titulo="Escaleta"
           nota="Consulta del orden de actuación. Edición exclusiva de Stage Manager y Grupo Base."
         >
@@ -128,7 +121,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
 
         <Seccion
           titulo="Rotación mensual de roles"
-          nota="Tu única edición: asigna titulares y apoyos del mes. Los cambios actualizan los permisos de cada usuario."
+          nota="Tu única edición: asigna los titulares del mes (los apoyos los elige cada titular en su panel; el Grupo Base, el General). Los cambios actualizan los permisos de cada usuario."
         >
           {esTitular ? (
             <RotationPanel />
@@ -172,7 +165,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {rol === "general" && (
         <Seccion
           titulo="Propuestas de repertorio"
-          nota="Aprueba o rechaza cada propuesta: tu decisión es la final. Las aprobadas entran en el repertorio del mes. Siguen abiertas hasta que cierres el evento."
+          nota="Listado para validar en bloque: selecciona las propuestas y apruébalas o recházalas de una vez. Las aprobadas entran en el repertorio (informativo): el repertorio activo lo decide el Grupo Base. Siguen abiertas hasta que cierres el evento."
         >
           <PropuestasPanel editable={esTitular} />
         </Seccion>
@@ -190,9 +183,9 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {rol === "general" && (
         <Seccion
           titulo="Auditoría de fondos"
-          nota="Lectura de la caja del evento. Solo el rol Caja escribe y cierra."
+          nota="Lectura de la caja del evento. Solo el rol Caja escribe; tú (General) puedes cerrarla, pero verás un aviso: quedará registrado a tu nombre."
         >
-          <CashModule puedeEscribir={false} />
+          <CashModule puedeEscribir={false} puedeCerrar={esTitular} />
         </Seccion>
       )}
 

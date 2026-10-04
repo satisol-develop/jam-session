@@ -448,7 +448,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
     }
 
     case "cash.close": {
-      validarTitular("caja");
+      validarTitularAlguno(["caja", "general"]);
       const fondoInicial =
         Number(
           typeof b.fondoInicial === "string"
@@ -517,6 +517,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       const anteriores = s.roles.filter((r) => r.mes === mes);
       const conservadas = anteriores.filter((r) => {
         if (r.rol === "grupo-base") return true;
+        if (r.rol === "admin") return false; // Admin no admite apoyos.
         if (r.tipo !== "apoyo") return false;
         const nuevoTitular = titulares.find((t) => t.rol === r.rol)?.uid;
         return r.uid !== nuevoTitular;
@@ -532,6 +533,11 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
 
     case "apoyo.set": {
       const rol = String(b.rol ?? "") as Rol;
+      if (rol === "admin") {
+        throw new Error(
+          "El rol Admin no tiene apoyo: solo su titular accede a ese panel.",
+        );
+      }
       if (!ROLES.includes(rol)) throw new Error("Rol inválido.");
       const propios = demoRolesFor(currentDemoAccount());
       if (propios[rol] !== "titular" && propios.admin !== "titular") {

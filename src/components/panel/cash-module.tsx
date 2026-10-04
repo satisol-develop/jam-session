@@ -11,12 +11,16 @@ const eur = new Intl.NumberFormat("es-ES", {
 
 interface Props {
   puedeEscribir: boolean;
+  /** Cerrar la caja sin poder escribirla (Coordinador General). */
+  puedeCerrar?: boolean;
 }
 
-export function CashModule({ puedeEscribir }: Props) {
+export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
+  const cerrarPermitido = puedeCerrar ?? puedeEscribir;
   const [data, setData] = useState<ResumenCaja | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmarCierre, setConfirmarCierre] = useState(false);
 
   const [tipo, setTipo] = useState<TipoMovimiento>("consumible");
   const [concepto, setConcepto] = useState("");
@@ -76,8 +80,17 @@ export function CashModule({ puedeEscribir }: Props) {
     }
   }
 
-  async function cerrar(e: FormEvent) {
+  function cerrar(e: FormEvent) {
     e.preventDefault();
+    if (puedeEscribir) {
+      void ejecutarCierre();
+    } else {
+      setConfirmarCierre(true);
+    }
+  }
+
+  async function ejecutarCierre() {
+    setConfirmarCierre(false);
     setBusy(true);
     setError(null);
     try {
@@ -250,7 +263,7 @@ export function CashModule({ puedeEscribir }: Props) {
               <dd className="tabular-nums">{eur.format(data.cierre.diferencia)}</dd>
             </div>
           </dl>
-        ) : puedeEscribir ? (
+        ) : cerrarPermitido ? (
           <form onSubmit={cerrar} className="space-y-2">
             <div className="grid gap-2 sm:grid-cols-2">
               <input
@@ -279,10 +292,48 @@ export function CashModule({ puedeEscribir }: Props) {
           </form>
         ) : (
           <p className="db-muted text-xs">
-            La caja aún no está cerrada. Solo el titular puede cerrarla.
+            La caja aún no está cerrada. Solo puede cerrarla el titular de Caja
+            o el Coordinador General.
           </p>
         )}
       </section>
+
+      {confirmarCierre && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="db-card w-full max-w-md space-y-4 p-6">
+            <h3 className="db-title text-base">Cerrar caja antes de tiempo</h3>
+            <p className="text-sm">
+              Estás cerrando la caja <strong>antes de que lo haga el rol Caja</strong>.
+              El cierre quedará registrado a tu nombre en la auditoría y en el
+              historial de la sesión, y el rol Caja ya no podrá registrar más
+              movimientos.
+            </p>
+            <p className="db-muted text-xs">¿Quieres continuar?</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={ejecutarCierre}
+                disabled={busy}
+                className="db-btn flex-1"
+              >
+                {busy ? "Cerrando…" : "Sí, cerrar caja"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmarCierre(false)}
+                disabled={busy}
+                className="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

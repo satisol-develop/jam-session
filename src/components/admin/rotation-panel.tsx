@@ -179,10 +179,12 @@ export function RotationPanel() {
                 apoyo (en su panel)
               </span>
               <p className="db-muted py-2 text-xs">
-                {asignaciones[rol].apoyo
-                  ? usuarios.find((u) => u.uid === asignaciones[rol].apoyo)
-                      ?.nombre ?? asignaciones[rol].apoyo
-                  : "— Sin apoyos —"}
+                {rol === "admin"
+                  ? "No aplica: Admin no tiene apoyo."
+                  : asignaciones[rol].apoyo
+                    ? usuarios.find((u) => u.uid === asignaciones[rol].apoyo)
+                        ?.nombre ?? asignaciones[rol].apoyo
+                    : "— Sin apoyos —"}
               </p>
             </div>
           </div>
