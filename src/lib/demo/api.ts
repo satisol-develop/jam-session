@@ -140,6 +140,41 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       } as T;
     }
 
+    case "event.inscripciones":
+      return {
+        eventoId: DEMO_EVENTO_ID,
+        inscripciones: s.inscripciones,
+      } as T;
+
+    case "musician.setEstado": {
+      validarTitular("grupo-base");
+      const ins = s.inscripciones.find((i) => i.id === String(b.id ?? ""));
+      if (!ins) throw new Error("Inscripción no encontrada.");
+      const estado = String(b.estado ?? "");
+      if (!["pendiente", "asignado", "parcial", "rechazado"].includes(estado)) {
+        throw new Error("Estado inválido.");
+      }
+      ins.estado = estado as Inscripcion["estado"];
+      bumpDemoVersion(s);
+      return ins as T;
+    }
+
+    case "proposal.list":
+      return { propuestas: s.propuestas } as T;
+
+    case "proposal.resolve": {
+      validarTitular("general");
+      const propuesta = s.propuestas.find((x) => x.id === String(b.id ?? ""));
+      if (!propuesta) throw new Error("Propuesta no encontrada.");
+      const estado = String(b.estado ?? "");
+      if (estado !== "aprobada" && estado !== "rechazada") {
+        throw new Error("Estado inválido.");
+      }
+      propuesta.estado = estado;
+      bumpDemoVersion(s);
+      return propuesta as T;
+    }
+
     case "material.list": {
       const cancion = s.catalogo.find(
         (c) => c.carpetaDriveId === String(b.carpetaDriveId ?? ""),
