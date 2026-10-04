@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Backend Google Apps Script (solo local, no se publica)
+/apps-script/

@@ -29,11 +29,13 @@ Firebase ni Apps Script.
 - Para usar los servicios reales: `NEXT_PUBLIC_DEMO_MODE=false` en `.env.local`
   (y variables reales del paso siguiente).
 
-### 1. Apps Script (backend)
+### 1. Apps Script (backend, solo local)
 
-Sigue [`apps-script/README.md`](apps-script/README.md): crear proyecto,
-ejecutar `setup()`, desplegar Web App y (opcional) `seedDemoData()` para datos
-de prueba.
+> **Nota:** el código del backend (`apps-script/`) **no se publica en este
+> repositorio** (está en `.gitignore`); vive solo en local y no participa en
+> el modo demo. Si necesitas el backend real, copia la carpeta `apps-script/`
+> desde tu copia local y sigue su `README.md`: crear proyecto, ejecutar
+> `setup()`, desplegar Web App y (opcional) `seedDemoData()`.
 
 ### 2. Firebase
 
@@ -74,13 +76,18 @@ resuelve **siempre en Apps Script** contra la hoja:
 - **Titular**: lectura/escritura de su panel, creación de tareas propias y
   marcado de checks.
 - **Apoyo**: solo lectura del panel de su rol.
-- **Admin**: matriz de usuarios y rotación mensual (actualiza claims vía
+- **Admin**: **vista global en solo lectura** de todos los paneles (estado,
+  tareas, escaleta, inscripciones, propuestas, instrumentos y caja); su
+  **única edición** es la rotación mensual (actualiza claims vía
   `/api/admin/rotate`).
 - **General**: aprueba la sesión → genera automáticamente las tareas
-  predeterminadas de cada rol.
-- **Grupo Base / Stage Manager**: operan la escaleta (polling 4 s).
-- **Técnico / Redes**: paneles con sus listas de tareas.
+  predeterminadas de cada rol; resuelve propuestas y audita la caja.
+- **Grupo Base / Stage Manager**: operan la escaleta (polling 4 s) y, el
+  Grupo Base, las inscripciones.
+- **Técnico / Redes**: instrumentos confirmados y kit de difusión.
 - **Caja y Barra** (opcional por evento): cobros y cuadre de caja.
+
+Cada panel incluye su **guía de proceso** desplegable con los pasos a seguir.
 
 ## Arquitectura de seguridad
 
@@ -116,10 +123,12 @@ src/
     api/gs                    # BFF firmado hacia Apps Script
     api/admin/rotate          # Rotación de roles + custom claims
   components/                 # UI por dominio (musician, panel, admin)
-  lib/                        # firebase, api (signer/client/server), auth
+  lib/                        # firebase, api (signer/client/server), auth, demo
   proxy.ts                    # Guard de UX para rutas privadas (Next 16)
-apps-script/                  # Backend: API, triggers y setup (ver su README)
 ```
+
+El backend `apps-script/` existe solo en local (excluido del repo con
+`.gitignore`); los datos dummy no lo necesitan.
 
 ## Despliegue en GitHub Pages (modo demo)
 
