@@ -35,8 +35,8 @@ export function PanelInicio({
   const verInscripciones = verPropuestas;
 
   return (
-    <div className="space-y-4">
-      <section className="db-card p-5 sm:p-6">
+    <div className="space-y-3 sm:space-y-4">
+      <section className="db-card p-4 sm:p-6">
         <h2 className="db-title mb-1 text-base">Estado ahora</h2>
         <p className="db-muted mb-4 text-sm">
           {esAdmin
@@ -111,7 +111,7 @@ export function PanelInicio({
         )}
       </section>
 
-      <section className="db-guide db-card p-5 sm:p-6">
+      <section className="db-guide db-card p-4 sm:p-6">
         <h2 className="db-title mb-1 text-base">
           {esAdmin ? "Protocolo de revisión" : "Paso a paso"} ·{" "}
           {ROLES_META[rol].label}

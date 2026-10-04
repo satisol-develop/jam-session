@@ -32,7 +32,7 @@ function Seccion({
   children: ReactNode;
 }) {
   return (
-    <section className="db-card p-5 sm:p-6">
+    <section className="db-card p-4 sm:p-6">
       <h2 className="db-title mb-1 text-base">{titulo}</h2>
       {nota && <p className="db-muted mb-4 text-sm">{nota}</p>}
       <div className={nota ? "" : "mt-3"}>{children}</div>
@@ -54,6 +54,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     {
       id: "inicio",
       label: "Inicio",
+      primaria: true,
       node: (go) => (
         <PanelInicio
           rol={rol}
@@ -79,6 +80,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {
         id: "tareas",
         label: "Tareas",
+        primaria: true,
         conteo: pendTareas,
         node: (
           <Seccion
@@ -92,11 +94,12 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {
         id: "inscripciones",
         label: "Inscripciones",
+        primaria: true,
         conteo: estado.inscripcionesPendientes,
         node: (
           <Seccion
             titulo="Inscripciones de músicos"
-            nota="Solicitudes recibidas. Los estados los asigna el Grupo Base."
+            nota="Solicitudes recibidas; los estados los asigna el Grupo Base."
           >
             <InscripcionesPanel editable={false} />
           </Seccion>
@@ -105,11 +108,12 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {
         id: "propuestas",
         label: "Propuestas",
+        primaria: true,
         conteo: estado.propuestasPendientes,
         node: (
           <Seccion
             titulo="Propuestas de repertorio"
-            nota="Pendientes y resueltas. Las resuelve el rol General."
+            nota="Pendientes y resueltas; las resuelve el rol General."
           >
             <PropuestasPanel editable={false} />
           </Seccion>
@@ -121,7 +125,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         node: (
           <Seccion
             titulo="Instrumentos confirmados"
-            nota="Líneas por instrumento para planificación técnica."
+            nota="Líneas por instrumento para la planificación técnica."
           >
             <InstrumentosPanel />
           </Seccion>
@@ -133,7 +137,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         node: (
           <Seccion
             titulo="Caja y fondos"
-            nota="Movimientos, totales y cierre. Escritura exclusiva del rol Caja."
+            nota="Movimientos y totales. Solo el rol Caja escribe."
           >
             <CashModule puedeEscribir={false} />
           </Seccion>
@@ -145,7 +149,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         node: (
           <Seccion
             titulo="Historial de sesiones"
-            nota="Sesiones cerradas: participantes, roles del mes, tareas y resultado de caja. Solo lectura."
+            nota="Sesiones cerradas: roles, tareas y resultado de caja."
           >
             <HistoryReport />
           </Seccion>
@@ -157,7 +161,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         node: (
           <Seccion
             titulo="Rotación mensual de roles"
-            nota="Tu única edición: asigna los titulares del mes (los apoyos los elige cada titular en su panel; el Grupo Base, el General). Los cambios actualizan los permisos de cada usuario."
+            nota="Tu única edición: titulares del mes; al guardar se actualizan los permisos."
           >
             {esTitular ? (
               <RotationPanel />
@@ -179,10 +183,11 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     tabs.push({
       id: "sesion",
       label: "Sesión",
+      primaria: true,
       node: (
         <Seccion
           titulo="Datos, aprobación y cierre de la sesión"
-          nota="Edita título, fecha, hora y lugar; aprueba para generar tareas; cierra tras la Jam para pasarlo al historial."
+          nota="Edita los datos, aprueba para generar tareas y cierra tras la Jam."
         >
           <ApproveCard puedeEditar={esTitular} />
         </Seccion>
@@ -194,6 +199,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     tabs.push({
       id: "caja",
       label: "Caja",
+      primaria: true,
       node: (
         <Seccion titulo="Caja y Barra">
           <CashModule puedeEscribir={esTitular} />
@@ -207,11 +213,12 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {
         id: "propuestas",
         label: "Propuestas",
+        primaria: true,
         conteo: estado.propuestasPendientes,
         node: (
           <Seccion
             titulo="Propuestas de repertorio"
-            nota="Listado para validar en bloque: selecciona las propuestas y apruébalas o recházalas de una vez. Las aprobadas entran en el repertorio (informativo): el repertorio activo lo decide el Grupo Base. Siguen abiertas hasta que cierres el evento."
+            nota="Valida en bloque: las aprobadas entran al repertorio informativo; el activo lo decide el Grupo Base."
           >
             <PropuestasPanel editable={esTitular} />
           </Seccion>
@@ -223,7 +230,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         node: (
           <Seccion
             titulo="Grupo Base del mes"
-            nota="Tu grupo: no rota en la matriz. Quien esté en la lista tiene acceso al panel de Grupo Base."
+            nota="Tu grupo del mes: no rota y tiene acceso a su panel."
           >
             <GrupoBasePanel />
           </Seccion>
@@ -235,7 +242,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         node: (
           <Seccion
             titulo="Auditoría de fondos"
-            nota="Lectura de la caja del evento. Solo el rol Caja escribe; tú (General) puedes cerrarla, pero verás un aviso: quedará registrado a tu nombre."
+            nota="Lectura de la caja; tú puedes cerrarla con aviso (quedará a tu nombre)."
           >
             <CashModule puedeEscribir={false} puedeCerrar={esTitular} />
           </Seccion>
@@ -249,11 +256,12 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {
         id: "propuestas",
         label: "Propuestas",
+        primaria: true,
         conteo: estado.propuestasPendientes,
         node: (
           <Seccion
             titulo="Propuestas de la banda"
-            nota="Lectura: las tienes en cuenta para definir el repertorio; quien aprueba es el General."
+            nota="Lectura: las tienes en cuenta; aprueba el General."
           >
             <PropuestasPanel editable={false} />
           </Seccion>
@@ -262,11 +270,12 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {
         id: "inscripciones",
         label: "Inscripciones",
+        primaria: true,
         conteo: estado.inscripcionesPendientes,
         node: (
           <Seccion
             titulo="Inscripciones de músicos"
-            nota="Instrumentos y temas solicitados. Asigna el estado de cada inscripción."
+            nota="Asigna el estado de cada músico: asignado / parcial / rechazado."
           >
             <InscripcionesPanel editable={esTitular} />
           </Seccion>
@@ -278,7 +287,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         node: (
           <Seccion
             titulo="Ensayo general y cierre de inscripciones"
-            nota="≈1 semana antes: decide el ensayo, cierra las inscripciones y anuncia la fecha."
+            nota="≈1 semana antes: fija el ensayo y cierra las inscripciones."
           >
             <EnsayoPanel />
           </Seccion>
@@ -305,6 +314,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     tabs.push({
       id: "escaleta",
       label: "Escaleta",
+      primaria: true,
       node: (
         <Seccion
           titulo="Escaleta en directo"
@@ -322,10 +332,11 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     tabs.push({
       id: "instrumentos",
       label: "Instrumentos",
+      primaria: true,
       node: (
         <Seccion
           titulo="Instrumentos confirmados"
-          nota="Líneas confirmadas por inscripción: base para microfonías y monitores."
+          nota="Líneas confirmadas: base para microfonías y monitores."
         >
           <InstrumentosPanel />
         </Seccion>
@@ -337,6 +348,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     tabs.push({
       id: "difusion",
       label: "Difusión",
+      primaria: true,
       node: (
         <Seccion
           titulo="Kit de difusión"
@@ -351,11 +363,12 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   tabs.push({
     id: "tareas",
     label: "Tareas",
+    primaria: true,
     conteo: pendTareas,
     node: (
       <Seccion
         titulo="Lista de tareas"
-        nota="Tus tareas del evento: márcalas a medida que avanzas; los pasos (subtareas) se generan al aprobar la sesión."
+        nota="Tus tareas del evento: márcalas y ve añadiendo pasos."
       >
         <TaskList rol={rol} />
       </Seccion>
@@ -366,10 +379,11 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     tabs.push({
       id: "apoyos",
       label: "Apoyos",
+      primaria: rol !== "general",
       node: (
         <Seccion
           titulo="Apoyos de tu rol"
-          nota="Elige quién apoya tu rol este mes: los apoyos entran a tu panel en modo solo lectura."
+          nota="Elige quién apoya tu rol este mes (entra en solo lectura)."
         >
           <ApoyosPanel rol={rol} />
         </Seccion>
@@ -420,27 +434,26 @@ export function RolPanelClient({ rol: rolParam }: { rol: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 pt-6 pb-16">
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link href="/panel" className="db-kicker underline">
-            ← Paneles
-          </Link>
-          <p className="db-kicker mt-1">Debarock Kolektiboa</p>
-          <h1 className="db-title mt-1 text-3xl sm:text-4xl">
+    <div className="mx-auto max-w-4xl px-4 pt-5 pb-16 sm:pt-6">
+      <header className="mb-4">
+        <Link href="/panel" className="db-kicker underline">
+          ← Paneles
+        </Link>
+        <div className="mt-1 flex flex-wrap items-center gap-2.5">
+          <h1 className="db-title text-2xl sm:text-4xl">
             {ROLES_META[rol].label}
           </h1>
-          <p className="db-muted mt-1 text-sm">
-            {ROLES_META[rol].description}
-          </p>
+          <span
+            className={`db-badge ${
+              tipo === "titular" ? "db-badge-solid" : "db-badge-line"
+            }`}
+          >
+            {tipo}
+          </span>
         </div>
-        <span
-          className={`db-badge ${
-            tipo === "titular" ? "db-badge-solid" : "db-badge-line"
-          }`}
-        >
-          {tipo}
-        </span>
+        <p className="db-muted mt-1 hidden text-sm sm:block">
+          {ROLES_META[rol].description}
+        </p>
       </header>
 
       <PanelBody rol={rol} tipo={tipo} />
