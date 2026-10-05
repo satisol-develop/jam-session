@@ -17,7 +17,7 @@ y módulo de Caja y Barra.
 
 ## Puesta en marcha
 
-> **Guía completa de producción, paso a paso: [PRODUCCION.md](PRODUCCION.md)**
+> **Guía completa de producción, paso a paso: [docs/PRODUCCION.md](docs/PRODUCCION.md)**
 > (Drive → Apps Script → Firebase → Vercel → verificación).
 
 ### 0. Modo demo (sin servicios)
