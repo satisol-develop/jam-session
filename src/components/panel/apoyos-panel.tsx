@@ -87,7 +87,7 @@ export function ApoyosPanel({ rol }: { rol: Rol }) {
         )}
         {apoyos.map((uid) => (
           <li key={uid} className="flex items-center justify-between gap-2">
-            <span>
+            <span className="min-w-0 break-words">
               {nombre(uid)}
               <span className="db-muted text-xs"> · apoyo (solo lectura)</span>
             </span>
@@ -95,7 +95,7 @@ export function ApoyosPanel({ rol }: { rol: Rol }) {
               <button
                 onClick={() => guardar(apoyos.filter((a) => a !== uid))}
                 disabled={busy}
-                className="db-ghost text-xs!"
+                className="db-ghost shrink-0 text-xs!"
                 aria-label={`Quitar apoyo de ${nombre(uid)}`}
               >
                 Quitar

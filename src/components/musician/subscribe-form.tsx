@@ -144,7 +144,7 @@ export function SubscribeForm({ inscripcion, onSaved, cerradas, ensayo }: Props)
                 type="button"
                 onClick={() => toggleInstrumento(inst)}
                 aria-pressed={active}
-                className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
+                className={`rounded-full border px-3 py-2.5 text-sm font-medium transition ${
                   active
                     ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-black"
                     : "border-neutral-300 hover:border-neutral-500 dark:border-neutral-700"
@@ -194,7 +194,7 @@ export function SubscribeForm({ inscripcion, onSaved, cerradas, ensayo }: Props)
                       onChange={(e) =>
                         setInstrumentoTema(c.id, e.target.value)
                       }
-                      className="rounded-lg border border-neutral-300 bg-white px-2 py-1 text-sm text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+                      className="rounded-lg border border-neutral-300 bg-white px-2 py-2 text-base text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
                     >
                       {opcionesInstrumento.map((i) => (
                         <option key={i} value={i}>
@@ -224,7 +224,7 @@ export function SubscribeForm({ inscripcion, onSaved, cerradas, ensayo }: Props)
           rows={2}
           maxLength={300}
           placeholder="Ej.: puedo entrar en el tema 3, pero llegaré 15 min tarde."
-          className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+          className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
         />
       </fieldset>
 

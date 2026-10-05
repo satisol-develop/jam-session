@@ -82,7 +82,9 @@ export function SiteHeader() {
               </button>
             </>
           ) : loading ? (
-            <span className="px-3 text-neutral-400">…</span>
+            <span className={`px-3 ${enPanel ? "text-white/50" : "text-neutral-500"}`}>
+              …
+            </span>
           ) : (
             <>
               <Link href="/login" className={linkCls}>
@@ -90,11 +92,7 @@ export function SiteHeader() {
               </Link>
               <Link
                 href="/registro"
-                className={
-                  enPanel
-                    ? "rounded-lg bg-[#FFE600] px-3 py-2 font-semibold text-black transition hover:bg-white"
-                    : "rounded-lg bg-neutral-900 px-3 py-2 font-semibold text-white transition hover:bg-neutral-700 dark:bg-white dark:text-black"
-                }
+                className="rounded-lg bg-[#FFE600] px-3 py-2 font-semibold text-black transition hover:bg-white"
               >
                 Registro
               </Link>

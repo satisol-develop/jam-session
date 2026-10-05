@@ -27,7 +27,7 @@ const ESTADO_META: Record<
   },
   fin: {
     label: "Terminado",
-    cls: "bg-white/5 text-white/40",
+    cls: "bg-white/5 text-white/55",
     siguiente: "espera",
     accion: "Reponer",
   },
@@ -220,19 +220,19 @@ export default function EscaletaPage() {
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <span className="mt-0.5 w-6 text-sm font-bold tabular-nums text-white/40">
+                  <span className="mt-0.5 w-6 text-sm font-bold tabular-nums text-white/50">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`font-semibold ${
+                      className={`break-words font-semibold ${
                         t.estado === "fin" ? "line-through" : ""
                       }`}
                     >
                       {t.titulo}
                     </p>
                     {t.interpretes && (
-                      <p className="db-muted mt-0.5 text-sm">
+                      <p className="db-muted mt-0.5 break-words text-sm">
                         {t.interpretes}
                       </p>
                     )}
@@ -274,7 +274,7 @@ export default function EscaletaPage() {
                         onClick={() => eliminar(i)}
                         disabled={guardando}
                         aria-label="Eliminar turno"
-                        className="min-h-11 rounded-lg border border-red-500/40 px-2.5 py-1 text-xs text-red-400 disabled:opacity-50"
+                        className="min-h-11 rounded-xl border border-red-500/40 px-2.5 py-1 text-xs text-red-400 disabled:opacity-50"
                       >
                         ✕
                       </button>

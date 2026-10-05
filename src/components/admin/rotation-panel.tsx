@@ -168,13 +168,13 @@ export function RotationPanel() {
             className="grid gap-2 rounded-xl border border-white/12 p-3 sm:grid-cols-[10rem_1fr_1fr]"
           >
             <span className="db-title self-center text-sm">{rol}</span>
-            <div>
+            <div className="min-w-0">
               <span className="db-muted mb-1 block text-xs">titular</span>
               {selectUser(asignaciones[rol].titular, (uid) =>
                 setRol(rol, "titular", uid),
               )}
             </div>
-            <div>
+            <div className="min-w-0">
               <span className="db-muted mb-1 block text-xs">
                 apoyo (en su panel)
               </span>

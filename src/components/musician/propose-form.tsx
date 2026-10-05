@@ -84,7 +84,7 @@ export function ProposeForm() {
               value={cancion}
               onChange={(e) => setCancion(e.target.value)}
               placeholder="Ej. September"
-              className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+              className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
             />
           </div>
           <div>
@@ -98,7 +98,7 @@ export function ProposeForm() {
               value={artista}
               onChange={(e) => setArtista(e.target.value)}
               placeholder="Ej. Earth, Wind & Fire"
-              className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+              className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
             />
           </div>
         </div>
@@ -111,7 +111,7 @@ export function ProposeForm() {
             required
             value={instrumento}
             onChange={(e) => setInstrumento(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+            className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
           >
             <option value="">Elige un instrumento…</option>
             {INSTRUMENTOS.map((i) => (
@@ -136,7 +136,7 @@ export function ProposeForm() {
         <button
           type="submit"
           disabled={busy}
-          className="rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100 disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
+          className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100 disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-900 sm:w-auto"
         >
           {busy ? "Enviando…" : "Enviar propuesta"}
         </button>

@@ -97,7 +97,9 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
                 <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-black">
                   {fileIcon(a.mimeType)}
                 </span>
-                <span className="flex-1 font-medium">{a.nombre}</span>
+                <span className="min-w-0 flex-1 break-words font-medium">
+                  {a.nombre}
+                </span>
               </button>
             </li>
           ))}
@@ -115,7 +117,7 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
             <a
               href={blobUrl}
               download={contenido.nombre}
-              className="text-xs font-medium underline text-neutral-500"
+              className="inline-block rounded-lg px-2 py-2 text-sm font-medium underline text-neutral-500"
             >
               Descargar
             </a>
@@ -124,14 +126,14 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
             <iframe
               src={blobUrl}
               title={contenido.nombre}
-              className="h-[75vh] w-full rounded-xl border border-neutral-200 dark:border-neutral-800"
+              className="h-[75dvh] w-full rounded-xl border border-neutral-200 dark:border-neutral-800"
             />
           ) : contenido.mimeType.startsWith("image/") ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={blobUrl}
               alt={contenido.nombre}
-              className="mx-auto max-h-[75vh] rounded-xl border border-neutral-200 dark:border-neutral-800"
+              className="mx-auto max-h-[75dvh] rounded-xl border border-neutral-200 dark:border-neutral-800"
             />
           ) : contenido.mimeType.startsWith("audio/") ? (
             <audio controls src={blobUrl} className="w-full">
@@ -187,7 +189,7 @@ export default function PartiturasPage() {
       {catalogo === null ? (
         <p className="text-sm text-neutral-500">Cargando repertorio…</p>
       ) : conMaterial === 0 ? (
-        <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-400 dark:border-neutral-700">
+        <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">
           Todavía no hay material publicado para este repertorio.
         </p>
       ) : (
@@ -199,7 +201,7 @@ export default function PartiturasPage() {
             id="cancion"
             value={cancionId}
             onChange={(e) => setCancionId(e.target.value)}
-            className="mb-6 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+            className="mb-6 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
           >
             <option value="">— Selecciona —</option>
             {catalogo.map((c) => (

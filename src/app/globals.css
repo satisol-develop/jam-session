@@ -24,7 +24,7 @@ html.dark {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ================================================================
@@ -249,7 +249,11 @@ body {
   .db-btn,
   .db-ghost,
   .db-input,
-  .db-progress-fill {
+  .db-progress-fill,
+  .db-bottombar-item,
+  .db-paso-ir,
+  .db-zone a,
+  .db-zone button {
     transition: none;
   }
 
@@ -433,7 +437,7 @@ body {
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   color: rgba(255, 255, 255, 0.5);
 }
 

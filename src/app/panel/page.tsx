@@ -44,7 +44,7 @@ export default function PanelHubPage() {
             <li key={rol}>
               <Link
                 href={`/panel/${rol}`}
-                className="db-card db-card-hover block h-full p-5"
+                className="db-card db-card-hover block h-full p-4 sm:p-6"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex min-w-0 items-center gap-2.5">
@@ -56,7 +56,7 @@ export default function PanelHubPage() {
                     </h2>
                   </span>
                   <span
-                    className={`db-badge ${
+                    className={`db-badge shrink-0 ${
                       roles[rol] === "titular"
                         ? "db-badge-solid"
                         : "db-badge-line"

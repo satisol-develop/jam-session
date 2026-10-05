@@ -118,7 +118,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
   const esperado = data.cierre?.esperadoEnCaja ?? fondo + cobradoEfectivo;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {error && <p className="db-error">{error}</p>}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -217,7 +217,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
                 </span>
                 <span className="db-muted ml-2 text-xs">{m.metodo}</span>
               </span>
-              <span className="tabular-nums">{eur.format(m.importe)}</span>
+              <span className="shrink-0 tabular-nums">{eur.format(m.importe)}</span>
               {puedeEscribir && !data.cierre && (
                 <button
                   onClick={() => eliminar(m.id)}
@@ -234,7 +234,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
       )}
 
       <section className="db-card p-4">
-        <h3 className="db-title mb-3 text-sm">Cierre y cuadre</h3>
+        <h3 className="db-title mb-3 text-base">Cierre y cuadre</h3>
 
         {data.cierre ? (
           <dl className="space-y-1 text-sm">

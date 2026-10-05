@@ -146,14 +146,14 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
               <li
                 key={t.id}
                 className={`rounded-xl border transition ${
-                  esTitular ? "border-white/15 hover:border-[#FFE600]" : "border-white/15"
+                  esTitular ? "border-white/12 hover:border-[#FFE600]" : "border-white/12"
                 } ${t.estado === "hecha" ? "bg-white/5" : ""}`}
               >
                 <button
                   type="button"
                   onClick={() => onToggle(t)}
                   disabled={!esTitular || busy}
-                  className="flex w-full items-start gap-3 px-4 pt-3 text-left text-sm"
+                  className="flex w-full items-start gap-3 px-4 py-3 text-left text-sm disabled:cursor-default disabled:opacity-60"
                 >
                   <span
                     className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border text-xs ${
@@ -164,7 +164,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                   >
                     {t.estado === "hecha" ? "✓" : ""}
                   </span>
-                  <span className="flex-1">
+                  <span className="min-w-0 flex-1 break-words">
                     <span
                       className={
                         t.estado === "hecha" ? "line-through opacity-60" : ""
@@ -183,7 +183,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                       </span>
                     )}
                     {subtareas.length > 0 && (
-                      <span className="ml-2 text-[10px] uppercase text-white/45">
+                      <span className="ml-2 text-xs text-white/60 uppercase">
                         {hechasSub}/{subtareas.length} pasos
                       </span>
                     )}
@@ -198,7 +198,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                           type="button"
                           onClick={() => onToggleSub(t, st.id)}
                           disabled={!esTitular || busy}
-                          className={`flex w-full items-center gap-2 rounded px-1 py-0.5 text-left text-xs ${
+                          className={`flex min-h-9 w-full items-center gap-2 rounded px-1.5 py-1.5 text-left text-xs ${
                             esTitular ? "hover:bg-white/5" : "cursor-default"
                           }`}
                         >

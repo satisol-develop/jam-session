@@ -171,7 +171,7 @@ export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
       {puedeEditar && evento.estado !== "realizado" && (
         <form
           onSubmit={guardarDatos}
-          className="grid gap-3 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800 sm:grid-cols-2"
+          className="grid gap-3 rounded-xl border border-neutral-200 p-4 dark:border-white/12 sm:grid-cols-2"
         >
           <label className="text-xs font-semibold">
             Título
@@ -248,7 +248,7 @@ export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
         (puedeEditar ? (
           <form
             onSubmit={crearSiguiente}
-            className="grid gap-3 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800 sm:grid-cols-2"
+            className="grid gap-3 rounded-xl border border-neutral-200 p-4 dark:border-white/12 sm:grid-cols-2"
           >
             <p className="db-kicker sm:col-span-2">
               Crear la siguiente sesión

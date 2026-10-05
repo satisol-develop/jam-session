@@ -82,12 +82,12 @@ export function GrupoBasePanel() {
         {miembros.length === 0 && <li className="db-muted">Sin miembros.</li>}
         {miembros.map((uid) => (
           <li key={uid} className="flex items-center justify-between gap-2">
-            <span>{nombre(uid)}</span>
+            <span className="min-w-0 break-words">{nombre(uid)}</span>
             {editable && (
               <button
                 onClick={() => guardar(miembros.filter((m) => m !== uid))}
                 disabled={busy || miembros.length === 1}
-                className="db-ghost text-xs!"
+                className="db-ghost shrink-0 text-xs!"
                 aria-label={`Quitar a ${nombre(uid)} del Grupo Base`}
               >
                 Quitar

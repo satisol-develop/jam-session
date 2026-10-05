@@ -100,7 +100,7 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
           >
             Ninguna
           </button>
-          <span className="db-muted ml-auto text-xs">
+          <span className="db-muted w-full text-xs sm:ml-auto sm:w-auto">
             {seleccion.length} de {pendientes.length} pendientes seleccionadas
           </span>
         </div>
@@ -110,7 +110,7 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
         {propuestas.map((p) => (
           <li key={p.id} className="rounded-xl border border-white/12 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="flex items-center gap-2 text-sm font-semibold">
+              <label className="flex min-w-0 items-center gap-2 text-sm font-semibold">
                 {editable && p.estado === "pendiente" && (
                   <input
                     type="checkbox"
@@ -118,11 +118,11 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
                     onChange={() => alternar(p.id)}
                     disabled={busy}
                     aria-label={`Seleccionar «${p.cancion}» de ${p.nombre}`}
-                    className="h-4 w-4 accent-[#FFE600]"
+                    className="size-4.5 accent-[#FFE600]"
                   />
                 )}
-                {p.nombre}
-              </span>
+                <span className="min-w-0 break-words">{p.nombre}</span>
+              </label>
               <span
                 className={`db-badge ${
                   p.estado === "aprobada"
@@ -135,7 +135,7 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
                 {p.estado}
               </span>
             </div>
-            <p className="mt-1 text-sm">
+            <p className="mt-1 break-words text-sm">
               «{p.cancion}»
               {p.artista ? ` — ${p.artista}` : ""}
               <span className="db-muted"> · {p.nombre} la tocaría en {p.instrumento}</span>
@@ -159,7 +159,7 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
             type="button"
             onClick={() => resolverLote("rechazada")}
             disabled={busy || seleccion.length === 0}
-            className="rounded-lg border border-red-500/40 px-3 py-1.5 text-xs font-semibold uppercase text-red-300 disabled:opacity-50"
+            className="min-h-10 rounded-xl border border-red-500/40 px-3 py-2 text-xs font-semibold text-red-300 uppercase disabled:opacity-50"
           >
             Rechazar seleccionadas
           </button>

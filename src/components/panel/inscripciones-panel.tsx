@@ -66,7 +66,7 @@ export function InscripcionesPanel({ editable }: { editable: boolean }) {
         {inscripciones.map((i) => (
           <li key={i.id} className="rounded-xl border border-white/12 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-semibold">{i.nombre}</span>
+              <span className="min-w-0 break-words font-semibold">{i.nombre}</span>
               <span className={ESTADO_BADGE[i.estado]}>{i.estado}</span>
             </div>
 
@@ -81,7 +81,7 @@ export function InscripcionesPanel({ editable }: { editable: boolean }) {
             <ul className="db-muted mt-2 space-y-0.5 text-sm">
               {i.temas.map((t, idx) => (
                 <li key={`${i.id}-${idx}`}>
-                  {t.titulo} <span className="text-white/35">· {t.instrumento}</span>
+                  {t.titulo} <span className="text-white/55">· {t.instrumento}</span>
                 </li>
               ))}
             </ul>

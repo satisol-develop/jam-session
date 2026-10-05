@@ -85,7 +85,7 @@ export function InstrumentosPanel() {
                 <li key={`${l.instrumento}-${idx}`}>
                   {m.nombre}
                   {m.temas.length > 0 && (
-                    <span className="text-white/35"> · {m.temas.join(", ")}</span>
+                    <span className="text-white/55"> · {m.temas.join(", ")}</span>
                   )}
                 </li>
               ))}

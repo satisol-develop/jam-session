@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { TabIcon } from "@/components/panel/panel-icons";
 
 export interface PanelTab {
@@ -44,6 +44,23 @@ export function PanelTabs({
   onProtocolo?: () => void;
 }) {
   const [masAbierto, setMasAbierto] = useState(false);
+  const [sombraDcha, setSombraDcha] = useState(true);
+  const chipsRef = useRef<HTMLDivElement>(null);
+
+  /* Sombra de borde derecho en los chips cuando hay más contenido oculto. */
+  useEffect(() => {
+    function medir() {
+      const el = chipsRef.current;
+      if (!el) return;
+      setSombraDcha(el.scrollWidth - el.scrollLeft - el.clientWidth > 8);
+    }
+    const raf = requestAnimationFrame(medir);
+    window.addEventListener("resize", medir);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", medir);
+    };
+  }, [tabs.length]);
 
   /* La hoja «Más» bloquea el scroll de fondo y cierra con Escape. */
   useEffect(() => {
@@ -74,29 +91,45 @@ export function PanelTabs({
       {/* Chips (desktop) */}
       <nav
         aria-label="Secciones del panel"
-        className="db-tabs db-scroll-x sticky top-[calc(4rem+env(safe-area-inset-top))] z-30 -mx-4 hidden gap-1.5 overflow-x-auto px-4 pt-3 pb-2.5 sm:flex"
+        className="db-tabs sticky top-[calc(4rem+env(safe-area-inset-top))] z-30 -mx-4 hidden sm:block"
       >
-        {tabs.map((t) => {
-          const activa = t.id === actual?.id;
-          const tieneConteo = typeof t.conteo === "number" && t.conteo > 0;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => seleccionar(t.id)}
-              aria-current={activa ? "page" : undefined}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
-                activa
-                  ? "bg-[#FFE600] text-black"
-                  : "border border-white/15 text-white/55 hover:border-[#FFE600]/50 hover:text-white"
-              }`}
-            >
-              <TabIcon id={t.id} className="size-3.5" />
-              {t.label}
-              {tieneConteo && <Conteo n={t.conteo as number} activa={activa} />}
-            </button>
-          );
-        })}
+        <div
+          ref={chipsRef}
+          onScroll={() => {
+            const el = chipsRef.current;
+            if (el)
+              setSombraDcha(el.scrollWidth - el.scrollLeft - el.clientWidth > 8);
+          }}
+          className="db-scroll-x flex gap-1.5 overflow-x-auto px-4 pt-3 pb-2.5"
+        >
+          {tabs.map((t) => {
+            const activa = t.id === actual?.id;
+            const tieneConteo = typeof t.conteo === "number" && t.conteo > 0;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => seleccionar(t.id)}
+                aria-current={activa ? "page" : undefined}
+                className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold uppercase tracking-wider transition ${
+                  activa
+                    ? "bg-[#FFE600] text-black"
+                    : "border border-white/15 text-white/55 hover:border-[#FFE600]/50 hover:text-white"
+                }`}
+              >
+                <TabIcon id={t.id} className="size-3.5" />
+                {t.label}
+                {tieneConteo && <Conteo n={t.conteo as number} activa={activa} />}
+              </button>
+            );
+          })}
+        </div>
+        {sombraDcha && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[rgba(13,13,13,0.95)] to-transparent"
+          />
+        )}
       </nav>
 
       {/* Contenido de la pestaña activa */}

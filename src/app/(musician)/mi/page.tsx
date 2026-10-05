@@ -20,7 +20,7 @@ function Section({
 }) {
   return (
     <section className="rounded-2xl border border-neutral-200 p-5 dark:border-neutral-800 sm:p-6">
-      <h2 className="text-base font-bold">{title}</h2>
+      <h2 className="text-xl font-bold">{title}</h2>
       {description && (
         <p className="mb-4 mt-1 text-sm text-neutral-500">{description}</p>
       )}
@@ -62,7 +62,7 @@ export default function MiZonaPage() {
               : ` Inscripción abierta: ${evento.titulo || "Jam Session"}.`
             : ""}
         </p>
-        {!cargado && <p className="mt-2 text-sm text-neutral-400">Cargando…</p>}
+        {!cargado && <p className="mt-2 text-sm text-neutral-500">Cargando…</p>}
         {cargado && !evento && (
           <p className="mt-2 text-sm text-amber-600">
             No hay ningún evento activo ahora mismo.
@@ -73,14 +73,14 @@ export default function MiZonaPage() {
       <div className="flex flex-wrap gap-3 text-sm">
         <Link
           href="/partituras"
-          className="rounded-lg border border-neutral-300 px-4 py-2 font-medium transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
+          className="rounded-lg border border-neutral-300 px-4 py-2.5 font-medium transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
         >
           Partituras y material
         </Link>
         {roleEntries.length > 0 && (
           <Link
             href="/panel"
-            className="rounded-lg bg-neutral-900 px-4 py-2 font-medium text-white transition hover:bg-neutral-700 dark:bg-white dark:text-black"
+            className="rounded-lg bg-neutral-900 px-4 py-2.5 font-medium text-white transition hover:bg-neutral-700 dark:bg-white dark:text-black"
           >
             Paneles del equipo
           </Link>

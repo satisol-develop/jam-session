@@ -54,7 +54,7 @@ const eur = (n: number) =>
 
 function Stat({ label, value, extra }: { label: string; value: string; extra?: string }) {
   return (
-    <div className="rounded-xl border border-neutral-200 p-3 dark:border-neutral-800">
+    <div className="rounded-xl border border-neutral-200 p-3 dark:border-white/12">
       <dt className="db-kicker mb-1">{label}</dt>
       <dd className="text-sm font-bold">{value}</dd>
       {extra && <dd className="db-muted text-xs">{extra}</dd>}
@@ -71,9 +71,9 @@ function Resumen({ entrada }: { entrada: Entrada }) {
   const pendientes = tareas.filter((x) => x.estado === "pendiente");
 
   return (
-    <article className="space-y-4 rounded-2xl border border-neutral-200 p-4 dark:border-neutral-800 sm:p-5">
+    <article className="db-card space-y-4 p-4 sm:p-6">
       <header className="flex flex-wrap items-center gap-2 text-sm">
-        <h3 className="font-bold">{evento.titulo}</h3>
+        <h3 className="db-title text-base">{evento.titulo}</h3>
         <span className="db-badge db-badge-solid">realizado</span>
         <span className="db-muted text-xs">
           {fechaLegible(evento.fecha)} · {evento.hora} · {evento.lugar}
@@ -136,14 +136,14 @@ function Resumen({ entrada }: { entrada: Entrada }) {
 
       <section>
         <h4 className="db-kicker mb-2">Movimientos ({movimientos.length})</h4>
-        <ul className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 text-sm dark:divide-neutral-800 dark:border-neutral-800">
+        <ul className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 text-sm dark:divide-white/10 dark:border-white/12">
           {movimientos.map((m) => (
-            <li key={m.id} className="flex items-center justify-between px-3 py-2">
-              <span>
+            <li key={m.id} className="flex items-center justify-between gap-3 px-3 py-2">
+              <span className="min-w-0 break-words">
                 {m.concepto}
                 <span className="db-muted text-xs"> · {m.tipo}</span>
               </span>
-              <span className="tabular-nums">{eur(m.importe)}</span>
+              <span className="shrink-0 tabular-nums">{eur(m.importe)}</span>
             </li>
           ))}
         </ul>
