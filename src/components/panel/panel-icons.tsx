@@ -84,6 +84,12 @@ const ICONS: Record<string, ReactNode> = {
       <circle cx="19" cy="12" r="1.5" />
     </>
   ),
+  protocolo: (
+    <>
+      <rect x="5" y="4" width="14" height="17" rx="2" />
+      <path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M9 9.5h6M9 13.5h6M9 17.5h4" />
+    </>
+  ),
 };
 
 const FALLBACK = <path d="M5 12h14" />;

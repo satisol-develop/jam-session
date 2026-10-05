@@ -401,27 +401,6 @@ body {
   transition: width 0.3s ease;
 }
 
-/* Protocolo de la pestaña Inicio */
-.db-guide {
-  border: 1px dashed rgba(255, 230, 0, 0.45);
-  background: rgba(255, 230, 0, 0.05);
-  border-radius: 1rem;
-}
-
-.db-guide ol {
-  list-style: decimal;
-  padding-left: 1.35rem;
-  display: grid;
-  gap: 0.55rem;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.db-guide ol::marker {
-  color: #ffe600;
-  font-weight: 800;
-}
-
 /* Stat-cards de estado en la pestaña Inicio */
 .db-stat {
   background: rgba(255, 255, 255, 0.03);

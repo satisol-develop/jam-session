@@ -45,13 +45,19 @@ export function usePanelStatus(rol: Rol): EstadoPanel & { recargar: () => void }
       .then((res) => res.tareas ?? [])
       .catch(() => [] as Tarea[]);
 
-    const propuestasP = api<{ propuestas: Propuesta[] }>("proposal.list")
-      .then((res) => res.propuestas ?? [])
-      .catch(() => [] as Propuesta[]);
+    const propuestasP =
+      rol === "admin" || rol === "general" || rol === "grupo-base"
+        ? api<{ propuestas: Propuesta[] }>("proposal.list")
+            .then((res) => res.propuestas ?? [])
+            .catch(() => [] as Propuesta[])
+        : Promise.resolve([] as Propuesta[]);
 
-    const inscripcionesP = api<{ inscripciones: Inscripcion[] }>("event.inscripciones")
-      .then((res) => res.inscripciones ?? [])
-      .catch(() => [] as Inscripcion[]);
+    const inscripcionesP =
+      rol === "admin" || rol === "general" || rol === "grupo-base"
+        ? api<{ inscripciones: Inscripcion[] }>("event.inscripciones")
+            .then((res) => res.inscripciones ?? [])
+            .catch(() => [] as Inscripcion[])
+        : Promise.resolve([] as Inscripcion[]);
 
     const cajaP = PUEDE_LEER_CAJA.includes(rol)
       ? api<ResumenCaja>("cash.list")

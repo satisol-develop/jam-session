@@ -445,7 +445,12 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         </p>
       </header>
 
-      <PanelTabs tabs={tabs} activo={activo} onSeleccionar={seleccionar} />
+      <PanelTabs
+        tabs={tabs}
+        activo={activo}
+        onSeleccionar={seleccionar}
+        onProtocolo={abrirProtocolo}
+      />
 
       {protocolo && (
         <ProtocoloModal rol={rol} onCerrar={cerrarProtocolo} irA={irA} />

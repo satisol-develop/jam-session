@@ -4,6 +4,18 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { ROLES_META } from "@/lib/constants";
 import { ROLES } from "@/types";
+import type { Rol } from "@/types";
+import { TabIcon } from "@/components/panel/panel-icons";
+
+const ROL_ICONO: Record<Rol, string> = {
+  admin: "rotacion",
+  general: "sesion",
+  "grupo-base": "grupo-base",
+  "stage-manager": "escaleta",
+  tecnico: "instrumentos",
+  caja: "caja",
+  redes: "difusion",
+};
 
 export default function PanelHubPage() {
   const { roles, loading } = useAuth();
@@ -35,7 +47,14 @@ export default function PanelHubPage() {
                 className="db-card db-card-hover block h-full p-5"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <h2 className="db-title text-lg">{ROLES_META[rol].label}</h2>
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <span className="text-[#FFE600]">
+                      <TabIcon id={ROL_ICONO[rol]} className="size-5" />
+                    </span>
+                    <h2 className="db-title truncate text-lg">
+                      {ROLES_META[rol].label}
+                    </h2>
+                  </span>
                   <span
                     className={`db-badge ${
                       roles[rol] === "titular"
@@ -56,8 +75,8 @@ export default function PanelHubPage() {
       )}
 
       <p className="db-muted mt-8 text-xs">
-        ¿Tarea del día? Entra en tu panel: cada rol incluye su guía de proceso
-        paso a paso.
+        ¿Tarea del día? Entra en tu panel: el Inicio te dice el siguiente paso
+        y el botón Protocolo resume el ciclo completo.
       </p>
     </div>
   );

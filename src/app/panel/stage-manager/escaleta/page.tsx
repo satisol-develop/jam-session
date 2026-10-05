@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
 import type { EstadoTurno, Turno } from "@/types";
@@ -33,6 +34,7 @@ const ESTADO_META: Record<
 };
 
 export default function EscaletaPage() {
+  const router = useRouter();
   const { roles, loading: cargandoAuth } = useAuth();
   const puedeEditar =
     roles["stage-manager"] === "titular" || roles["grupo-base"] === "titular";
@@ -170,12 +172,16 @@ export default function EscaletaPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <header className="mb-6">
-        <Link
-          href="/panel"
+        <button
+          type="button"
+          onClick={() => {
+            if (window.history.length > 1) window.history.back();
+            else router.push("/panel");
+          }}
           className="db-kicker underline"
         >
-          ← Paneles
-        </Link>
+          ← Volver
+        </button>
         <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2">
           <h1 className="db-title text-3xl sm:text-4xl">Escaleta en directo</h1>
           <span className="db-muted text-xs">

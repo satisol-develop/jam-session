@@ -13,13 +13,6 @@ export interface PanelTab {
   node: ReactNode;
 }
 
-/** Id de pestaña desde el hash de la URL (#tareas, #caja…). */
-export function idDesdeHash(tabs: PanelTab[]): string {
-  if (typeof window === "undefined") return tabs[0]?.id ?? "";
-  const hash = decodeURIComponent(window.location.hash.slice(1));
-  return tabs.some((t) => t.id === hash) ? hash : tabs[0]?.id ?? "";
-}
-
 function Conteo({ n, activa }: { n: number; activa?: boolean }) {
   return (
     <span
@@ -42,10 +35,13 @@ export function PanelTabs({
   tabs,
   activo,
   onSeleccionar,
+  onProtocolo,
 }: {
   tabs: PanelTab[];
   activo: string;
   onSeleccionar: (id: string) => void;
+  /** Abre el modal de protocolo desde la hoja «Más» (móvil). */
+  onProtocolo?: () => void;
 }) {
   const [masAbierto, setMasAbierto] = useState(false);
 
@@ -184,6 +180,21 @@ export function PanelTabs({
                   </li>
                 );
               })}
+              {onProtocolo && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMasAbierto(false);
+                      onProtocolo();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-white/80 transition hover:bg-white/5"
+                  >
+                    <TabIcon id="protocolo" className="size-5 shrink-0" />
+                    <span className="flex-1">Protocolo</span>
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
         </>
