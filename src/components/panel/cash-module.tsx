@@ -199,10 +199,10 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
       {data.movimientos.length === 0 ? (
         <p className="db-muted text-sm">Sin movimientos todavía.</p>
       ) : (
-        <ul className="db-card divide-y divide-white/10 overflow-hidden">
+        <ul className="db-card divide-y divide-white/10">
           {data.movimientos.map((m) => (
             <li key={m.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-              <span className="flex-1">
+              <span className="min-w-0 flex-1 break-words">
                 <span className="font-medium">{m.concepto || m.tipo}</span>
                 <span
                   className={`ml-2 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
@@ -223,7 +223,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
                   onClick={() => eliminar(m.id)}
                   disabled={busy}
                   aria-label="Anular movimiento"
-                  className="text-xs text-red-400 disabled:opacity-50"
+                  className="min-h-10 min-w-10 p-2 text-xs text-red-400 disabled:opacity-50"
                 >
                   ✕
                 </button>
@@ -299,12 +299,14 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
       </section>
 
       {confirmarCierre && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="db-card w-full max-w-md space-y-4 p-6">
+        <>
+          <div className="db-modal-backdrop" aria-hidden="true" />
+          <div
+            className="db-modal space-y-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Cerrar caja antes de tiempo"
+          >
             <h3 className="db-title text-base">Cerrar caja antes de tiempo</h3>
             <p className="text-sm">
               Estás cerrando la caja <strong>antes de que lo haga el rol Caja</strong>.
@@ -326,13 +328,13 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
                 type="button"
                 onClick={() => setConfirmarCierre(false)}
                 disabled={busy}
-                className="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                className="db-ghost"
               >
                 Cancelar
               </button>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

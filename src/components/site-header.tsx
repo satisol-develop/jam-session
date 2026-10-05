@@ -24,8 +24,8 @@ export function SiteHeader() {
     ? "border-white/10 bg-[#0d0d0d]/95 text-[#f2f2f2]"
     : "border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-black/80";
   const linkCls = enPanel
-    ? "rounded-lg px-3 py-2 font-medium transition hover:bg-white/10"
-    : "rounded-lg px-3 py-2 font-medium transition hover:bg-neutral-100 dark:hover:bg-neutral-900";
+    ? "rounded-lg px-2 py-2.5 font-medium transition hover:bg-white/10 sm:px-3 sm:py-2"
+    : "rounded-lg px-2 py-2.5 font-medium transition hover:bg-neutral-100 dark:hover:bg-neutral-900 sm:px-3 sm:py-2";
   const linkActivo = enPanel
     ? "bg-white/10"
     : "bg-neutral-100 dark:bg-neutral-900";
@@ -34,20 +34,22 @@ export function SiteHeader() {
     : "hidden max-w-[10rem] truncate px-2 text-neutral-500 sm:inline";
 
   return (
-    <header className={`sticky top-0 z-40 border-b ${headerCls}`}>
+    <header
+      className={`sticky top-0 z-40 border-b pt-[env(safe-area-inset-top)] ${headerCls}`}
+    >
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:h-16">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <Link href="/" className="text-lg font-black tracking-tight">
             Jam<span className="text-red-500">Session</span>
           </Link>
           {DEMO_MODE && (
-            <span className="rounded-full border border-amber-500/50 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            <span className="hidden rounded-full border border-amber-500/50 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 sm:inline-block">
               Demo
             </span>
           )}
         </div>
 
-        <nav className="flex items-center gap-1 text-sm">
+        <nav className="flex min-w-0 items-center gap-0.5 text-sm sm:gap-1">
           <ThemeToggle />
           {!loading && user ? (
             <>

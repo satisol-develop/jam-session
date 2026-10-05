@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { TabIcon } from "@/components/panel/panel-icons";
 
 export interface PanelTab {
@@ -45,6 +45,21 @@ export function PanelTabs({
 }) {
   const [masAbierto, setMasAbierto] = useState(false);
 
+  /* La hoja «Más» bloquea el scroll de fondo y cierra con Escape. */
+  useEffect(() => {
+    if (!masAbierto) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMasAbierto(false);
+    }
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [masAbierto]);
+
   function seleccionar(id: string) {
     setMasAbierto(false);
     onSeleccionar(id);
@@ -59,7 +74,7 @@ export function PanelTabs({
       {/* Chips (desktop) */}
       <nav
         aria-label="Secciones del panel"
-        className="db-tabs db-scroll-x sticky top-16 z-30 -mx-4 hidden gap-1.5 overflow-x-auto px-4 pt-3 pb-2.5 sm:flex"
+        className="db-tabs db-scroll-x sticky top-[calc(4rem+env(safe-area-inset-top))] z-30 -mx-4 hidden gap-1.5 overflow-x-auto px-4 pt-3 pb-2.5 sm:flex"
       >
         {tabs.map((t) => {
           const activa = t.id === actual?.id;
@@ -149,7 +164,7 @@ export function PanelTabs({
               <button
                 type="button"
                 onClick={() => setMasAbierto(false)}
-                className="db-muted text-xs font-semibold uppercase"
+                className="min-h-10 rounded-lg px-3 py-2 text-xs font-bold text-white/60 uppercase"
               >
                 Cerrar
               </button>

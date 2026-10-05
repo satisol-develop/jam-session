@@ -237,7 +237,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                       }
                       maxLength={120}
                       placeholder="+ subtarea…"
-                      className="db-input flex-1 text-xs!"
+                      className="db-input flex-1"
                     />
                     <button
                       type="submit"

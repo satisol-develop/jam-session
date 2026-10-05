@@ -97,7 +97,7 @@ export function InscripcionesPanel({ editable }: { editable: boolean }) {
                   value={i.estado}
                   onChange={(e) => cambiarEstado(i.id, e.target.value)}
                   disabled={busy}
-                  className="db-input w-auto! py-1! text-xs!"
+                  className="db-input w-auto! py-1.5!"
                 >
                   {ESTADOS.map((e) => (
                     <option key={e} value={e}>
@@ -107,7 +107,7 @@ export function InscripcionesPanel({ editable }: { editable: boolean }) {
                 </select>
               </label>
             ) : (
-              <p className="db-muted mt-2 text-[11px]">
+              <p className="db-muted mt-2 text-xs">
                 Solo lectura: el Grupo Base asigna los estados.
               </p>
             )}

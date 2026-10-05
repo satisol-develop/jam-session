@@ -128,9 +128,9 @@ body {
 .db-bottombar-label {
   max-width: 100%;
   overflow: hidden;
-  font-size: 0.5625rem;
+  font-size: 0.625rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -149,6 +149,8 @@ body {
   inset-inline: 0;
   bottom: 0;
   z-index: 51;
+  max-height: min(70dvh, calc(100dvh - 5rem));
+  overflow-y: auto;
   background: #161616;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 1rem 1rem 0 0;
@@ -332,9 +334,16 @@ body {
   color: #ffffff;
   border-radius: 0.75rem;
   padding: 0.6rem 0.8rem;
-  font-size: 0.875rem;
+  /* 16px en móvil: evita el zoom automático de iOS al enfocar */
+  font-size: 1rem;
   outline: none;
   transition: border-color 0.15s ease;
+}
+
+@media (min-width: 640px) {
+  .db-input {
+    font-size: 0.875rem;
+  }
 }
 
 .db-input:focus {
@@ -342,7 +351,7 @@ body {
 }
 
 .db-input::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .db-badge {

@@ -53,7 +53,7 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
+    <div className="flex min-h-[calc(100dvh-3.5rem)] items-center justify-center px-4 sm:min-h-[calc(100dvh-4rem)]">
       <div className="w-full max-w-sm">
         <h1 className="mb-1 text-2xl font-bold">Crear cuenta</h1>
         <p className="mb-6 text-sm text-neutral-500">

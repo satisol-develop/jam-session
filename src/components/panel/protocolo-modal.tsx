@@ -58,7 +58,7 @@ export function ProtocoloModal({
           <button
             type="button"
             onClick={onCerrar}
-            className="db-ghost shrink-0 px-3 py-1.5 text-xs!"
+            className="db-ghost min-h-10 shrink-0 px-3 py-2 text-xs!"
           >
             Cerrar
           </button>

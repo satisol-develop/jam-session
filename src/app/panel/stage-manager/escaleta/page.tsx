@@ -250,7 +250,7 @@ export default function EscaletaPage() {
                           onClick={() => mover(i, -1)}
                           disabled={i === 0 || guardando}
                           aria-label="Subir"
-                          className="db-ghost px-2.5! py-1! text-sm disabled:opacity-30"
+                          className="db-ghost min-h-11 min-w-11 px-2.5! py-1! text-sm disabled:opacity-30"
                         >
                           ↑
                         </button>
@@ -258,7 +258,7 @@ export default function EscaletaPage() {
                           onClick={() => mover(i, 1)}
                           disabled={i === turnos.length - 1 || guardando}
                           aria-label="Bajar"
-                          className="db-ghost px-2.5! py-1! text-sm disabled:opacity-30"
+                          className="db-ghost min-h-11 min-w-11 px-2.5! py-1! text-sm disabled:opacity-30"
                         >
                           ↓
                         </button>
@@ -266,7 +266,7 @@ export default function EscaletaPage() {
                       <button
                         onClick={() => cambiarEstado(i)}
                         disabled={guardando}
-                        className="db-btn px-2.5! py-1.5! text-xs!"
+                        className="db-btn min-h-11 px-3! py-2! text-xs!"
                       >
                         {meta.accion}
                       </button>
@@ -274,7 +274,7 @@ export default function EscaletaPage() {
                         onClick={() => eliminar(i)}
                         disabled={guardando}
                         aria-label="Eliminar turno"
-                        className="rounded-lg border border-red-500/40 px-2.5 py-1 text-xs text-red-400 disabled:opacity-50"
+                        className="min-h-11 rounded-lg border border-red-500/40 px-2.5 py-1 text-xs text-red-400 disabled:opacity-50"
                       >
                         ✕
                       </button>

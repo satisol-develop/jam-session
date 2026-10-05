@@ -435,7 +435,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
           <button
             type="button"
             onClick={abrirProtocolo}
-            className="db-ghost ml-auto px-3 py-1.5 text-xs!"
+            className="db-ghost ml-auto min-h-10 px-3 py-2 text-xs!"
           >
             Protocolo
           </button>
