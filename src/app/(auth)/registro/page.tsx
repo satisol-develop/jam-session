@@ -60,7 +60,7 @@ export default function RegistroPage() {
           Regístrate para inscribirte en la Jam Session.
         </p>
         {DEMO_MODE && (
-          <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
             Modo demo: el registro crea un músico <strong>sin roles</strong> (solo
             «Mi zona» y material). Los paneles de rol se prueban con las cuentas
             del selector de acceso en «Entrar».
@@ -77,9 +77,11 @@ export default function RegistroPage() {
               type="text"
               required
               autoComplete="name"
+              autoCapitalize="words"
+              autoCorrect="off"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-neutral-900"
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white sm:text-sm"
             />
           </div>
           <div>
@@ -93,7 +95,7 @@ export default function RegistroPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-neutral-900"
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white sm:text-sm"
             />
           </div>
           <div>
@@ -108,12 +110,12 @@ export default function RegistroPage() {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-neutral-900"
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white sm:text-sm"
             />
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
               {error}
             </p>
           )}
@@ -121,7 +123,7 @@ export default function RegistroPage() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
           >
             {busy ? "Creando cuenta…" : "Crear cuenta"}
           </button>
@@ -129,14 +131,17 @@ export default function RegistroPage() {
 
         <button
           onClick={onGoogle}
-          className="mt-3 w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100"
+          className="mt-3 w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
         >
           Continuar con Google
         </button>
 
-        <p className="mt-6 text-center text-sm text-neutral-500">
+        <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
           ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="font-medium text-neutral-900 underline">
+          <Link
+            href="/login"
+            className="font-medium text-neutral-900 underline dark:text-white"
+          >
             Entrar
           </Link>
         </p>

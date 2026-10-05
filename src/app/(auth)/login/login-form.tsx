@@ -81,7 +81,7 @@ export function LoginForm() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-neutral-900"
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white sm:text-sm"
             />
           </div>
           <div>
@@ -95,12 +95,12 @@ export function LoginForm() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none focus:border-neutral-900"
+              className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white sm:text-sm"
             />
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
               {error}
             </p>
           )}
@@ -108,7 +108,7 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
           >
             {busy ? "Entrando…" : "Entrar"}
           </button>
@@ -116,14 +116,14 @@ export function LoginForm() {
 
         <button
           onClick={onGoogle}
-          className="mt-3 w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100"
+          className="mt-3 w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
         >
           Continuar con Google
         </button>
 
         {DEMO_MODE && (
-          <div className="mt-6 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          <div className="mt-6 rounded-xl border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-950">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
               Modo demo · entra como
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -133,23 +133,26 @@ export function LoginForm() {
                   type="button"
                   onClick={() => quickLogin(a.email)}
                   disabled={busy}
-                  className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-medium transition hover:border-neutral-900 disabled:opacity-50"
+                  className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-medium transition hover:border-neutral-900 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-white"
                   title={a.email}
                 >
                   {a.rol ? ROLES_META[a.rol].label.split("·")[0].trim() : "Músico"}
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-[11px] leading-relaxed text-neutral-500">
+            <p className="mt-2 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
               Cada cuenta solo ve su panel (el músico no tiene roles). Contraseña
               libre; en registro se crea un músico sin roles.
             </p>
           </div>
         )}
 
-        <p className="mt-6 text-center text-sm text-neutral-500">
+        <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
           ¿No tienes cuenta?{" "}
-          <Link href="/registro" className="font-medium text-neutral-900 underline">
+          <Link
+            href="/registro"
+            className="font-medium text-neutral-900 underline dark:text-white"
+          >
             Regístrate
           </Link>
         </p>

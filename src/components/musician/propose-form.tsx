@@ -151,7 +151,10 @@ export function ProposeForm() {
             >
               <span className="flex-1">
                 «{p.cancion}»{p.artista ? ` — ${p.artista}` : ""}
-                <span className="db-muted text-xs"> · en {p.instrumento}</span>
+                <span className="text-neutral-500 text-xs dark:text-neutral-400">
+                  {" "}
+                  · en {p.instrumento}
+                </span>
               </span>
               <span className="shrink-0 text-xs text-neutral-500">
                 {ESTADO_LABEL[p.estado] ?? p.estado}

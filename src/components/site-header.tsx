@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { DEMO_MODE } from "@/lib/demo";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteHeader() {
   const { user, roles, loading, logout } = useAuth();
@@ -47,6 +48,7 @@ export function SiteHeader() {
         </div>
 
         <nav className="flex items-center gap-1 text-sm">
+          <ThemeToggle />
           {!loading && user ? (
             <>
               <Link
