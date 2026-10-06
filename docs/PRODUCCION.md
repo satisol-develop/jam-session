@@ -53,25 +53,66 @@ Resumen rápido (detalle en cada sección):
 
 ## 2. Firebase — identidad (login)
 
-1. <https://console.firebase.google.com> → **Añadir proyecto** (p. ej.
-   `jam-session`). Google Analytics no hace falta.
-2. **Authentication → Get started**:
-   - **Email/contraseña** → Enable.
-   - **Google** → Enable (el login de la web ofrece ambos).
-3. **Project settings → Tus apps → Web app (`</>`)** → registrar la app
-   (nombre `jam-session`, sin Hosting) → **Register** → copia la
-   **configuración**. Son las 6 variables `NEXT_PUBLIC_FIREBASE_*`. La
-   **API key** de esa configuración la necesitas en el paso 3.5.
-4. **Authentication → Settings → Authorized domains** → añade el dominio de
-   GitHub Pages (`satisol-develop.github.io`) y el dominio propio si lo
-   tienes. (Sin esto, Google sign-in fallará en la web desplegada.)
-5. **Bootstrap del Admin** (necesario para ver /panel/admin y rotar roles):
-   1. En la web desplegada, regístrate con tu cuenta (email/contraseña o
-      Google). Aún estará en modo demo: da igual, el usuario se crea en
-      Firebase.
-   2. Firebase Console → **Authentication → Users** → copia el **UID**.
-   3. El spreadsheet aún no existe: la fila va en el paso 3.4 (hoja `Roles`),
-      tras ejecutar `setup()`.
+Solo hace falta **Authentication**; la web ofrece dos botones (correo y
+Google), ambos se configuran aquí.
+
+### 2.1 Proyecto
+
+1. <https://console.firebase.google.com> → **Añadir proyecto** → nombre
+   `jam-session` (o el que quieras) → Google Analytics: **no** → **Crear
+   proyecto** → Continuar.
+2. Si ya tienes proyecto (p. ej. `jam-session`), úsalo: el nombre del proyecto
+   es el valor `projectId` de la configuración.
+
+### 2.2 Métodos de inicio de sesión
+
+1. Menú **Authentication → Empezar** (Get started).
+2. Pestaña **Métodos de inicio de sesión**:
+   - **Correo y contraseña** → **Activar** → Guardar.
+   - **Google** → **Activar** → si pide «proyecto de soporte», elige el que te
+     proponga → Guardar.
+3. Si falta cualquiera de los dos, su botón en la web fallará al iniciar
+   sesión.
+
+### 2.3 Dominios autorizados (necesario para Google)
+
+1. **Authentication → Settings (Configuración) → Dominios autorizados →
+   Añadir dominio**.
+2. Escribe `satisol-develop.github.io` → **Añadir**.
+3. `localhost` y `127.0.0.1` ya vienen (para desarrollar en local). Sin el
+   dominio de Pages, «Continuar con Google» falla en la web publicada;
+   correo/contraseña sí funcionaría.
+
+### 2.4 Registrar la app web — los 6 valores
+
+1. ⚙️ **Project settings → Tus apps → Añadir app → `</>` (Web)**.
+2. Nombre `jam-session`, **sin** Hosting → **Registrar app**.
+3. Copia la **Configuración de tu app** (si la cierras, luego está en ⚙️
+   **Project settings → Tus apps → tu app web**). Cada valor va aquí:
+
+| Valor en Firebase | Variable / destino |
+|---|---|
+| `apiKey` | `NEXT_PUBLIC_FIREBASE_API_KEY` **y** propiedad `FIREBASE_API_KEY` del Apps Script (paso 3.5) |
+| `authDomain` | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` |
+| `projectId` | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` |
+| `storageBucket` | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` |
+| `messagingSenderId` | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` |
+| `appId` | `NEXT_PUBLIC_FIREBASE_APP_ID` |
+
+4. Las 6 van como **secrets** en GitHub (paso 4.2): una por nombre
+   (`NEXT_PUBLIC_FIREBASE_API_KEY`, …).
+
+> No configures Firestore, Storage, Functions, Hosting ni reglas: los datos
+> viven en Google Sheets/Drive. `storageBucket` aparece en la config aunque
+> no se use.
+
+### 2.5 Bootstrap del Admin
+
+1. En la web desplegada, regístrate con tu cuenta (email/contraseña o
+   Google). Aún en modo demo: da igual, el usuario se crea en Firebase.
+2. **Authentication → Users** → tu usuario → copia el **UID**.
+3. El spreadsheet aún no existe: la fila va en el paso 3.4 (hoja `Roles`),
+   tras ejecutar `setup()`.
 
 > Los roles se leen de la hoja `Roles` en cada `user.me`: **no hay claims ni
 > service account**. Tras una rotación, los permisos valen al instante.
