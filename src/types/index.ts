@@ -46,7 +46,7 @@ export interface Cancion {
   tonalidad: string;
   carpetaDriveId: string;
   estado: EstadoCancion;
-  origen: "drive" | "propuesta";
+  origen: "drive" | "propuesta" | "panel";
 }
 
 export type EstadoUsuario = "activo" | "baja";

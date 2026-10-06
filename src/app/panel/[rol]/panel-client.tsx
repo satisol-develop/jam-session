@@ -19,6 +19,7 @@ import { PropuestasPanel } from "@/components/panel/propuestas-panel";
 import { DifusionKit } from "@/components/panel/difusion-kit";
 import { EnsayoPanel } from "@/components/panel/ensayo-panel";
 import { GrupoBasePanel } from "@/components/panel/grupo-base-panel";
+import { RepertorioPanel } from "@/components/panel/repertorio-panel";
 import { PanelInicio } from "@/components/panel/panel-inicio";
 import { ProtocoloModal } from "@/components/panel/protocolo-modal";
 import { usePanelStatus } from "@/components/panel/use-panel-status";
@@ -235,6 +236,19 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     if (rol === "general") {
       tabs.push(
         {
+          id: "repertorio",
+          label: "Repertorio",
+          primaria: true,
+          node: (
+            <Seccion
+              titulo="Repertorio del mes"
+              nota="Añade temas que verán la web, /mi y /partituras. El Grupo Base también puede."
+            >
+              <RepertorioPanel editable={esTitular} />
+            </Seccion>
+          ),
+        },
+        {
           id: "propuestas",
           label: "Propuestas",
           primaria: true,
@@ -277,6 +291,19 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
 
     if (rol === "grupo-base") {
       tabs.push(
+        {
+          id: "repertorio",
+          label: "Repertorio",
+          primaria: true,
+          node: (
+            <Seccion
+              titulo="Repertorio del mes"
+              nota="Define el repertorio: los temas que añadas aparecerán en la web, /mi y /partituras."
+            >
+              <RepertorioPanel editable={esTitular} />
+            </Seccion>
+          ),
+        },
         {
           id: "propuestas",
           label: "Propuestas",

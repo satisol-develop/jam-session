@@ -155,7 +155,8 @@ Con la web de GitHub Pages abierta (tras el deploy), comprueba en este orden:
    con el modal de aviso (`cash.close`).
 6. **Grupo Base**: inscripciones (`event.inscripciones`,
    `musician.setEstado`), ensayo y cierre de inscripciones
-   (`event.setEnsayo`, `event.setInscripciones`).
+   (`event.setEnsayo`, `event.setInscripciones`) y repertorio
+   (`repertoire.add` en su pestaña Repertorio; también desde el General).
 7. **Músico** (`/mi`): inscribirse (`musician.subscribe`), proponer una
    canción (`musician.propose`) y ver mis propuestas.
 8. **Caja** (`/panel/caja`): registrar consumos/gastos (`cash.add`) y cerrar.

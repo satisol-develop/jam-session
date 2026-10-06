@@ -253,6 +253,31 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       return propuesta as T;
     }
 
+    case "repertoire.add": {
+      validarTitularAlguno(["grupo-base", "general"]);
+      const titulo = String(b.titulo ?? "").trim().slice(0, 160);
+      const artista = String(b.artista ?? "").trim().slice(0, 160);
+      const tonalidad = String(b.tonalidad ?? "").trim().slice(0, 16);
+      if (titulo.length < 2) throw new Error("El título del tema es obligatorio.");
+      if (
+        s.catalogo.some((c) => c.titulo.toLowerCase() === titulo.toLowerCase())
+      ) {
+        throw new Error("Ese tema ya está en el repertorio.");
+      }
+      const cancion: Cancion = {
+        id: demoId(s, "c"),
+        titulo,
+        artista,
+        tonalidad,
+        carpetaDriveId: "",
+        estado: "activo",
+        origen: "panel",
+      };
+      s.catalogo.push(cancion);
+      bumpDemoVersion(s);
+      return cancion as T;
+    }
+
     case "material.list": {
       const cancion = s.catalogo.find(
         (c) => c.carpetaDriveId === String(b.carpetaDriveId ?? ""),
