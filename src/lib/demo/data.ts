@@ -361,17 +361,17 @@ export function createDemoStore(): DemoStore {
     contador: 100,
   };
 
-  const canciones: [string, string, string][] = [
-    ["Sultans of Swing", "Dire Straits", "Dm"],
-    ["Come As You Are", "Nirvana", "F#m"],
-    ["Valerie", "The Zutons", "Em"],
-    ["Superstition", "Stevie Wonder", "Ebm"],
-    ["Wonderwall", "Oasis", "F#m"],
-    ["Billie Jean", "Michael Jackson", "Fm"],
-    ["Lady Madonna", "The Beatles", "F"],
-    ["Smooth", "Santana ft. Rob Thomas", "C#m"],
+  const canciones: [string, string, string, string][] = [
+    ["Sultans of Swing", "Dire Straits", "Dm", "Rock, Classic Rock & Indie"],
+    ["Come As You Are", "Nirvana", "F#m", "Rock, Classic Rock & Indie"],
+    ["Valerie", "The Zutons", "Em", "Pop, Dance & Neo-Soul"],
+    ["Superstition", "Stevie Wonder", "Ebm", "Funk, Soul & Disco"],
+    ["Wonderwall", "Oasis", "F#m", "Rock, Classic Rock & Indie"],
+    ["Billie Jean", "Michael Jackson", "Fm", "Pop, Dance & Neo-Soul"],
+    ["Lady Madonna", "The Beatles", "F", "Rock, Classic Rock & Indie"],
+    ["Smooth", "Santana ft. Rob Thomas", "C#m", "Música Latina, Bossa & Afro-Cubano"],
   ];
-  store.catalogo = canciones.map(([titulo, artista, tonalidad], i) => ({
+  store.catalogo = canciones.map(([titulo, artista, tonalidad, categoria], i) => ({
     id: `c${i + 1}`,
     titulo,
     artista,
@@ -379,6 +379,7 @@ export function createDemoStore(): DemoStore {
     carpetaDriveId: `folder-demo-${i + 1}`,
     estado: "activo",
     origen: i < 6 ? "drive" : "propuesta",
+    categoria,
   }));
 
   store.usuarios = [

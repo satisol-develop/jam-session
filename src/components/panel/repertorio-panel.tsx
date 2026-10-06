@@ -131,6 +131,11 @@ export function RepertorioPanel({ editable }: { editable: boolean }) {
               {c.tonalidad && (
                 <span className="db-badge shrink-0">{c.tonalidad}</span>
               )}
+              {c.categoria && (
+                <span className="db-badge db-badge-line hidden shrink-0 lg:inline-flex">
+                  {c.categoria}
+                </span>
+              )}
               <span className="db-badge db-badge-line hidden shrink-0 sm:inline-flex">
                 {c.origen}
               </span>

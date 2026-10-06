@@ -127,7 +127,8 @@ está en `.gitignore`; cópialo desde tu equipo).
    contenido por el de `apps-script/appsscript.json`.
 3. Crea un archivo por cada `.gs` de la carpeta y pega su contenido
    (`main`, `sheets`, `routes`, `musicians`, `roles`, `eventos`, `caja`,
-   `escaleta`, `drive`, `files`, `seed`). Alternativa rápida con `clasp`:
+   `escaleta`, `drive`, `files`, `seed`, `seed-repertorio`, `init`).
+   Alternativa rápida con `clasp`:
    `npm i -g @google/clasp && clasp login && clasp create --type sheets && clasp push`
    (desde dentro de `apps-script/`).
 4. **Primera vez solamente**: ejecuta `setup()` (menú ▶). Crea el

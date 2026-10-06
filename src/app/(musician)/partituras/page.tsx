@@ -180,6 +180,18 @@ export default function PartiturasPage() {
   const conMaterial = catalogo?.length ?? 0;
   const cancion = catalogo?.find((c) => c.id === cancionId) ?? null;
 
+  const sinGenero: Cancion[] = [];
+  const grupos = new Map<string, Cancion[]>();
+  for (const c of catalogo ?? []) {
+    if (c.categoria) {
+      const lista = grupos.get(c.categoria);
+      if (lista) lista.push(c);
+      else grupos.set(c.categoria, [c]);
+    } else {
+      sinGenero.push(c);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <header className="mb-6">
@@ -214,11 +226,21 @@ export default function PartiturasPage() {
             className="mb-6 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
           >
             <option value="">— Selecciona —</option>
-            {catalogo.map((c) => (
+            {sinGenero.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.titulo}
                 {c.artista ? ` — ${c.artista}` : ""}
               </option>
+            ))}
+            {[...grupos.entries()].map(([genero, lista]) => (
+              <optgroup key={genero} label={genero}>
+                {lista.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.titulo}
+                    {c.artista ? ` — ${c.artista}` : ""}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
 

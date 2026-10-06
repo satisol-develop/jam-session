@@ -47,6 +47,8 @@ export interface Cancion {
   carpetaDriveId: string;
   estado: EstadoCancion;
   origen: "drive" | "propuesta" | "panel";
+  /** Género curado (columna `categoria` de la hoja Repertorio). */
+  categoria?: string;
 }
 
 export type EstadoUsuario = "activo" | "baja";
