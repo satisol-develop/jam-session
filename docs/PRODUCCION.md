@@ -44,9 +44,12 @@ Resumen rápido (detalle en cada sección):
 4. `artista` y `tonalidad` se rellenan a mano en la hoja `Repertorio`, desde
    la pestaña Repertorio del panel del Grupo Base/General, o en el propio
    Sheet (no hace falta para que funcione).
-5. Opcional (cartel público): sube el cartel, compártelo con **«Cualquier
-   persona con el enlace»** y guarda la URL; se pega después en
-   `Eventos.cartel_url`.
+5. **Cartel**: desde el panel **Redes → Kit de difusión** se descarga la
+   plantilla (`public/plantillas/cartel.svg`), se edita y el cartel final se
+   sube con «Subir cartel» (JPG/PNG/WEBP/SVG, máx. 6 MB): va a Drive con
+   enlace público y aparece en la portada. Alternativa manual: sube el
+   cartel, compártelo con **«Cualquier persona con el enlace»** y guarda la
+   URL en `Eventos.cartel_url`.
 
 ## 2. Firebase — identidad (login)
 
@@ -208,6 +211,8 @@ la hoja **`LogActividad`** del spreadsheet.
 - [ ] Registrarte crea el usuario en **Firebase Console → Authentication**.
 - [ ] `/panel/admin` carga la matriz real (`admin.users`).
 - [ ] Añadir un tema en la pestaña Repertorio (GB) lo publica en la web.
+- [ ] El cartel subido desde el panel Redes (Kit de difusión) aparece en la
+      portada pública.
 - [ ] Si falta cualquier config, la UI muestra un error claro (p. ej.
       «Falta NEXT_PUBLIC_APPS_SCRIPT_URL en el entorno del build» o
       «FIREBASE_API_KEY no configurado»).

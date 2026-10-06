@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { api } from "@/lib/api/client";
 import type { Evento } from "@/types";
+
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const CARTEL_MIME_OK = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+const MAX_CARTEL_BYTES = 6 * 1024 * 1024;
 
 const fmtFecha = new Intl.DateTimeFormat("es-ES", {
   weekday: "long",
@@ -10,10 +14,92 @@ const fmtFecha = new Intl.DateTimeFormat("es-ES", {
   month: "long",
 });
 
-export function DifusionKit() {
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(String(fr.result).split(",")[1] ?? "");
+    fr.onerror = () => reject(new Error("No se pudo leer el archivo."));
+    fr.readAsDataURL(file);
+  });
+}
+
+function cargarImagen(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("No se pudo procesar la imagen."));
+    img.src = src;
+  });
+}
+
+interface CartelArchivo {
+  nombre: string;
+  mimeType: string;
+  base64: string;
+}
+
+/**
+ * Valida y prepara el cartel: SVG tal cual; raster grande se reescala a
+ * 1600 px en JPEG para que la portada cargue rápido y entre en el límite.
+ */
+async function prepararCartel(file: File): Promise<CartelArchivo> {
+  const mime =
+    file.type || (file.name.toLowerCase().endsWith(".svg") ? "image/svg+xml" : "");
+  if (!CARTEL_MIME_OK.includes(mime)) {
+    throw new Error("Formato no admitido: usa JPG, PNG, WEBP o SVG.");
+  }
+  if (file.size > 30 * 1024 * 1024) {
+    throw new Error("El archivo pesa demasiado.");
+  }
+
+  if (mime === "image/svg+xml") {
+    const b64 = await fileToBase64(file);
+    if (b64.length * 0.75 > MAX_CARTEL_BYTES) {
+      throw new Error("El cartel supera los 6 MB.");
+    }
+    return { nombre: file.name, mimeType: mime, base64: b64 };
+  }
+
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await cargarImagen(url);
+    const largo = Math.max(img.naturalWidth, img.naturalHeight) || 1;
+    const escala = Math.min(1, 1600 / largo);
+    if (escala === 1 && file.size <= 1_200_000) {
+      const b64 = await fileToBase64(file);
+      if (b64.length * 0.75 > MAX_CARTEL_BYTES) {
+        throw new Error("El cartel supera los 6 MB; exporta una imagen más ligera.");
+      }
+      return { nombre: file.name, mimeType: mime, base64: b64 };
+    }
+    const lienzo = document.createElement("canvas");
+    lienzo.width = Math.max(1, Math.round(img.naturalWidth * escala));
+    lienzo.height = Math.max(1, Math.round(img.naturalHeight * escala));
+    const ctx = lienzo.getContext("2d");
+    if (!ctx) throw new Error("Canvas no disponible en este navegador.");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+    ctx.drawImage(img, 0, 0, lienzo.width, lienzo.height);
+    const b64 = lienzo.toDataURL("image/jpeg", 0.86).split(",")[1] ?? "";
+    if (b64.length * 0.75 > MAX_CARTEL_BYTES) {
+      throw new Error("El cartel supera los 6 MB; exporta una imagen más ligera.");
+    }
+    return {
+      nombre: file.name.replace(/\.[^.]+$/, "") + ".jpg",
+      mimeType: "image/jpeg",
+      base64: b64,
+    };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+export function DifusionKit({ editable }: { editable: boolean }) {
   const [evento, setEvento] = useState<Evento | null | undefined>(undefined);
   const [copiado, setCopiado] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subiendo, setSubiendo] = useState(false);
+  const [ok, setOk] = useState<string | null>(null);
 
   useEffect(() => {
     api<{ evento: Evento | null }>("public.event")
@@ -27,7 +113,7 @@ export function DifusionKit() {
   if (evento === undefined) {
     return <p className="db-muted text-sm">Cargando evento…</p>;
   }
-  if (error) {
+  if (error && !evento) {
     return <p className="db-error">{error}</p>;
   }
   if (!evento) {
@@ -53,6 +139,25 @@ export function DifusionKit() {
       setTimeout(() => setCopiado(false), 2000);
     } catch {
       /* portapapeles no disponible */
+    }
+  }
+
+  async function subirCartel(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || subiendo) return;
+    setSubiendo(true);
+    setError(null);
+    setOk(null);
+    try {
+      const prep = await prepararCartel(file);
+      const res = await api<{ cartelUrl: string }>("event.setCartel", prep);
+      setEvento((prev) => (prev ? { ...prev, cartelUrl: res.cartelUrl } : prev));
+      setOk("Cartel publicado: ya se ve en la portada de la web.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo subir el cartel.");
+    } finally {
+      setSubiendo(false);
     }
   }
 
@@ -82,6 +187,61 @@ export function DifusionKit() {
           {ensayo && ` Ensayo general: ${ensayo}.`} ¡Toca con nosotros!
           #DebarockKolektiboa
         </p>
+      </div>
+
+      <div className="rounded-xl border border-white/12 p-3">
+        <p className="db-kicker mb-2">Cartel de la sesión</p>
+
+        {evento.cartelUrl ? (
+          <div className="mb-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={evento.cartelUrl}
+              alt={`Cartel de ${evento.titulo}`}
+              className="max-h-72 rounded-xl border border-white/12"
+            />
+            <p className="db-muted mt-1 text-xs">
+              Así se ve ahora mismo en la portada pública.
+            </p>
+          </div>
+        ) : (
+          <p className="db-muted mb-3 text-sm">
+            Aún no hay cartel publicado: la portada muestra el hueco
+            «El cartel del mes se publicará aquí».
+          </p>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={`${BASE_PATH}/plantillas/cartel.svg`}
+            download="cartel-jam-session.svg"
+            className="db-btn text-xs!"
+          >
+            Descargar plantilla
+          </a>
+          {editable && (
+            <label
+              className={`db-ghost text-xs! ${subiendo ? "pointer-events-none opacity-50" : ""}`}
+            >
+              {subiendo ? "Subiendo…" : "Subir cartel"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                className="hidden"
+                onChange={subirCartel}
+                disabled={subiendo}
+              />
+            </label>
+          )}
+        </div>
+
+        <p className="db-muted mt-2 text-xs">
+          Descarga la plantilla (SVG), edita el título, fecha, hora y lugar en
+          Illustrator, Inkscape, Figma o el navegador; expórtala como PNG o JPG
+          y súbrela aquí. Formatos: JPG, PNG, WEBP o SVG (máx. 6 MB).
+        </p>
+        {ok && <p className="db-badge mt-2 inline-flex">{ok}</p>}
+        {error && <p className="db-error mt-2">{error}</p>}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

@@ -405,7 +405,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
             titulo="Kit de difusión"
             nota="Datos del evento y textos base para cartel y publicaciones."
           >
-            <DifusionKit />
+            <DifusionKit editable={esTitular} />
           </Seccion>
         ),
       });

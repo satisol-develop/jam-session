@@ -706,6 +706,24 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       return { evento: s.evento } as T;
     }
 
+    case "event.setCartel": {
+      requiereEventoAbierto(s);
+      validarTitular("redes");
+      const mimeType = String(b.mimeType ?? "");
+      const b64 = String(b.base64 ?? "");
+      if (
+        !["image/jpeg", "image/png", "image/webp", "image/svg+xml"].includes(
+          mimeType,
+        )
+      ) {
+        throw new Error("Formato no admitido: usa JPG, PNG, WEBP o SVG.");
+      }
+      if (!b64) throw new Error("Archivo vacío.");
+      s.evento.cartelUrl = `data:${mimeType};base64,${b64}`;
+      bumpDemoVersion(s);
+      return { cartelUrl: s.evento.cartelUrl } as T;
+    }
+
     case "gb.set": {
       validarTitular("general");
       const mes = s.evento.mes;
