@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
+import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import type { Cancion } from "@/types";
 
 interface Archivo {
@@ -155,6 +156,7 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
 }
 
 export default function PartiturasPage() {
+  const { pendiente } = useRequireAuth();
   const [catalogo, setCatalogo] = useState<Cancion[] | null>(null);
   const [cancionId, setCancionId] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -166,6 +168,14 @@ export default function PartiturasPage() {
         setError(err instanceof Error ? err.message : "No se pudo cargar."),
       );
   }, []);
+
+  if (pendiente) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-neutral-500">
+        Cargando…
+      </div>
+    );
+  }
 
   const conMaterial = catalogo?.length ?? 0;
   const cancion = catalogo?.find((c) => c.id === cancionId) ?? null;

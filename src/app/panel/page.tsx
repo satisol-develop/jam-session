@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import { ROLES_META } from "@/lib/constants";
 import { ROLES } from "@/types";
 import type { Rol } from "@/types";
@@ -19,7 +20,16 @@ const ROL_ICONO: Record<Rol, string> = {
 
 export default function PanelHubPage() {
   const { roles, loading } = useAuth();
+  const { pendiente } = useRequireAuth();
   const asignados = ROLES.filter((r) => roles[r]);
+
+  if (pendiente) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        <p className="db-muted text-sm">Cargando…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">

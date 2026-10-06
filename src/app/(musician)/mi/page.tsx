@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import { api } from "@/lib/api/client";
 import { SubscribeForm } from "@/components/musician/subscribe-form";
 import { ProposeForm } from "@/components/musician/propose-form";
@@ -31,6 +32,7 @@ function Section({
 
 export default function MiZonaPage() {
   const { user, roles } = useAuth();
+  const { pendiente } = useRequireAuth();
   const [evento, setEvento] = useState<Evento | null>(null);
   const [inscripcion, setInscripcion] = useState<Inscripcion | null>(null);
   const [cargado, setCargado] = useState(false);
@@ -47,6 +49,14 @@ export default function MiZonaPage() {
       .catch(() => undefined)
       .finally(() => setCargado(true));
   }, []);
+
+  if (pendiente) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-neutral-500">
+        Cargando…
+      </div>
+    );
+  }
 
   const roleEntries = Object.entries(roles);
 

@@ -27,10 +27,11 @@ jobs:
 
       - run: npm ci
 
-      - name: Static export (modo demo)
+      - name: Static export (GitHub Pages)
         env:
-          NEXT_PUBLIC_DEMO_MODE: "true"
+          NEXT_PUBLIC_DEMO_MODE: "${{ vars.NEXT_PUBLIC_DEMO_MODE || secrets.NEXT_PUBLIC_DEMO_MODE || 'true' }}"
           NEXT_PUBLIC_BASE_PATH: ${{ github.event.repository.name == 'satisol-develop.github.io' && '' || format('/{0}', github.event.repository.name) }}
+          NEXT_PUBLIC_APPS_SCRIPT_URL: ${{ secrets.NEXT_PUBLIC_APPS_SCRIPT_URL }}
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}

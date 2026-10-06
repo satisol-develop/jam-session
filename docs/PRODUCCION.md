@@ -1,11 +1,15 @@
 # Puesta en producción — Jam Session
 
 Guía concreta, paso a paso, para que la app funcione con los servicios reales
-(Firebase + Apps Script + Google Sheets + Google Drive en Vercel). El orden es
-importante: **Drive → Apps Script → Firebase → Vercel → verificación**.
+(Firebase + Apps Script + Google Sheets + Google Drive, desplegada en
+**GitHub Pages**). El orden es importante:
+**Drive → Apps Script → Firebase → GitHub → verificación**.
 
-> GitHub Pages se queda en **modo demo** (no lleva variables de entorno →
-> `NEXT_PUBLIC_DEMO_MODE` por defecto `true`). La producción real es **Vercel**.
+> Arquitectura: **static export en GitHub Pages** (sin servidor propio). El
+> navegador llama **directamente** al Apps Script (`NEXT_PUBLIC_APPS_SCRIPT_URL`),
+> que verifica el ID token de Firebase con `accounts:lookup`. No hay Vercel ni
+> service account. GitHub Pages arranca en **modo demo**
+> (`NEXT_PUBLIC_DEMO_MODE` por defecto `true`); se pasa a real con una variable.
 
 ---
 
@@ -43,13 +47,19 @@ El código está en la carpeta local `apps-script/` (no va en el repo).
    `npm i -g @google/clasp && clasp login && clasp create --type sheets && clasp push`
    (desde dentro de `apps-script/`).
 4. **Primera vez solamente**: ejecuta `setup()` (menú ▶). Crea el
-   spreadsheet **Jam Session — Datos**, guarda `SPREADSHEET_ID` y genera
-   `HMAC_SECRET` en **Propiedades del script**.
+   spreadsheet **Jam Session — Datos** y guarda `SPREADSHEET_ID` en
+   Propiedades del script.
    - ⚠️ Si el spreadsheet ya existía de una configuración anterior, **no
      vuelvas a ejecutar `setup()`** (crearía otro): ejecuta **`migrate()`**
      (actualiza hojas y columnas conservando los datos).
 5. En **Propiedades del script** añade a mano:
    - `DRIVE_ROOT_ID` = el ID de la carpeta de Drive del paso 1.
+   - `FIREBASE_API_KEY` = la API key del proyecto Firebase (paso 3.3). El
+     backend la usa para verificar los tokens con `accounts:lookup`.
+   - `ALLOWED_ORIGINS` *(opcional)* = JSON array de orígenes permitidos,
+     p. ej. `["https://satisol-develop.github.io"]`. Sin esta propiedad se
+     acepta cualquier origen: la seguridad real es el token + los roles de la
+     hoja `Roles`.
 6. Ejecuta (editor ▶, una cada vez):
    - `syncCatalogFromDrive()` → rellena la hoja `Repertorio` desde Drive.
    - `scheduleCatalogSync()` → instala el trigger automático cada 6 h.
@@ -59,11 +69,12 @@ El código está en la carpeta local `apps-script/` (no va en el repo).
    - Ejecutar como: **Yo**
    - Quién tiene acceso: **Cualquier usuario**
    - → **Deploy** y copia la URL `.../exec`. Ejecuta `webAppUrl()` para
-     verificarla. **Guárdala**: es `APPS_SCRIPT_URL`.
-8. Copia `HMAC_SECRET` (Propiedades del script) → será `APPS_SCRIPT_SECRET`.
+     verificarla. **Guárdala**: es `NEXT_PUBLIC_APPS_SCRIPT_URL`.
 
 > ⚠️ Cada vez que **reimplementes** la web app puede cambiar la URL: si
-> cambia, actualiza `APPS_SCRIPT_URL` en Vercel y redespliega.
+> cambia, actualiza `NEXT_PUBLIC_APPS_SCRIPT_URL` en GitHub (paso 4) y
+> redespliega la web (Settings → Variables → cambiar valor no rebuilda:
+> lanza un redeploy con **Re-run** o pulsa ▶ *Run workflow*).
 
 ## 3. Firebase — identidad (login)
 
@@ -74,16 +85,12 @@ El código está en la carpeta local `apps-script/` (no va en el repo).
    - **Google** → Enable (el login de la web ofrece ambos).
 3. **Project settings → Tus apps → Web app (`</>`)** → registrar la app
    (nombre `jam-session`, sin Hosting) → **Register** → copia la
-   **configuración**. Son las 6 variables `NEXT_PUBLIC_FIREBASE_*`.
-4. **Project settings → Service accounts → Generate new private key** → se
-   descarga un JSON. Ese JSON es `FIREBASE_SERVICE_ACCOUNT` (en Vercel:
-   pega el JSON en una sola línea; en local puedes pasarlo a base64):
-   ```powershell
-   [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes((Get-Content service.json -Raw)))
-   ```
-5. **Authentication → Settings → Authorized domains** → añade el dominio de
-   Vercel (p. ej. `jam-session.vercel.app`) y el dominio propio si lo tienes.
-6. **Bootstrap del Admin** (necesario para poder rotar roles y ver /panel/admin):
+   **configuración**. Son las 6 variables `NEXT_PUBLIC_FIREBASE_*`. La
+   **API key** de esa configuración es la `FIREBASE_API_KEY` del paso 2.5.
+4. **Authentication → Settings → Authorized domains** → añade el dominio de
+   GitHub Pages (`satisol-develop.github.io`) y el dominio propio si lo
+   tienes.
+5. **Bootstrap del Admin** (necesario para poder rotar roles y ver /panel/admin):
    1. En la web, regístrate con tu cuenta (email/contraseña o Google).
    2. Firebase Console → **Authentication → Users** → copia el **UID**.
    3. Abre el spreadsheet *Jam Session — Datos* → hoja **`Roles`** → añade la
@@ -92,7 +99,10 @@ El código está en la carpeta local `apps-script/` (no va en el repo).
       |---|---|---|---|
       | `2026-10` | `admin` | `TU-UID` | `titular` |
 
-## 4. Variables de entorno y Vercel
+> Los roles se leen de la hoja `Roles` en cada `user.me`: **no hay claims ni
+> service account**. Tras una rotación, los permisos valen al instante.
+
+## 4. Variables de entorno y GitHub Pages
 
 1. En local: `cp .env.example .env.local` y rellena:
 
@@ -104,35 +114,41 @@ El código está en la carpeta local `apps-script/` (no va en el repo).
    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
    NEXT_PUBLIC_FIREBASE_APP_ID=...
-   APPS_SCRIPT_URL=https://script.google.com/macros/s/XXXX/exec
-   APPS_SCRIPT_SECRET=<HMAC_SECRET>
-   FIREBASE_SERVICE_ACCOUNT=<JSON en una línea o base64>
+   NEXT_PUBLIC_APPS_SCRIPT_URL=https://script.google.com/macros/s/XXXX/exec
    NEXT_PUBLIC_BASE_PATH=
    ```
 
-2. <https://vercel.com> → **Add New → Project** → importa
-   `satisol-develop/jam-session` (Next.js se detecta solo).
-3. **Settings → Environment Variables** → añade **todas** las anteriores en
-   **Production** (y también en Preview si quieres probar ahí).
-4. **Deploy**. Si ya estaba desplegado y solo cambias variables →
-   **Deployments → ⋯ → Redeploy** (las variables nuevas no aplican hasta un
-   build nuevo).
-5. `NEXT_PUBLIC_*` son públicas (config del cliente Firebase, no son
-   secretos). `APPS_SCRIPT_SECRET` y `FIREBASE_SERVICE_ACCOUNT` solo viven en
-   el servidor (Vercel), nunca en el navegador.
+2. GitHub → `satisol-develop/jam-session` → **Settings → Secrets and
+   variables → Actions**:
+
+   - **Secrets** (6): `NEXT_PUBLIC_FIREBASE_API_KEY`, `_AUTH_DOMAIN`,
+     `_PROJECT_ID`, `_STORAGE_BUCKET`, `_MESSAGING_SENDER_ID`, `_APP_ID`,
+     y `NEXT_PUBLIC_APPS_SCRIPT_URL`.
+   - **Variables**: `NEXT_PUBLIC_DEMO_MODE` = `false` (para salir del modo
+     demo; con la variable ausente el build sigue en demo).
+
+3. El deploy es automático: **push a `main`** → el workflow
+   `Deploy GitHub Pages` construye el static export y publica `out/` en
+   <https://satisol-develop.github.io/jam-session/>.
+
+4. Todas las `NEXT_PUBLIC_*` son **públicas** (viajan al navegador). La
+   seguridad no depende de que se oculten: verifica tokens y roles el backend
+   Apps Script.
 
 ## 5. Verificación en producción
 
-Con la web de Vercel abierta (tras el deploy), comprueba en este orden:
+Con la web de GitHub Pages abierta (tras el deploy), comprueba en este orden:
 
 1. **Home**: carga con el evento vigente y el repertorio (viene de
    `public.event` en Sheets; si está vacío, revisa `setup()`/`seedDemoData()`
    y `DRIVE_ROOT_ID`).
-2. **Login** con correo/contraseña y con Google.
-3. **Tu cuenta admin**: con la fila de `Roles` del paso 3.4, entra en
+2. **Login** con correo/contraseña y con Google (si Google falla, revisa los
+   Authorized domains del paso 3.4).
+3. **Tu cuenta admin**: con la fila de `Roles` del paso 3.5, entra en
    `/panel/admin` y comprueba que la matriz carga (`admin.users`).
 4. **Rotación**: asigna titulares en la matriz → **Guardar rotación** → cada
-   titular recibe su rol y puede entrar en su panel.
+   titular recibe su rol en la hoja `Roles` (y puede entrar en su panel tras
+   refrescar).
 5. **General** (`/panel/general`): edita datos (`event.update`), aprueba la
    sesión (`general.approve` → tareas con subtareas), elige el Grupo Base
    (`gb.set`), valida propuestas en bloque y, en «Auditoría», cierra la caja
@@ -159,9 +175,10 @@ la hoja **`LogActividad`** del spreadsheet.
 - **Rotación mensual** (recomendado antes del día 25): Admin → matriz →
   Guardar. Los apoyos los elige cada titular en su panel; el Grupo Base, el
   General.
-- **Triggers**: Firebase/Script → revisa de vez en cuando que el trigger de
+- **Triggers**: revisa de vez en cuando que el trigger de
   `syncCatalogFromDrive` sigue activo (editor → ⏰ triggers).
-- **Actualizar el backend**: edita los `.gs` → reimplementa la versión web
-  app → si cambia la URL, actualiza `APPS_SCRIPT_URL` en Vercel y redespliega.
+- **Actualizar el backend (`.gs`)**: edita → reimplementa la versión web app
+  → si cambia la URL, actualiza el secret de GitHub y redespliega la web.
+- **Actualizar la web**: push a `main` → el workflow publica solo.
 - **Borrado/limpieza**: la hoja `Historial` es autocontenida (JSON por
   sesión); puedes consultarla tal cual sin tocar nada.

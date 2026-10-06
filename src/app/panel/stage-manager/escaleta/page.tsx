@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import type { EstadoTurno, Turno } from "@/types";
 
 const POLL_MS = 4000;
@@ -36,6 +37,7 @@ const ESTADO_META: Record<
 export default function EscaletaPage() {
   const router = useRouter();
   const { roles, loading: cargandoAuth } = useAuth();
+  const { pendiente } = useRequireAuth();
   const puedeEditar =
     roles["stage-manager"] === "titular" || roles["grupo-base"] === "titular";
   const puedeVer = Boolean(
@@ -147,7 +149,7 @@ export default function EscaletaPage() {
     setNuevoInterprete("");
   }
 
-  if (cargandoAuth) {
+  if (cargandoAuth || pendiente) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
         <p className="db-muted text-sm">Cargando…</p>

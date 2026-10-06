@@ -10,15 +10,15 @@ y módulo de Caja y Barra.
 | Capa | Tecnología |
 |---|---|
 | Front-end | Next.js 16 (App Router, TypeScript, Tailwind CSS, React 19) |
-| Auth | Firebase Auth (cliente) + firebase-admin (verificación de ID tokens y custom claims) |
-| Datos | Google Sheets vía **Google Apps Script Web App** (API firmada con HMAC-SHA256) |
+| Auth | Firebase Auth (cliente); el ID token lo verifica Apps Script con `accounts:lookup` |
+| Datos | Google Sheets vía **Google Apps Script Web App** (API JSON directa desde el navegador) |
 | Archivos | Google Drive (catálogo maestro: partituras, cifrados, guías de audio) |
-| Despliegue | Vercel (web) + Apps Script (backend operativo) |
+| Despliegue | GitHub Pages (static export) + Apps Script (backend operativo) |
 
 ## Puesta en marcha
 
 > **Guía completa de producción, paso a paso: [docs/PRODUCCION.md](docs/PRODUCCION.md)**
-> (Drive → Apps Script → Firebase → Vercel → verificación).
+> (Drive → Apps Script → Firebase → GitHub → verificación).
 
 ### 0. Modo demo (sin servicios)
 
@@ -49,9 +49,9 @@ Firebase ni Apps Script.
 
 1. Crea un proyecto en [Firebase Console](https://console.firebase.google.com).
 2. Activa **Authentication → Sign-in method**: `Correo/contraseña` y `Google`.
-3. Registra una app web y copia la configuración.
-4. Genera una **cuenta de servicio** (Configuración del proyecto → Cuentas de
-   servicio → Generar nueva clave privada) para `firebase-admin`.
+3. Registra una app web y copia la configuración (las 6 `NEXT_PUBLIC_FIREBASE_*`).
+4. En **Authentication → Settings → Authorized domains** añade el dominio de
+   GitHub Pages (`satisol-develop.github.io`).
 
 ### 3. Variables de entorno
 
@@ -59,9 +59,10 @@ Firebase ni Apps Script.
 cp .env.example .env.local
 ```
 
-Rellena las claves de Firebase, `APPS_SCRIPT_URL`, `APPS_SCRIPT_SECRET` (que
-vive en Propiedades del script) y `FIREBASE_SERVICE_ACCOUNT` (JSON de la cuenta
-de servicio, en base64 o en una línea).
+Rellena las claves de Firebase y `NEXT_PUBLIC_APPS_SCRIPT_URL` (Web App URL
+del Apps Script). No hay secretos de servidor: el navegador llama directo a
+Apps Script, que verifica el token con `FIREBASE_API_KEY` (Propiedades del
+script).
 
 ### 4. Desarrollo
 
@@ -77,8 +78,8 @@ restaura al terminar).
 
 ## Roles y permisos
 
-La matriz de roles vive en la hoja `Roles` (titular / apoyo por mes) y se
-refleja en custom claims (`jam_roles`) para la UI. La autorización real se
+La matriz de roles vive en la hoja `Roles` (titular / apoyo por mes) y llega
+al cliente con `user.me` en cada inicio de sesión. La autorización real se
 resuelve **siempre en Apps Script** contra la hoja:
 
 - **Titular**: lectura/escritura de su panel, creación de tareas propias y
@@ -86,8 +87,8 @@ resuelve **siempre en Apps Script** contra la hoja:
 - **Apoyo**: solo lectura del panel de su rol.
 - **Admin**: **vista global en solo lectura** de todos los paneles (estado,
   tareas, escaleta, inscripciones, propuestas, instrumentos y caja); su
-  **única edición** es la rotación mensual (actualiza claims vía
-  `/api/admin/rotate`).
+  **única edición** es la rotación mensual (actualiza la hoja `Roles` vía
+  `admin.rotate`; los permisos valen al instante).
 - **General**: aprueba la sesión → genera automáticamente las tareas
   predeterminadas de cada rol; resuelve propuestas y audita la caja.
 - **Grupo Base / Stage Manager**: operan la escaleta (polling 4 s) y, el
@@ -100,18 +101,18 @@ Cada panel incluye su **guía de proceso** desplegable con los pasos a seguir.
 ## Arquitectura de seguridad
 
 ```
-Navegador ──(ID token Firebase)──▶ Next.js (Vercel)
-                                      │  verifica token con firebase-admin
-                                      │  firma payload: HMAC(route|uid|ts|body)
-                                      ▼
-                              Apps Script Web App
-                                      │  valida firma (±5 min) y resuelve
-                                      │  rol real en la hoja Roles
-                                      ▼
-                              Google Sheets / Google Drive
+Navegador ──({route, body, token, origin})──▶ Apps Script Web App
+      (static export GitHub Pages)                  │  verifica ID token con
+                                                    │  accounts:lookup (Google)
+                                                    │  resuelve rol real en la
+                                                    │  hoja Roles (requireRole_)
+                                                    ▼
+                                            Google Sheets / Google Drive
 ```
 
-- El secreto HMAC nunca llega al navegador.
+- El uid lo dicta Google (token verificado), no el cliente; la autorización
+  es la hoja `Roles` del mes del evento activo.
+- Allowlist de orígenes opcional (`ALLOWED_ORIGINS`) como capa cosmética.
 - Drive solo sirve archivos dentro de la carpeta raíz del catálogo
   (`DRIVE_ROOT_ID`); las subidas externas se bloquean con los permisos de
   compartir de la carpeta (solo cuentas del equipo).
@@ -128,40 +129,27 @@ src/
     (musician)/partituras     # Visor protegido de material (Drive)
     panel/                    # Hub de paneles + /panel/[rol]
     panel/stage-manager/escaleta  # Escaleta en directo (polling)
-    api/gs                    # BFF firmado hacia Apps Script
-    api/admin/rotate          # Rotación de roles + custom claims
   components/                 # UI por dominio (musician, panel, admin)
-  lib/                        # firebase, api (signer/client/server), auth, demo
-  proxy.ts                    # Guard de UX para rutas privadas (Next 16)
+  lib/                        # firebase, api/client (directo a GAS), auth, demo
+  proxy.ts                    # Guard de UX en dev/build normal (Next 16);
+                              # el export estático usa guards de cliente
 ```
 
 El backend `apps-script/` existe solo en local (excluido del repo con
 `.gitignore`); los datos dummy no lo necesitan.
 
-## Despliegue en GitHub Pages (modo demo)
+## Despliegue en GitHub Pages (producción)
 
 `.github/workflows/deploy-pages.yml` construye el export estático en cada push
 a `main` y publica el resultado en GitHub Pages
-(`https://<usuario>.github.io/jam-session/`):
+(`https://satisol-develop.github.io/jam-session/`):
 
 1. En el repositorio: **Settings → Pages → Source: GitHub Actions**.
-2. El workflow fija `NEXT_PUBLIC_DEMO_MODE=true` y `NEXT_PUBLIC_BASE_PATH`
-   según el nombre del repo (automático).
-3. Los secrets opcionales `NEXT_PUBLIC_FIREBASE_*` (Settings → Secrets and
-   variables → Actions) se inyectan en el build; si no existen, la web queda
-   en modo demo con datos dummy.
-
-Limitación: GitHub Pages es estático, así que no hay BFF (`/api/gs`),
-rotación real ni backend; todo usa el modo demo.
-
-## Despliegue en Vercel (producción real)
-
-1. Importa el repositorio y define las variables de entorno del paso 3
-   (incluida `FIREBASE_SERVICE_ACCOUNT` en base64).
-2. `NEXT_PUBLIC_*` son públicas (configuración del cliente Firebase, no son
-   secretos); el resto solo se usa en el servidor.
-3. Tras el primer despliegue, comprueba que `/api/gs` responde y que la
-   vista pública muestra el evento.
+2. **Secrets** (Settings → Secrets and variables → Actions): las 6
+   `NEXT_PUBLIC_FIREBASE_*` y `NEXT_PUBLIC_APPS_SCRIPT_URL`.
+3. **Variables**: `NEXT_PUBLIC_DEMO_MODE=false` para salir del modo demo
+   (sin la variable, el build queda en demo con datos dummy).
+4. `NEXT_PUBLIC_BASE_PATH` se fija según el nombre del repo (automático).
 
 ## Fases implementadas
 

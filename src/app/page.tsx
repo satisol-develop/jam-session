@@ -1,5 +1,9 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { fetchPublicEvent } from "@/lib/api/server";
+import { api } from "@/lib/api/client";
+import type { EventoPublico } from "@/types";
 
 function formatFecha(fecha: string): string {
   if (!fecha) return "";
@@ -21,8 +25,27 @@ function formatEnsayo(valor: string): string {
   return `${d.toLocaleDateString("es-ES", { day: "numeric", month: "long" })} · ${d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
-export default async function Home() {
-  const data = await fetchPublicEvent();
+export default function Home() {
+  const [data, setData] = useState<EventoPublico | null>(null);
+  const [cargando, setCargado] = useState(true);
+
+  useEffect(() => {
+    let vivo = true;
+    api<EventoPublico>("public.event")
+      .then((res) => {
+        if (vivo) setData(res);
+      })
+      .catch(() => {
+        // Sin backend: se muestran los textos por defecto (estado vacío).
+      })
+      .finally(() => {
+        if (vivo) setCargado(false);
+      });
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
   const evento = data?.evento ?? null;
   const catalogo = data?.catalogo ?? [];
 
@@ -73,7 +96,7 @@ export default async function Home() {
           />
         ) : (
           <div className="mx-auto flex h-64 w-full max-w-lg items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-gradient-to-br from-red-500/10 via-transparent to-amber-500/10 text-sm text-neutral-500 dark:border-neutral-700">
-            El cartel del mes se publicará aquí
+            {cargando ? "Cargando cartel…" : "El cartel del mes se publicará aquí"}
           </div>
         )}
       </section>
@@ -88,7 +111,9 @@ export default async function Home() {
 
         {catalogo.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">
-            El repertorio estará disponible en breve.
+            {cargando
+              ? "Cargando repertorio…"
+              : "El repertorio estará disponible en breve."}
           </p>
         ) : (
           <ol className="divide-y divide-neutral-200 rounded-2xl border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">

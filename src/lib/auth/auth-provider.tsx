@@ -19,6 +19,7 @@ import {
   type User,
 } from "firebase/auth";
 import { getFirebaseAuth, getGoogleProvider } from "@/lib/firebase/client";
+import { api } from "@/lib/api/client";
 import { DEMO_MODE } from "@/lib/demo";
 import {
   clearDemoSession,
@@ -80,10 +81,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const loadRoles = useCallback(async (u: User): Promise<RolesMap> => {
-    const token = await u.getIdTokenResult(true);
-    const claim = token.claims.jam_roles;
-    const map =
-      typeof claim === "object" && claim !== null ? (claim as RolesMap) : {};
+    // Los roles viven en la hoja Roles (Apps Script) y llegan con user.me.
+    const map = await api<{ roles?: RolesMap }>("user.me")
+      .then((me) => me?.roles ?? {})
+      .catch(() => ({}));
     setRoles(map);
     setSessionCookies(u, map);
     return map;

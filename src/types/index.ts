@@ -181,14 +181,6 @@ export interface Asistentes {
   usuarios: Usuario[];
 }
 
-export interface GsPayload {
-  route: string;
-  uid: string;
-  ts: number;
-  body: string;
-  sig: string;
-}
-
 export interface GsEnvelope<T = unknown> {
   ok: boolean;
   data?: T;

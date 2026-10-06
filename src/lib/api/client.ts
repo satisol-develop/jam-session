@@ -13,6 +13,11 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Llamada directa al Apps Script (GitHub Pages no tiene servidor propio).
+ * POST con Content-Type text/simple (sin preflight CORS): el ID token de
+ * Firebase viaja en el body y lo verifica el backend con accounts:lookup.
+ */
 export async function api<T = unknown>(route: string, body?: unknown): Promise<T> {
   if (DEMO_MODE) {
     try {
@@ -25,18 +30,30 @@ export async function api<T = unknown>(route: string, body?: unknown): Promise<T
     }
   }
 
+  const url = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL;
+  if (!url) {
+    throw new ApiError(
+      "Falta NEXT_PUBLIC_APPS_SCRIPT_URL en el entorno del build.",
+      0,
+    );
+  }
+
   const auth = getFirebaseAuth();
   const token = auth.currentUser ? await auth.currentUser.getIdToken() : null;
 
   let res: Response;
   try {
-    res = await fetch("/api/gs", {
+    res = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ route, body }),
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        route,
+        body,
+        token,
+        origin: window.location.origin,
+      }),
+      redirect: "follow",
+      cache: "no-store",
     });
   } catch {
     throw new ApiError("Error de red. Comprueba tu conexión.", 0);

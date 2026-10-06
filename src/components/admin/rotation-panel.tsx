@@ -4,7 +4,6 @@ import { useEffect, useState, type FormEvent } from "react";
 import { api } from "@/lib/api/client";
 import { DEMO_MODE } from "@/lib/demo";
 import { demoApi } from "@/lib/demo/api";
-import { getFirebaseAuth } from "@/lib/firebase/client";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { ROLES } from "@/types";
 import type { RoleAssignment, Rol, Usuario } from "@/types";
@@ -99,18 +98,11 @@ export function RotationPanel() {
         );
         setOk(`Rotación guardada: ${res.asignaciones.length} asignaciones del mes.`);
       } else {
-        const token = await getFirebaseAuth().currentUser?.getIdToken();
-        const res = await fetch("/api/admin/rotate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ mes, asignaciones: lista }),
-        });
-        const json = (await res.json()) as { ok: boolean; error?: string; data?: { actualizados: number } };
-        if (!json.ok) throw new Error(json.error ?? "No se pudo rotar.");
-        setOk(`Rotación guardada: ${json.data?.actualizados ?? 0} usuarios actualizados.`);
+        const res = await api<{ mes: string; asignaciones: RoleAssignment[] }>(
+          "admin.rotate",
+          { mes, asignaciones: lista },
+        );
+        setOk(`Rotación guardada: ${res.asignaciones.length} asignaciones del mes.`);
       }
       await refreshRoles();
       await cargar();

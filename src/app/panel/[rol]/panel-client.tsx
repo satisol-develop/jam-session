@@ -3,6 +3,7 @@
 import { useCallback, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import { ROLES_META } from "@/lib/constants";
 import { ROLES } from "@/types";
 import type { Rol } from "@/types";
@@ -461,11 +462,12 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
 
 export function RolPanelClient({ rol: rolParam }: { rol: string }) {
   const { roles, loading } = useAuth();
+  const { pendiente } = useRequireAuth();
   const rol = rolParam as Rol;
   const valido = ROLES.includes(rol);
   const tipo = roles[rol];
 
-  if (loading) {
+  if (pendiente || loading) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10">
         <p className="db-muted text-sm">Cargando…</p>
