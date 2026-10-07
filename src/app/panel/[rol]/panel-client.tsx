@@ -11,6 +11,7 @@ import { TaskList } from "@/components/panel/task-list";
 import { ApoyosPanel } from "@/components/panel/apoyos-panel";
 import { RotationPanel } from "@/components/admin/rotation-panel";
 import { HistoryReport } from "@/components/admin/history-report";
+import { UsuariosPanel } from "@/components/admin/usuarios-panel";
 import { ApproveCard } from "@/components/panel/approve-card";
 import { CashModule } from "@/components/panel/cash-module";
 import { InscripcionesPanel } from "@/components/panel/inscripciones-panel";
@@ -199,6 +200,18 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
                 modifiques.
               </p>
             )}
+          </Seccion>
+        ),
+      },
+      {
+        id: "usuarios",
+        label: "Usuarios",
+        node: (
+          <Seccion
+            titulo="Gestión de usuarios"
+            nota="Alta de participantes con contraseña por defecto y verificación de correo."
+          >
+            <UsuariosPanel />
           </Seccion>
         ),
       }

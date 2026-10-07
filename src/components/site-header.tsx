@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-provider";
@@ -11,6 +12,20 @@ export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const tieneRoles = Object.keys(roles).length > 0;
+
+  // El modo oscuro es una opción de la plataforma (logueado); fuera siempre claro.
+  useEffect(() => {
+    const raiz = document.documentElement;
+    if (!user) {
+      raiz.classList.remove("dark");
+      return;
+    }
+    try {
+      if (localStorage.getItem("jam-theme") === "dark") raiz.classList.add("dark");
+    } catch {
+      /* almacenamiento no disponible */
+    }
+  }, [user]);
 
   async function onLogout() {
     await logout();
@@ -50,7 +65,7 @@ export function SiteHeader() {
         </div>
 
         <nav className="flex min-w-0 items-center gap-0.5 text-sm sm:gap-1">
-          <ThemeToggle />
+          {!loading && user && <ThemeToggle />}
           {!loading && user ? (
             <>
               <Link

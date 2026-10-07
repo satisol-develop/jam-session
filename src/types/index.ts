@@ -84,6 +84,13 @@ export interface Inscripcion {
 
 export type EstadoPropuesta = "pendiente" | "aprobada" | "rechazada";
 
+/** Ficheros adjuntos a una propuesta (partitura/cifrado/guía). */
+export interface ArchivoPropuesta {
+  nombre: string;
+  mimeType: string;
+  bytes: number;
+}
+
 export interface Propuesta {
   id: string;
   uid: string;
@@ -93,6 +100,7 @@ export interface Propuesta {
   instrumento: string;
   estado: EstadoPropuesta;
   fecha: string;
+  archivos?: ArchivoPropuesta[];
 }
 
 export type EstadoTurno = "espera" | "escena" | "fin";

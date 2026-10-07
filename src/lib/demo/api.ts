@@ -169,6 +169,11 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       if (instrumento.length < 2) {
         throw new Error("Indica el instrumento con el que la tocarías.");
       }
+      const adjuntos = (Array.isArray(b.archivos) ? b.archivos : []) as {
+        nombre: string;
+        mimeType: string;
+        base64: string;
+      }[];
       const propuesta = {
         id: demoId(s, "p"),
         uid,
@@ -178,6 +183,11 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         instrumento,
         estado: "pendiente" as const,
         fecha: new Date().toISOString(),
+        archivos: adjuntos.map((a) => ({
+          nombre: a.nombre,
+          mimeType: a.mimeType,
+          bytes: Math.floor((a.base64?.length ?? 0) * 0.75),
+        })),
       };
       s.propuestas.unshift(propuesta);
       bumpDemoVersion(s);
@@ -506,6 +516,32 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       bumpDemoVersion(s);
       return cierre as T;
     }
+
+    case "admin.createUser": {
+      validarTitular("admin");
+      const email = String(b.email ?? "").trim().toLowerCase();
+      const nombreNuevo = String(b.nombre ?? "").trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error("Correo inválido.");
+      }
+      if (s.usuarios.some((u) => u.email.toLowerCase() === email)) {
+        throw new Error("Ya existe una cuenta con ese correo.");
+      }
+      const nuevo: Usuario = {
+        uid: `demo-${Date.now()}`,
+        email,
+        nombre: nombreNuevo || email.split("@")[0],
+        telefono: "",
+        estado: "activo",
+        fechaAlta: new Date().toISOString(),
+      };
+      s.usuarios.push(nuevo);
+      bumpDemoVersion(s);
+      return { uid: nuevo.uid, email, clave: "jam2026" } as T;
+    }
+
+    case "user.passwordChanged":
+      return { clavePendiente: false } as T;
 
     case "admin.users":
       return {

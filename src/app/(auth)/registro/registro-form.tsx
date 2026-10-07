@@ -9,7 +9,7 @@ import { DEMO_MODE } from "@/lib/demo";
 import { FirebaseError } from "firebase/app";
 
 export function RegistroForm() {
-  const { register, signInWithGoogle } = useAuth();
+  const { register } = useAuth();
   const router = useRouter();
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
@@ -42,22 +42,13 @@ export function RegistroForm() {
     }
   }
 
-  async function onGoogle() {
-    setError(null);
-    try {
-      await signInWithGoogle();
-      router.replace("/mi");
-    } catch {
-      setError("No se pudo iniciar sesión con Google.");
-    }
-  }
-
   return (
     <div className="flex min-h-[calc(100dvh-3.5rem)] items-center justify-center px-4 sm:min-h-[calc(100dvh-4rem)]">
       <div className="w-full max-w-sm">
         <h1 className="mb-1 text-2xl font-bold">Crear cuenta</h1>
         <p className="mb-6 text-sm text-neutral-500">
-          Regístrate para inscribirte en la Jam Session.
+          Registro solo para participantes: te enviaremos un correo de
+          verificación que debes abrir antes de entrar.
         </p>
         {DEMO_MODE && (
           <p className="mb-4 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
@@ -128,13 +119,6 @@ export function RegistroForm() {
             {busy ? "Creando cuenta…" : "Crear cuenta"}
           </button>
         </form>
-
-        <button
-          onClick={onGoogle}
-          className="mt-3 w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
-        >
-          Continuar con Google
-        </button>
 
         <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
           ¿Ya tienes cuenta?{" "}

@@ -12,13 +12,13 @@ import {
 import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
+  sendEmailVerification,
   signInWithEmailAndPassword,
-  signInWithPopup,
   signOut,
   updateProfile,
   type User,
 } from "firebase/auth";
-import { getFirebaseAuth, getGoogleProvider } from "@/lib/firebase/client";
+import { getFirebaseAuth } from "@/lib/firebase/client";
 import { api } from "@/lib/api/client";
 import { DEMO_MODE } from "@/lib/demo";
 import {
@@ -37,11 +37,14 @@ interface AuthContextValue {
   user: User | null;
   roles: RolesMap;
   loading: boolean;
+  /** La cuenta creada por el admin aún usa la contraseña por defecto. */
+  clavePendiente: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   register: (nombre: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshRoles: () => Promise<RolesMap>;
+  /** Recarga el usuario de Firebase (p. ej. tras verificar el correo). */
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -79,15 +82,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<RolesMap>({});
   const [loading, setLoading] = useState(true);
+  const [clavePendiente, setClavePendiente] = useState(false);
 
   const loadRoles = useCallback(async (u: User): Promise<RolesMap> => {
-    // Los roles viven en la hoja Roles (Apps Script) y llegan con user.me.
-    const map = await api<{ roles?: RolesMap }>("user.me")
-      .then((me) => me?.roles ?? {})
-      .catch(() => ({}));
-    setRoles(map);
-    setSessionCookies(u, map);
-    return map;
+    // Los roles y el estado de la contraseña viven en Apps Script (user.me).
+    try {
+      const me = await api<{
+        roles?: RolesMap;
+        usuario?: { clavePendiente?: boolean };
+      }>("user.me");
+      const map = me?.roles ?? {};
+      setRoles(map);
+      setClavePendiente(me?.usuario?.clavePendiente === true);
+      setSessionCookies(u, map);
+      return map;
+    } catch {
+      // Sin red: no se toca el flag de contraseña (se mantiene el anterior).
+      setSessionCookies(u, {});
+      return {};
+    }
   }, []);
 
   useEffect(() => {
@@ -135,14 +148,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithEmailAndPassword(getFirebaseAuth(), email, _password);
   }, []);
 
-  const signInWithGoogle = useCallback(async () => {
-    if (DEMO_MODE) {
-      await signIn("demo@jam.session", "demo");
-      return;
-    }
-    await signInWithPopup(getFirebaseAuth(), getGoogleProvider());
-  }, [signIn]);
-
   const register = useCallback(
     async (nombre: string, email: string, password: string) => {
       if (DEMO_MODE) {
@@ -162,6 +167,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       );
       await updateProfile(cred.user, { displayName: nombre });
+      try {
+        // El registro solo se completa tras verificar el correo.
+        await sendEmailVerification(cred.user);
+      } catch {
+        // Si Firebase ya lo envió al crear la cuenta, se ignora.
+      }
       await cred.user.getIdToken(true);
     },
     [],
@@ -190,18 +201,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return loadRoles(auth.currentUser);
   }, [loadRoles]);
 
+  const refreshUser = useCallback(async () => {
+    if (DEMO_MODE) return;
+    const auth = getFirebaseAuth();
+    const u = auth.currentUser;
+    if (!u) return;
+    await u.reload();
+    // loadRoles re-renderiza el contexto con refs nuevas (user.emailVerified
+    // queda actualizado en la misma instancia recargada).
+    await loadRoles(u);
+  }, [loadRoles]);
+
   const value = useMemo(
     () => ({
       user,
       roles,
       loading,
+      clavePendiente,
       signIn,
-      signInWithGoogle,
       register,
       logout,
       refreshRoles,
+      refreshUser,
     }),
-    [user, roles, loading, signIn, signInWithGoogle, register, logout, refreshRoles],
+    [
+      user,
+      roles,
+      loading,
+      clavePendiente,
+      signIn,
+      register,
+      logout,
+      refreshRoles,
+      refreshUser,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

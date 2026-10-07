@@ -56,8 +56,9 @@ Resumen rápido (detalle en cada sección):
 
 ## 2. Firebase — identidad (login)
 
-Solo hace falta **Authentication**; la web ofrece dos botones (correo y
-Google), ambos se configuran aquí.
+Solo hace falta **Authentication**; la web solo ofrece **correo y contraseña**
+(el registro de participantes se verifica por correo y la web ya no muestra
+botón de Google).
 
 ### 2.1 Proyecto
 
@@ -72,19 +73,20 @@ Google), ambos se configuran aquí.
 1. Menú **Authentication → Empezar** (Get started).
 2. Pestaña **Métodos de inicio de sesión**:
    - **Correo y contraseña** → **Activar** → Guardar.
-   - **Google** → **Activar** → si pide «proyecto de soporte», elige el que te
-     proponga → Guardar.
-3. Si falta cualquiera de los dos, su botón en la web fallará al iniciar
-   sesión.
+   - **Google** → **Desactivar** (la web ya no permite entrar con Google;
+     solo participantes con cuenta creada o registrado y verificado por
+     correo).
+3. Si «Correo y contraseña» no está activo, ni el registro ni el login
+   funcionarán.
 
-### 2.3 Dominios autorizados (necesario para Google)
+### 2.3 Dominios autorizados (necesario para los correos de verificación)
 
 1. **Authentication → Settings (Configuración) → Dominios autorizados →
    Añadir dominio**.
 2. Escribe `satisol-develop.github.io` → **Añadir**.
 3. `localhost` y `127.0.0.1` ya vienen (para desarrollar en local). Sin el
-   dominio de Pages, «Continuar con Google» falla en la web publicada;
-   correo/contraseña sí funcionaría.
+   dominio de Pages, el **enlace de verificación del correo** del registro
+   apuntaría mal en la web publicada.
 
 ### 2.4 Registrar la app web — los 6 valores
 
@@ -111,8 +113,8 @@ Google), ambos se configuran aquí.
 
 ### 2.5 Bootstrap del Admin
 
-1. En la web desplegada, regístrate con tu cuenta (email/contraseña o
-   Google). Aún en modo demo: da igual, el usuario se crea en Firebase.
+1. En la web desplegada, regístrate con tu cuenta (email/contraseña) y
+   **abre el correo de verificación** antes de entrar.
 2. **Authentication → Users** → tu usuario → copia el **UID**.
 3. El spreadsheet aún no existe: la fila va en el paso 3.4 (hoja `Roles`),
    tras ejecutar `setup()`.
@@ -142,18 +144,28 @@ está en `.gitignore`; cópialo desde tu equipo).
    | mes | rol | uid | tipo |
    |---|---|---|---|
    | `2026-10` | `admin` | `TU-UID` | `titular` |
-   - ⚠️ Si el spreadsheet ya existía de una configuración anterior, **no
-     vuelvas a ejecutar `setup()`** (crearía otro): ejecuta **`migrate()`**
-     (actualiza hojas y columnas conservando los datos).
-5. En **Propiedades del script** añade a mano:
-   - `DRIVE_ROOT_ID` = el ID de la carpeta de Drive del paso 1.
-   - `FIREBASE_API_KEY` = la API key del proyecto Firebase (paso 2.3). El
-     backend la usa para verificar los tokens con `accounts:lookup`; **sin
-     esta propiedad el login real falla**.
-   - `ALLOWED_ORIGINS` *(opcional)* = JSON array de orígenes permitidos,
-     p. ej. `["https://satisol-develop.github.io"]`. Sin esta propiedad se
-     acepta cualquier origen: la seguridad real es el token + los roles de la
-     hoja `Roles`.
+    - ⚠️ Si el spreadsheet ya existía de una configuración anterior, **no
+      vuelvas a ejecutar `setup()`** (crearía otro): ejecuta **`migrate()`**
+      (actualiza hojas y columnas conservando los datos). **Ejecuta
+      `migrate()` también cada vez que pegues una versión nueva de los 5
+      ficheros con columnas nuevas** (p. ej. `Usuarios.clave_pendiente` y
+      `Propuestas.carpeta_pendiente`/`archivos`): si no, las rutas que
+      escriben esas hojas fallan.
+  5. En **Propiedades del script** añade a mano:
+    - `DRIVE_ROOT_ID` = el ID de la carpeta de Drive del paso 1.
+    - `FIREBASE_API_KEY` = la API key del proyecto Firebase (paso 2.3). El
+      backend la usa para verificar los tokens con `accounts:lookup` y para
+      crear cuentas con `admin.createUser`; **sin esta propiedad el login
+      real falla**.
+    - `ALLOWED_ORIGINS` *(opcional)* = JSON array de orígenes permitidos,
+      p. ej. `["https://satisol-develop.github.io"]`. Sin esta propiedad se
+      acepta cualquier origen: la seguridad real es el token + los roles de la
+      hoja `Roles`.
+    - `CLAVE_DEFECTO` *(opcional)* = contraseña por defecto de las cuentas
+      creadas por el admin (por defecto `jam2026`).
+    - `PROPUESTAS_FOLDER_ID` *(opcional)* = carpeta de ficheros de
+      propuestas pendientes; si falta, la crea sola («Jam Session —
+      Propuestas», fuera del catálogo) y guarda el id.
 6. Ejecuta (editor ▶, una cada vez):
    - `syncCatalogFromDrive()` → rellena la hoja `Repertorio` desde Drive.
    - `scheduleCatalogSync()` → instala el trigger automático cada 6 h.
@@ -219,32 +231,38 @@ comprueba en este orden:
 2. **Home**: carga con el evento vigente y el repertorio (viene de
    `public.event` en Sheets; si está vacío, revisa `setup()`/`seedDemoData()`
    y `DRIVE_ROOT_ID`).
-3. **Login** con correo/contraseña y con Google (si Google falla, revisa los
-   Authorized domains del paso 2.4). Verifica en **Firebase Console →
-   Authentication → Users** que el usuario aparece.
+3. **Registro y login** con correo/contraseña: al registrarte, la web bloquea
+   hasta **abrir el correo de verificación** (botones «Reenviar» y «Ya lo he
+   verificado»). Verifica en **Firebase Console → Authentication → Users**
+   que el usuario aparece.
 4. **Tu cuenta admin**: con la fila de `Roles` del paso 3.4, entra en
    `/panel/admin` y comprueba que la matriz carga (`admin.users`).
-5. **Rotación**: asigna titulares en la matriz → **Guardar rotación** → cada
+5. **Alta de participantes**: `/panel/admin` → pestaña **Usuarios** → crea
+   una cuenta (`admin.createUser`): se da de alta con la contraseña por
+   defecto (`CLAVE_DEFECTO`, por defecto `jam2026`), recibe el correo de
+   verificación y, al entrar, la web le **fuerza a cambiar la contraseña**
+   (luego verifica el correo).
+6. **Rotación**: asigna titulares en la matriz → **Guardar rotación** → cada
    titular recibe su rol en la hoja `Roles` (y puede entrar en su panel tras
    refrescar).
-6. **General** (`/panel/general`): edita datos (`event.update`), aprueba la
+7. **General** (`/panel/general`): edita datos (`event.update`), aprueba la
    sesión (`general.approve` → tareas con subtareas), elige el Grupo Base
    (`gb.set`), valida propuestas en bloque y, en «Auditoría», cierra la caja
    con el modal de aviso (`cash.close`).
-7. **Grupo Base** (`/panel/grupo-base`): pestaña **Repertorio** — añade un
+8. **Grupo Base** (`/panel/grupo-base`): pestaña **Repertorio** — añade un
    tema (`repertoire.add`; también desde el General) y comprueba que aparece
    en la web pública y en `/partituras`; inscripciones
    (`event.inscripciones`, `musician.setEstado`), ensayo y cierre de
    inscripciones (`event.setEnsayo`, `event.setInscripciones`).
-8. **Músico** (`/mi`): inscribirse (`musician.subscribe`), proponer una
+9. **Músico** (`/mi`): inscribirse (`musician.subscribe`), proponer una
    canción (`musician.propose`) y ver mis propuestas.
-9. **Caja** (`/panel/caja`): registrar consumos/gastos (`cash.add`) y cerrar.
-10. **Cierre de evento**: General → `event.close` (exige caja cerrada) →
+10. **Caja** (`/panel/caja`): registrar consumos/gastos (`cash.add`) y cerrar.
+11. **Cierre de evento**: General → `event.close` (exige caja cerrada) →
     en `/panel/admin` aparece la sesión en **Historial** (`admin.history`).
-11. **Siguiente ciclo**: General → «Crear la siguiente sesión»
+12. **Siguiente ciclo**: General → «Crear la siguiente sesión»
     (`event.create`) → nuevo borrador con las tareas personales pendientes
     arrastradas.
-12. **Partituras** (`/partituras`): abre una canción y sus archivos
+13. **Partituras** (`/partituras`): abre una canción y sus archivos
     (`material.list` / `material.file`, desde Drive).
 
 Si algo falla, el error se muestra en la UI; los detalles del backend están en
@@ -254,9 +272,14 @@ la hoja **`LogActividad`** del spreadsheet.
 
 - [ ] Cabecera **sin etiqueta «Demo»**.
 - [ ] Home muestra evento y repertorio del spreadsheet (no los de ejemplo).
-- [ ] Registrarte crea el usuario en **Firebase Console → Authentication**.
+- [ ] Registrarte crea el usuario en **Firebase Console → Authentication** y
+      la web **bloquea hasta verificar el correo**.
+- [ ] El admin crea un participante en **Usuarios** con la contraseña por
+      defecto y, al entrar, se le fuerza el cambio de contraseña.
 - [ ] `/panel/admin` carga la matriz real (`admin.users`).
 - [ ] Añadir un tema en la pestaña Repertorio (GB) lo publica en la web.
+- [ ] Una propuesta **con ficheros** aprobada por el General deja sus
+      archivos en la carpeta del tema y aparecen en `/partituras`.
 - [ ] El cartel subido desde el panel Redes (Kit de difusión) aparece en la
       portada pública.
 - [ ] Si falta cualquier config, la UI muestra un error claro (p. ej.

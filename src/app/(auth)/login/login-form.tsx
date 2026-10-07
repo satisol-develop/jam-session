@@ -10,7 +10,7 @@ import { ROLES_META } from "@/lib/constants";
 import { FirebaseError } from "firebase/app";
 
 export function LoginForm() {
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn } = useAuth();
   const router = useRouter();
   const search = useSearchParams();
   const [email, setEmail] = useState("");
@@ -35,16 +35,6 @@ export function LoginForm() {
       );
     } finally {
       setBusy(false);
-    }
-  }
-
-  async function onGoogle() {
-    setError(null);
-    try {
-      await signInWithGoogle();
-      router.replace(next);
-    } catch {
-      setError("No se pudo iniciar sesión con Google.");
     }
   }
 
@@ -113,13 +103,6 @@ export function LoginForm() {
             {busy ? "Entrando…" : "Entrar"}
           </button>
         </form>
-
-        <button
-          onClick={onGoogle}
-          className="mt-3 w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
-        >
-          Continuar con Google
-        </button>
 
         {DEMO_MODE && (
           <div className="mt-6 rounded-xl border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-950">

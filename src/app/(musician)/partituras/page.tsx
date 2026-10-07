@@ -1,6 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type SortingState,
+} from "@tanstack/react-table";
 import { api } from "@/lib/api/client";
 import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import type { Cancion } from "@/types";
@@ -159,6 +169,11 @@ export default function PartiturasPage() {
   const { pendiente } = useRequireAuth();
   const [catalogo, setCatalogo] = useState<Cancion[] | null>(null);
   const [cancionId, setCancionId] = useState("");
+  const [busqueda, setBusqueda] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "titulo", desc: false },
+  ]);
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -169,6 +184,47 @@ export default function PartiturasPage() {
       );
   }, []);
 
+  const columnas = useMemo<ColumnDef<Cancion>[]>(
+    () => [
+      {
+        accessorKey: "titulo",
+        header: "Título",
+        cell: (ctx) => (
+          <span className="font-medium">{ctx.row.original.titulo}</span>
+        ),
+      },
+      {
+        accessorKey: "artista",
+        header: "Artista",
+        cell: (ctx) => (
+          <span className="text-neutral-500">{ctx.row.original.artista || "—"}</span>
+        ),
+      },
+      {
+        accessorKey: "categoria",
+        header: "Género",
+        cell: (ctx) => (
+          <span className="text-neutral-500">{ctx.row.original.categoria || "—"}</span>
+        ),
+      },
+    ],
+    [],
+  );
+
+  const table = useReactTable({
+    data: catalogo ?? [],
+    columns: columnas,
+    state: { globalFilter: busqueda, sorting, pagination },
+    onGlobalFilterChange: setBusqueda,
+    onSortingChange: setSorting,
+    onPaginationChange: setPagination,
+    globalFilterFn: "includesString",
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
+
   if (pendiente) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-neutral-500">
@@ -177,20 +233,9 @@ export default function PartiturasPage() {
     );
   }
 
-  const conMaterial = catalogo?.length ?? 0;
+  const filas = table.getRowModel().rows;
   const cancion = catalogo?.find((c) => c.id === cancionId) ?? null;
-
-  const sinGenero: Cancion[] = [];
-  const grupos = new Map<string, Cancion[]>();
-  for (const c of catalogo ?? []) {
-    if (c.categoria) {
-      const lista = grupos.get(c.categoria);
-      if (lista) lista.push(c);
-      else grupos.set(c.categoria, [c]);
-    } else {
-      sinGenero.push(c);
-    }
-  }
+  const total = catalogo?.length ?? 0;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -210,41 +255,162 @@ export default function PartiturasPage() {
 
       {catalogo === null ? (
         <p className="text-sm text-neutral-500">Cargando repertorio…</p>
-      ) : conMaterial === 0 ? (
+      ) : total === 0 ? (
         <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">
           Todavía no hay material publicado para este repertorio.
         </p>
       ) : (
         <>
-          <label htmlFor="cancion" className="mb-2 block text-sm font-semibold">
-            Elige un tema
-          </label>
-          <select
-            id="cancion"
-            value={cancionId}
-            onChange={(e) => setCancionId(e.target.value)}
-            className="mb-6 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2.5 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
-          >
-            <option value="">— Selecciona —</option>
-            {sinGenero.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.titulo}
-                {c.artista ? ` — ${c.artista}` : ""}
-              </option>
-            ))}
-            {[...grupos.entries()].map(([genero, lista]) => (
-              <optgroup key={genero} label={genero}>
-                {lista.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.titulo}
-                    {c.artista ? ` — ${c.artista}` : ""}
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <input
+              type="search"
+              value={busqueda}
+              onChange={(e) => {
+                setBusqueda(e.target.value);
+                setPagination((p) => ({ ...p, pageIndex: 0 }));
+              }}
+              placeholder="Buscar por título, artista o género…"
+              aria-label="Buscar en el repertorio"
+              className="min-h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white sm:w-72 sm:text-sm"
+            />
+            <label className="ml-auto flex items-center gap-2 text-xs text-neutral-500">
+              Por página
+              <select
+                value={pagination.pageSize}
+                onChange={(e) =>
+                  setPagination((p) => ({
+                    ...p,
+                    pageIndex: 0,
+                    pageSize: Number(e.target.value),
+                  }))
+                }
+                className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-xs text-black outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+              >
+                {[10, 25, 50].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
                   </option>
                 ))}
-              </optgroup>
-            ))}
-          </select>
+              </select>
+            </label>
+          </div>
 
-          {cancion && <MaterialViewer key={cancion.id} cancion={cancion} />}
+          <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                {table.getHeaderGroups().map((hg) => (
+                  <tr key={hg.id} className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950">
+                    {hg.headers.map((header) => (
+                      <th key={header.id} className="px-3 py-2.5 text-left">
+                        {header.isPlaceholder ? null : (
+                          <button
+                            type="button"
+                            onClick={header.column.getToggleSortingHandler()}
+                            className="flex items-center gap-1 font-semibold uppercase tracking-wide text-xs text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            {{
+                              asc: " ↑",
+                              desc: " ↓",
+                            }[header.column.getIsSorted() as string] ?? ""}
+                          </button>
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {filas.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={columnas.length}
+                      className="px-3 py-6 text-center text-neutral-500"
+                    >
+                      Ningún tema coincide con «{busqueda}».
+                    </td>
+                  </tr>
+                ) : (
+                  filas.map((fila) => (
+                    <tr
+                      key={fila.id}
+                      onClick={() => setCancionId(fila.original.id)}
+                      className={`cursor-pointer border-b border-neutral-100 transition last:border-0 dark:border-neutral-900 ${
+                        cancionId === fila.original.id
+                          ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-black"
+                          : "hover:bg-neutral-50 dark:hover:bg-neutral-900"
+                      }`}
+                    >
+                      {fila.getVisibleCells().map((celda) => (
+                        <td key={celda.id} className="px-3 py-2.5">
+                          {flexRender(celda.column.columnDef.cell, celda.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
+            <span>
+              Mostrando {filas.length} de{" "}
+              {table.getFilteredRowModel().rows.length} temas
+              {table.getFilteredRowModel().rows.length !== total
+                ? ` (repertorio: ${total})`
+                : ""}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                className="rounded-lg border border-neutral-300 px-3 py-1.5 font-medium transition hover:bg-neutral-100 disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-900"
+              >
+                Anterior
+              </button>
+              <span>
+                Pág. {pagination.pageIndex + 1} de{" "}
+                {Math.max(table.getPageCount(), 1)}
+              </span>
+              <button
+                type="button"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                className="rounded-lg border border-neutral-300 px-3 py-1.5 font-medium transition hover:bg-neutral-100 disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-900"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          {cancion && (
+            <section className="mt-8 border-t border-neutral-200 pt-6 dark:border-neutral-800">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h2 className="text-lg font-bold">
+                  {cancion.titulo}
+                  {cancion.artista ? (
+                    <span className="text-neutral-500 font-normal">
+                      {" "}
+                      — {cancion.artista}
+                    </span>
+                  ) : null}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setCancionId("")}
+                  className="text-xs text-neutral-500 underline"
+                >
+                  Cerrar
+                </button>
+              </div>
+              <MaterialViewer key={cancion.id} cancion={cancion} />
+            </section>
+          )}
         </>
       )}
     </div>

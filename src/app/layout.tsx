@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth/auth-provider";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { SessionGate } from "@/components/auth/session-gate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,8 +35,12 @@ export const viewport: Viewport = {
   ],
 };
 
-/** Tema inicial antes del primer pintado (localStorage o sistema). */
-const TEMA_INICIAL = `(function(){try{var t=localStorage.getItem("jam-theme");var d=t?t==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;if(d){document.documentElement.classList.add("dark");}}catch(e){}})();`;
+/**
+ * Tema inicial antes del primer pintado: el modo oscuro solo aplica dentro
+ * de la plataforma (sesión iniciada, cookie jam_auth) con la preferencia
+ * guardada; fuera siempre es claro. La preferencia del sistema ya no decide.
+ */
+const TEMA_INICIAL = `(function(){try{var t=localStorage.getItem("jam-theme");var sesion=document.cookie.indexOf("jam_auth=1")>=0;if(sesion&&t==="dark"){document.documentElement.classList.add("dark");}}catch(e){}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -47,7 +52,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: TEMA_INICIAL }} />
         <AuthProvider>
           <SiteHeader />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1">
+            <SessionGate>{children}</SessionGate>
+          </main>
           <SiteFooter />
         </AuthProvider>
       </body>

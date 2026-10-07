@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api } from "@/lib/api/client";
 import { INSTRUMENTOS } from "@/lib/constants";
+
+interface Adjunto {
+  nombre: string;
+  mimeType: string;
+  base64: string;
+  bytes: number;
+}
 
 interface PropuestaItem {
   id: string;
@@ -11,6 +18,7 @@ interface PropuestaItem {
   instrumento: string;
   estado: string;
   fecha: string;
+  archivos?: { nombre: string; mimeType: string; bytes: number }[];
 }
 
 const ESTADO_LABEL: Record<string, string> = {
@@ -19,20 +27,73 @@ const ESTADO_LABEL: Record<string, string> = {
   rechazada: "Descartada",
 };
 
+const MAX_ARCHIVOS = 6;
+const MAX_ARCHIVO_BYTES = 6 * 1024 * 1024;
+const MAX_TOTAL_BYTES = 10 * 1024 * 1024;
+
+function leerBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onerror = () => reject(new Error("No se pudo leer el fichero."));
+    lector.onload = () => {
+      const dato = String(lector.result ?? "");
+      resolve(dato.slice(dato.indexOf(",") + 1));
+    };
+    lector.readAsDataURL(file);
+  });
+}
+
 export function ProposeForm() {
   const [cancion, setCancion] = useState("");
   const [artista, setArtista] = useState("");
   const [instrumento, setInstrumento] = useState("");
   const [propuestas, setPropuestas] = useState<PropuestaItem[]>([]);
+  const [adjuntos, setAdjuntos] = useState<Adjunto[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
+  const inputArchivos = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api<{ propuestas: PropuestaItem[] }>("musician.myProposals")
       .then((d) => setPropuestas(d.propuestas ?? []))
       .catch(() => undefined);
   }, []);
+
+  async function onArchivos(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setError(null);
+    const entradas = Array.from(files);
+    if (adjuntos.length + entradas.length > MAX_ARCHIVOS) {
+      setError(`Máximo ${MAX_ARCHIVOS} ficheros por propuesta.`);
+      return;
+    }
+    let total = adjuntos.reduce((n, a) => n + a.bytes, 0);
+    const nuevos: Adjunto[] = [];
+    for (const f of entradas) {
+      if (f.size > MAX_ARCHIVO_BYTES) {
+        setError(`«${f.name}» supera los 6 MB.`);
+        return;
+      }
+      total += f.size;
+      if (total > MAX_TOTAL_BYTES) {
+        setError("Los ficheros superan los 10 MB en total.");
+        return;
+      }
+      nuevos.push({
+        nombre: f.name,
+        mimeType: f.type || "application/octet-stream",
+        base64: await leerBase64(f),
+        bytes: f.size,
+      });
+    }
+    setAdjuntos((prev) => [...prev, ...nuevos]);
+    if (inputArchivos.current) inputArchivos.current.value = "";
+  }
+
+  function quitarAdjunto(nombre: string) {
+    setAdjuntos((prev) => prev.filter((a) => a.nombre !== nombre));
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -45,6 +106,11 @@ export function ProposeForm() {
         artista,
         instrumento,
         texto: `Quiero tocar «${cancion.trim()}»${artista.trim() ? ` de ${artista.trim()}` : ""} en ${instrumento}.`,
+        archivos: adjuntos.map((a) => ({
+          nombre: a.nombre,
+          mimeType: a.mimeType,
+          base64: a.base64,
+        })),
       });
       setPropuestas((prev) => [
         {
@@ -54,12 +120,18 @@ export function ProposeForm() {
           instrumento,
           estado: "pendiente",
           fecha: new Date().toISOString(),
+          archivos: adjuntos.map((a) => ({
+            nombre: a.nombre,
+            mimeType: a.mimeType,
+            bytes: a.bytes,
+          })),
         },
         ...prev,
       ]);
       setCancion("");
       setArtista("");
       setInstrumento("");
+      setAdjuntos([]);
       setOk(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo enviar.");
@@ -122,6 +194,48 @@ export function ProposeForm() {
           </select>
         </div>
 
+        <div>
+          <span className="block text-sm font-semibold">
+            Ficheros (partitura, cifrado o guía)
+          </span>
+          <p className="mt-0.5 text-xs text-neutral-500">
+            Si la propuesta se aprueba, estos ficheros pasan a formar parte del
+            repertorio y se verán en «Partituras». Opcional: máx. {MAX_ARCHIVOS}{" "}
+            ficheros, 6 MB cada uno.
+          </p>
+          <input
+            ref={inputArchivos}
+            type="file"
+            multiple
+            accept=".pdf,.png,.jpg,.jpeg,.webp,.svg,.mp3,.wav,.m4a,.ogg,.txt,.zip"
+            onChange={(e) => void onArchivos(e.target.files)}
+            className="mt-2 block w-full rounded-xl border border-dashed border-neutral-300 bg-white px-3 py-2 text-sm text-black file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:file:bg-white dark:file:text-black"
+          />
+          {adjuntos.length > 0 && (
+            <ul className="mt-2 flex flex-wrap gap-1.5">
+              {adjuntos.map((a) => (
+                <li
+                  key={a.nombre}
+                  className="flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+                >
+                  <span className="max-w-40 truncate">{a.nombre}</span>
+                  <span className="text-neutral-500">
+                    {(a.bytes / 1024 / 1024).toFixed(1)} MB
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => quitarAdjunto(a.nombre)}
+                    aria-label={`Quitar ${a.nombre}`}
+                    className="font-bold text-neutral-400 hover:text-red-500"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         {error && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
             {error}
@@ -154,6 +268,9 @@ export function ProposeForm() {
                 <span className="text-neutral-500 text-xs dark:text-neutral-400">
                   {" "}
                   · en {p.instrumento}
+                  {p.archivos && p.archivos.length > 0
+                    ? ` · ${p.archivos.length} fichero${p.archivos.length > 1 ? "s" : ""}`
+                    : ""}
                 </span>
               </span>
               <span className="shrink-0 text-xs text-neutral-500">

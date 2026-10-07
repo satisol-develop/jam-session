@@ -140,6 +140,12 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
               {p.artista ? ` — ${p.artista}` : ""}
               <span className="db-muted"> · {p.nombre} la tocaría en {p.instrumento}</span>
             </p>
+            {p.archivos && p.archivos.length > 0 && (
+              <p className="db-muted mt-1 text-xs">
+                Ficheros:{" "}
+                {p.archivos.map((a) => a.nombre).join(", ")}
+              </p>
+            )}
             <p className="db-muted mt-1 text-xs">{fmt.format(new Date(p.fecha))}</p>
           </li>
         ))}
