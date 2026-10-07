@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
+import { descargarCsv } from "@/lib/csv";
 import type { Inscripcion } from "@/types";
 
 const ESTADOS = ["pendiente", "asignado", "parcial", "rechazado"] as const;
@@ -47,6 +48,21 @@ export function InscripcionesPanel({ editable }: { editable: boolean }) {
     }
   }
 
+  function exportarCsv() {
+    descargarCsv(
+      "inscripciones",
+      ["Nombre", "Instrumentos", "Temas", "Estado", "Notas", "Fecha"],
+      (inscripciones ?? []).map((i) => [
+        i.nombre,
+        i.instrumentos.join(" | "),
+        i.temas.map((t) => `${t.titulo} (${t.instrumento})`).join(" | "),
+        i.estado,
+        i.notas,
+        i.fecha,
+      ]),
+    );
+  }
+
   if (inscripciones === null) {
     return <SkeletonFilas n={3} />;
   }
@@ -61,7 +77,16 @@ export function InscripcionesPanel({ editable }: { editable: boolean }) {
 
   return (
     <div className="space-y-4">
-      {error && <p className="db-error">{error}</p>}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {error ? (
+          <p className="db-error">{error}</p>
+        ) : (
+          <p className="db-kicker">{inscripciones.length} inscripciones</p>
+        )}
+        <button type="button" onClick={exportarCsv} className="db-ghost text-xs!">
+          Descargar CSV
+        </button>
+      </div>
 
       <ul className="space-y-3">
         {inscripciones.map((i) => (

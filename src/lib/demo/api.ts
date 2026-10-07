@@ -91,6 +91,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       } as T;
 
     case "user.create":
+    case "user.updateProfile":
       return { uid: uid || `demo-user-${Date.now()}` } as T;
 
     case "user.me":
@@ -405,6 +406,33 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       return tarea as T;
     }
 
+    case "task.comment": {
+      const tarea = s.tareas.find((t) => t.id === String(b.taskId ?? ""));
+      if (!tarea) throw new Error("Tarea no encontrada.");
+      requiereEventoAbierto(s);
+      const rolesCom = demoRolesFor(acc ?? demoAccountFor(""));
+      if (!rolesCom[tarea.rol] && rolesCom.admin !== "titular") {
+        throw new Error(`Permiso denegado: no tienes el rol ${tarea.rol}.`);
+      }
+      const texto = String(b.texto ?? "").trim();
+      if (!texto) throw new Error("El comentario está vacío.");
+      if (texto.length > 500) {
+        throw new Error("El comentario es demasiado largo (máx. 500).");
+      }
+      tarea.comentarios = [
+        ...(tarea.comentarios ?? []),
+        {
+          id: demoId(s, "cm"),
+          uid,
+          autor: nombre,
+          texto,
+          fecha: new Date().toISOString(),
+        },
+      ];
+      bumpDemoVersion(s);
+      return tarea as T;
+    }
+
     case "escaleta.list":
       return {
         eventoId: s.evento.id,
@@ -538,6 +566,91 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       s.usuarios.push(nuevo);
       bumpDemoVersion(s);
       return { uid: nuevo.uid, email, clave: "jam2026" } as T;
+    }
+
+    case "admin.updateUser": {
+      validarTitular("admin");
+      const target = String(b.uid ?? "");
+      const u = s.usuarios.find((x) => x.uid === target);
+      if (!u) throw new Error("Usuario no encontrado.");
+      if (b.nombre !== undefined) u.nombre = String(b.nombre).trim();
+      if (b.telefono !== undefined) u.telefono = String(b.telefono).trim();
+      if (b.estado !== undefined && String(b.estado) !== "") {
+        const estado = String(b.estado);
+        if (estado !== "activo" && estado !== "baja") {
+          throw new Error("Estado inválido (activo | baja).");
+        }
+        u.estado = estado;
+      }
+      bumpDemoVersion(s);
+      return {
+        uid: target,
+        nombre: u.nombre,
+        telefono: u.telefono,
+        estado: u.estado,
+      } as T;
+    }
+
+    case "admin.resetPassword": {
+      validarTitular("admin");
+      const u = s.usuarios.find(
+        (x) => x.uid === String(b.uid ?? ""),
+      );
+      if (!u) throw new Error("Usuario no encontrado.");
+      return { uid: u.uid, email: u.email, enviado: true } as T;
+    }
+
+    case "admin.setUserRole": {
+      validarTitular("admin");
+      const rol = String(b.rol ?? "") as Rol;
+      if (!ROLES.includes(rol)) throw new Error("Rol inválido.");
+      const target = String(b.uid ?? "");
+      if (!s.usuarios.some((x) => x.uid === target)) {
+        throw new Error("Usuario no encontrado.");
+      }
+      let tipo = String(b.tipo ?? "");
+      if (tipo && tipo !== "titular" && tipo !== "apoyo") {
+        throw new Error("Tipo inválido (titular | apoyo).");
+      }
+      if (rol === "admin" && tipo) tipo = "titular";
+      const mes = s.evento.mes;
+      const sinEste = s.roles.filter(
+        (r) => !(r.uid === target && r.rol === rol && r.mes === mes),
+      );
+      s.roles = tipo
+        ? [...sinEste, { mes, rol, uid: target, tipo: tipo as "titular" | "apoyo" }]
+        : sinEste;
+      bumpDemoVersion(s);
+      return { uid: target, rol, tipo } as T;
+    }
+
+    case "admin.audit": {
+      validarTitular("admin");
+      const limite = Number(b.limite ?? 100) || 100;
+      const eventos = [
+        {
+          ts: new Date(Date.now() - 60_000).toISOString(),
+          uid,
+          usuario: nombre,
+          accion: "admin.login",
+          detalle: "demo",
+        },
+        {
+          ts: new Date(Date.now() - 300_000).toISOString(),
+          uid: "demo-general",
+          usuario: "Gabi Coordinación",
+          accion: "general.approve",
+          detalle: s.evento.id,
+        },
+        {
+          ts: new Date(Date.now() - 900_000).toISOString(),
+          uid: "demo-caja",
+          usuario: "Rocío Caja",
+          accion: "cash.add",
+          detalle: "consumible 2.5",
+        },
+      ].slice(0, limite);
+      return { eventos } as T;
     }
 
     case "user.passwordChanged":

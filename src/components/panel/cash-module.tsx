@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
+import { descargarCsv } from "@/lib/csv";
 import type { MovimientoCaja, ResumenCaja, TipoMovimiento } from "@/types";
 
 const eur = new Intl.NumberFormat("es-ES", {
@@ -203,7 +204,29 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
       {data.movimientos.length === 0 ? (
         <p className="db-muted text-sm">Sin movimientos todavía.</p>
       ) : (
-        <ul className="db-card divide-y divide-white/10">
+        <>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() =>
+                descargarCsv(
+                  "caja",
+                  ["Fecha", "Tipo", "Concepto", "Método", "Importe"],
+                  data.movimientos.map((m) => [
+                    m.fecha,
+                    m.tipo,
+                    m.concepto,
+                    m.metodo,
+                    m.importe,
+                  ]),
+                )
+              }
+              className="db-ghost text-xs!"
+            >
+              Descargar CSV
+            </button>
+          </div>
+          <ul className="db-card divide-y divide-white/10">
           {data.movimientos.map((m) => (
             <li key={m.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
               <span className="min-w-0 flex-1 break-words">
@@ -235,6 +258,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
             </li>
           ))}
         </ul>
+        </>
       )}
 
       <section className="db-card p-4">

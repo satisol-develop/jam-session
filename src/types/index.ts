@@ -127,6 +127,14 @@ export interface Subtarea {
   hecha: boolean;
 }
 
+export interface ComentarioTarea {
+  id: string;
+  uid: string;
+  autor: string;
+  texto: string;
+  fecha: string;
+}
+
 export interface Tarea {
   id: string;
   eventoId: string;
@@ -139,6 +147,8 @@ export interface Tarea {
   marcadaAt: string;
   /** Pasos opcionales para completar la tarea. */
   subtareas?: Subtarea[];
+  /** Conversación sobre la tarea (siempre disponible). */
+  comentarios?: ComentarioTarea[];
 }
 
 export type TipoMovimiento = "consumible" | "otro" | "gasto";

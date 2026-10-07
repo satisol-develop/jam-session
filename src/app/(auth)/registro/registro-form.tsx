@@ -23,7 +23,7 @@ export function RegistroForm() {
     setBusy(true);
     try {
       await register(nombre, email, password);
-      await api("user.create", { nombre, email }).catch(() => undefined);
+      await api("user.updateProfile", { nombre, email }).catch(() => undefined);
       router.replace("/mi");
     } catch (err) {
       if (err instanceof FirebaseError) {

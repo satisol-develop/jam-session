@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:export": "node scripts/build-static.mjs",
+    "check:routes": "node scripts/check-routes.mjs",
     "start": "next start",
     "lint": "eslint"
   },

@@ -12,6 +12,7 @@ import { ApoyosPanel } from "@/components/panel/apoyos-panel";
 import { RotationPanel } from "@/components/admin/rotation-panel";
 import { HistoryReport } from "@/components/admin/history-report";
 import { UsuariosPanel } from "@/components/admin/usuarios-panel";
+import { AuditPanel } from "@/components/admin/audit-panel";
 import { ApproveCard } from "@/components/panel/approve-card";
 import { CashModule } from "@/components/panel/cash-module";
 import { InscripcionesPanel } from "@/components/panel/inscripciones-panel";
@@ -218,9 +219,21 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         node: (
           <Seccion
             titulo="Gestión de usuarios"
-            nota="Alta de participantes con contraseña por defecto y verificación de correo."
+            nota="Alta, edición, baja, restablecer contraseña y roles del mes."
           >
             <UsuariosPanel />
+          </Seccion>
+        ),
+      },
+      {
+        id: "auditoria",
+        label: "Auditoría",
+        node: (
+          <Seccion
+            titulo="Auditoría de actividad"
+            nota="Últimos 200 movimientos registrados en la plataforma."
+          >
+            <AuditPanel />
           </Seccion>
         ),
       }

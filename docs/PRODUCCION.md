@@ -152,9 +152,9 @@ está en `.gitignore`; cópialo desde tu equipo).
       vuelvas a ejecutar `setup()`** (crearía otro): ejecuta **`migrate()`**
       (actualiza hojas y columnas conservando los datos). **Ejecuta
       `migrate()` también cada vez que pegues una versión nueva de los 5
-      ficheros con columnas nuevas** (p. ej. `Usuarios.clave_pendiente` y
-      `Propuestas.carpeta_pendiente`/`archivos`): si no, las rutas que
-      escriben esas hojas fallan.
+      ficheros con columnas nuevas** (p. ej. `Usuarios.clave_pendiente`,
+      `Propuestas.carpeta_pendiente`/`archivos` y `Tareas.comentarios`): si
+      no, las rutas que escriben esas hojas fallan.
   5. En **Propiedades del script** añade a mano:
     - `DRIVE_ROOT_ID` = el ID de la carpeta de Drive del paso 1.
     - `FIREBASE_API_KEY` = la API key del proyecto Firebase (paso 2.3). El
@@ -167,12 +167,18 @@ está en `.gitignore`; cópialo desde tu equipo).
       hoja `Roles`.
     - `CLAVE_DEFECTO` *(opcional)* = contraseña por defecto de las cuentas
       creadas por el admin (por defecto `jam2026`).
+    - `AVISOS_MAIL` *(opcional)* = `1` para activar los avisos por correo
+      (tarea nueva → al rol, propuesta resuelta → al proponente, evento
+      cerrado → a todos). Sin la propiedad no se envía nada.
     - `PROPUESTAS_FOLDER_ID` *(opcional)* = carpeta de ficheros de
       propuestas pendientes; si falta, la crea sola («Jam Session —
       Propuestas», fuera del catálogo) y guarda el id.
 6. Ejecuta (editor ▶, una cada vez):
    - `syncCatalogFromDrive()` → rellena la hoja `Repertorio` desde Drive.
    - `scheduleCatalogSync()` → instala el trigger automático cada 6 h.
+   - `instalarBackup()` *(opcional)* → trigger semanal de `backup()` (copia
+     del spreadsheet a Drive «Jam Session — Backups», conserva las 10
+     últimas; también se puede lanzar `backup()` a mano).
    - `seedDemoData()` *(opcional pero recomendado la primera vez)* → crea un
      evento en borrador y 4 canciones de ejemplo **en el spreadsheet real**
      (es un primer relleno; los datos dummy de la web no tienen nada que ver
@@ -245,7 +251,13 @@ comprueba en este orden:
    una cuenta (`admin.createUser`): se da de alta con la contraseña por
    defecto (`CLAVE_DEFECTO`, por defecto `jam2026`), recibe el correo de
    verificación y, al entrar, la web le **fuerza a cambiar la contraseña**
-   (luego verifica el correo).
+   (luego verifica el correo). Desde la fila expandida también puedes
+   editar nombre/teléfono (`admin.updateUser`), **dar de baja/reactivar**,
+   **restablecer la contraseña** por correo (`admin.resetPassword`) y
+   asignar roles del mes con un toque (`admin.setUserRole`). Las bajas
+   bloquean el acceso (`user.me` y todas las escrituras). La pestaña
+   **Auditoría** (`admin.audit`) muestra los últimos movimientos de
+   `LogActividad`.
 6. **Rotación**: asigna titulares en la matriz → **Guardar rotación** → cada
    titular recibe su rol en la hoja `Roles` (y puede entrar en su panel tras
    refrescar). **Admin y Grupo Base no rotan** (el admin es permanente; el GB
@@ -281,6 +293,9 @@ la hoja **`LogActividad`** del spreadsheet.
       la web **bloquea hasta verificar el correo**.
 - [ ] El admin crea un participante en **Usuarios** con la contraseña por
       defecto y, al entrar, se le fuerza el cambio de contraseña.
+- [ ] El admin edita/dar de baja/restablece desde **Usuarios** y asigna un
+      rol con un toque en los chips de la fila expandida.
+- [ ] La pestaña **Auditoría** de `/panel/admin` muestra actividad real.
 - [ ] `/panel/admin` carga la matriz real (`admin.users`).
 - [ ] Añadir un tema en la pestaña Repertorio (GB) lo publica en la web.
 - [ ] Una propuesta **con ficheros** aprobada por el General deja sus

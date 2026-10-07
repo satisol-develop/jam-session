@@ -77,6 +77,18 @@ export function demoRolesFor(account: DemoAccount): RolesMap {
       r.uid === account.uid,
   );
   if (enGrupo) roles["grupo-base"] = "titular";
+  // Asignaciones del mes hechas desde el panel de Usuarios (admin):
+  // sobrescriben lo estático (quitar no se puede en demo: vuelve lo fijo).
+  s.roles
+    .filter(
+      (r) =>
+        r.uid === account.uid &&
+        r.mes === s.evento.mes &&
+        r.rol !== "grupo-base",
+    )
+    .forEach((r) => {
+      roles[r.rol] = r.tipo;
+    });
   return roles;
 }
 

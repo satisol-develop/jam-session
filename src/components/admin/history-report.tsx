@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
+import { descargarCsv } from "@/lib/csv";
 import type {
   CierreCaja,
   Evento,
@@ -193,8 +194,57 @@ export function HistoryReport() {
     );
   }
 
+  function exportarCsv() {
+    if (!historial) return;
+    descargarCsv(
+      "historial-sesiones",
+      [
+        "Evento",
+        "Fecha",
+        "Inscripciones",
+        "Asignados",
+        "Tareas",
+        "Tareas hechas",
+        "Consumos",
+        "Otros ingresos",
+        "Gastos",
+        "Beneficio",
+        "Diferencia caja",
+      ],
+      historial.map((e) => {
+        const t = totales(e.movimientos);
+        const hechas = e.tareas.filter((x) => x.estado === "hecha").length;
+        const asignados = e.inscripciones.filter(
+          (i) => i.estado === "asignado",
+        ).length;
+        return [
+          e.evento.titulo,
+          e.evento.fecha,
+          e.inscripciones.length,
+          asignados,
+          e.tareas.length,
+          hechas,
+          t.consumibles,
+          t.otros,
+          t.gastos,
+          t.beneficio,
+          e.cierre ? e.cierre.diferencia : "",
+        ];
+      }),
+    );
+  }
+
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={exportarCsv}
+          className="db-ghost text-xs!"
+        >
+          Descargar CSV
+        </button>
+      </div>
       {historial.map((e) => (
         <Resumen key={e.evento.id} entrada={e} />
       ))}

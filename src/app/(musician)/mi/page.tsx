@@ -8,8 +8,8 @@ import { api } from "@/lib/api/client";
 import { SubscribeForm } from "@/components/musician/subscribe-form";
 import { ProposeForm } from "@/components/musician/propose-form";
 import { AttendeesList } from "@/components/musician/attendees-list";
-import { PantallaCargando } from "@/components/loading";
-import type { Evento, Inscripcion } from "@/types";
+import { PantallaCargando, SkeletonFilas } from "@/components/loading";
+import type { Evento, Inscripcion, Turno } from "@/types";
 
 function Section({
   title,
@@ -37,6 +37,14 @@ export default function MiZonaPage() {
   const [evento, setEvento] = useState<Evento | null>(null);
   const [inscripcion, setInscripcion] = useState<Inscripcion | null>(null);
   const [cargado, setCargado] = useState(false);
+  const [turnos, setTurnos] = useState<Turno[] | null>(null);
+
+  // Escaleta en directo (se muestra sola a medida que llega).
+  useEffect(() => {
+    api<{ turnos: Turno[] }>("escaleta.list")
+      .then((d) => setTurnos(d.turnos ?? []))
+      .catch(() => setTurnos([]));
+  }, []);
 
   useEffect(() => {
     // Salvaguarda: a los 12 s se pinta la zona aunque un endpoint tarde;
@@ -105,6 +113,50 @@ export default function MiZonaPage() {
           </Link>
         )}
       </div>
+
+      {turnos === null ? (
+        <SkeletonFilas n={2} />
+      ) : turnos.length > 0 ? (
+        <section className="rounded-2xl border border-neutral-200 p-5 dark:border-neutral-800">
+          <h2 className="text-xl font-bold">Escaleta en directo</h2>
+          <p className="mb-3 mt-1 text-sm text-neutral-500">
+            Próximos turnos de la Jam, según los actualiza el Stage Manager.
+          </p>
+          <ul className="space-y-2">
+            {turnos
+              .slice(
+                Math.max(
+                  0,
+                  turnos.findIndex((t) => t.estado === "escena"),
+                ),
+                Math.max(0, turnos.findIndex((t) => t.estado === "escena")) + 4,
+              )
+              .map((t) => (
+                <li
+                  key={t.id}
+                  className="flex items-center gap-3 rounded-xl border border-neutral-200 px-3 py-2 text-sm dark:border-neutral-700"
+                >
+                  <span className="db-muted shrink-0 tabular-nums text-xs">
+                    {t.orden}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="font-semibold">{t.titulo || "—"}</span>
+                    {t.interpretes && (
+                      <span className="ml-2 text-neutral-500">
+                        · {t.interpretes}
+                      </span>
+                    )}
+                  </span>
+                  {t.estado === "escena" && (
+                    <span className="shrink-0 rounded bg-[#FFE600] px-1.5 py-0.5 text-[10px] font-bold uppercase text-black">
+                      En escena
+                    </span>
+                  )}
+                </li>
+              ))}
+          </ul>
+        </section>
+      ) : null}
 
       <Section
         title="Inscripción"

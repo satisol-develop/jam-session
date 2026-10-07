@@ -6,6 +6,18 @@ import { api } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
 import type { Rol, Tarea } from "@/types";
 
+function fmtComentario(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleString("es-ES", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+}
+
 interface Props {
   rol: Rol;
   /** Muestra las tareas de todos los roles (vista global del admin). */
@@ -20,6 +32,8 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
   const [tareas, setTareas] = useState<Tarea[] | null>(null);
   const [nueva, setNueva] = useState("");
   const [nuevasSub, setNuevasSub] = useState<Record<string, string>>({});
+  const [hilos, setHilos] = useState<Record<string, boolean>>({});
+  const [nuevosCom, setNuevosCom] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,6 +121,26 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
     }
   }
 
+  async function onComentar(e: FormEvent, tarea: Tarea) {
+    e.preventDefault();
+    const texto = (nuevosCom[tarea.id] ?? "").trim();
+    if (busy || !texto) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const actualizada = await api<Tarea>("task.comment", {
+        taskId: tarea.id,
+        texto,
+      });
+      aplicar(actualizada);
+      setNuevosCom((prev) => ({ ...prev, [tarea.id]: "" }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo comentar.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (tareas === null) {
     return <SkeletonFilas n={3} />;
   }
@@ -143,6 +177,9 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
           {tareas.map((t) => {
             const subtareas = t.subtareas ?? [];
             const hechasSub = subtareas.filter((st) => st.hecha).length;
+            const comentarios = t.comentarios ?? [];
+            const hiloAbierto = Boolean(hilos[t.id]);
+            const puedeComentar = Boolean(roles[t.rol]) || roles.admin === "titular";
             return (
               <li
                 key={t.id}
@@ -249,6 +286,71 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                     </button>
                   </form>
                 )}
+
+                <div className="ml-12 mr-4 mb-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setHilos((prev) => ({ ...prev, [t.id]: !prev[t.id] }))
+                    }
+                    aria-expanded={hiloAbierto}
+                    className="db-kicker text-xs underline"
+                  >
+                    💬 {comentarios.length} {hiloAbierto ? "· ocultar" : "· comentar"}
+                  </button>
+
+                  {hiloAbierto && (
+                    <div className="mt-2 space-y-2">
+                      {comentarios.length === 0 && (
+                        <p className="db-muted text-xs">
+                          Sin comentarios todavía. Escribe el primero.
+                        </p>
+                      )}
+                      {comentarios.map((c) => (
+                        <div
+                          key={c.id}
+                          className="rounded-lg bg-white/5 px-2.5 py-1.5 text-xs"
+                        >
+                          <span className="font-semibold">{c.autor}</span>{" "}
+                          <span className="db-muted">
+                            {fmtComentario(c.fecha)}
+                          </span>
+                          <p className="mt-0.5 break-words whitespace-pre-wrap">
+                            {c.texto}
+                          </p>
+                        </div>
+                      ))}
+                      {puedeComentar && (
+                        <form
+                          onSubmit={(e) => onComentar(e, t)}
+                          className="flex gap-1.5"
+                        >
+                          <input
+                            type="text"
+                            value={nuevosCom[t.id] ?? ""}
+                            onChange={(e) =>
+                              setNuevosCom((prev) => ({
+                                ...prev,
+                                [t.id]: e.target.value,
+                              }))
+                            }
+                            maxLength={500}
+                            placeholder="Comentar…"
+                            aria-label={`Comentar en ${t.titulo}`}
+                            className="db-input flex-1"
+                          />
+                          <button
+                            type="submit"
+                            disabled={busy || !(nuevosCom[t.id] ?? "").trim()}
+                            className="db-btn text-xs! px-2!"
+                          >
+                            Enviar
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  )}
+                </div>
               </li>
             );
           })}
