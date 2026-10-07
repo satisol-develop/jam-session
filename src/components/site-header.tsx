@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { DEMO_MODE } from "@/lib/demo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { RoleSwitcher } from "@/components/role-switcher";
 
 export function SiteHeader() {
   const { user, roles, loading, logout } = useAuth();
@@ -76,16 +77,7 @@ export function SiteHeader() {
                   Mi zona
                 </Link>
               )}
-              {tieneRoles && (
-                <Link
-                  href="/panel"
-                  className={`${linkCls} ${
-                    pathname.startsWith("/panel") ? linkActivo : ""
-                  }`}
-                >
-                  Panel
-                </Link>
-              )}
+              <RoleSwitcher linkCls={linkCls} linkActivo={linkActivo} />
               <span className={mutedCls}>
                 {user.displayName ?? user.email}
               </span>

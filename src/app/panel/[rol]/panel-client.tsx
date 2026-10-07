@@ -55,6 +55,7 @@ function Seccion({
  */
 function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   const esTitular = tipo === "titular";
+  const { roles: rolesUsuario } = useAuth();
   const { recargar, ...estado } = usePanelStatus(rol);
   const pendTareas = Math.max(estado.tareasTotal - estado.tareasHechas, 0);
   const paso = proximoPaso(rol, estado);
@@ -460,11 +461,17 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
 
   const tabActual = tabs.find((t) => t.id === activo) ?? tabs[0];
 
+  const soloUnRol = ROLES.filter((r) => rolesUsuario[r]).length === 1;
+
   const cabecera = (
     <header className="mb-4">
-      <Link href="/panel" className="db-kicker underline">
-        ← Paneles
-      </Link>
+      {soloUnRol ? (
+        <span className="db-kicker">Panel</span>
+      ) : (
+        <Link href="/panel" className="db-kicker underline">
+          ← Paneles
+        </Link>
+      )}
       <div className="mt-1 flex flex-wrap items-center gap-2.5">
         <h1 className="db-title text-2xl sm:text-4xl">
           {ROLES_META[rol].label}

@@ -55,6 +55,17 @@ export const ROLES_META: Record<
   },
 };
 
+/** Icono de navegación de cada rol (chips del hub, hoja de cambio, etc.). */
+export const ROL_ICONO: Record<Rol, string> = {
+  admin: "rotacion",
+  general: "sesion",
+  "grupo-base": "grupo-base",
+  "stage-manager": "escaleta",
+  tecnico: "instrumentos",
+  caja: "caja",
+  redes: "difusion",
+};
+
 /** Fases del ciclo de una sesión (agrupan el protocolo de cada rol). */
 export type FaseGuia = "preparacion" | "semana" | "dia" | "cierre";
 

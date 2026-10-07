@@ -1,32 +1,39 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { useRequireAuth } from "@/lib/auth/use-require-auth";
-import { ROLES_META } from "@/lib/constants";
+import { ROLES_META, ROL_ICONO } from "@/lib/constants";
 import { ROLES } from "@/types";
-import type { Rol } from "@/types";
 import { TabIcon } from "@/components/panel/panel-icons";
-
-const ROL_ICONO: Record<Rol, string> = {
-  admin: "rotacion",
-  general: "sesion",
-  "grupo-base": "grupo-base",
-  "stage-manager": "escaleta",
-  tecnico: "instrumentos",
-  caja: "caja",
-  redes: "difusion",
-};
 
 export default function PanelHubPage() {
   const { roles, loading } = useAuth();
   const { pendiente } = useRequireAuth();
+  const router = useRouter();
   const asignados = ROLES.filter((r) => roles[r]);
+  // Con un solo rol no hay hub que mostrar: entra directo en su panel.
+  const soloUnRol =
+    !pendiente && !loading && asignados.length === 1 ? asignados[0] : null;
+
+  useEffect(() => {
+    if (soloUnRol) router.replace(`/panel/${soloUnRol}`);
+  }, [soloUnRol, router]);
 
   if (pendiente) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10">
         <p className="db-muted text-sm">Cargando…</p>
+      </div>
+    );
+  }
+
+  if (soloUnRol) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        <p className="db-muted text-sm">Abriendo tu panel…</p>
       </div>
     );
   }
