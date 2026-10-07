@@ -570,15 +570,19 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       const propuestas = (Array.isArray(b.asignaciones)
         ? b.asignaciones
         : []) as RoleAssignment[];
-      // Solo titulares (sin Grupo Base): los apoyos los eligen los titulares.
+      // Solo titulares (sin Grupo Base ni Admin): los apoyos los eligen los titulares.
       const titulares = propuestas.filter(
-        (a) => a.tipo === "titular" && a.rol !== "grupo-base" && a.uid,
+        (a) =>
+          a.tipo === "titular" &&
+          a.rol !== "grupo-base" &&
+          a.rol !== "admin" &&
+          a.uid,
       );
       if (titulares.length === 0) throw new Error("Asigna al menos un titular.");
       const anteriores = s.roles.filter((r) => r.mes === mes);
       const conservadas = anteriores.filter((r) => {
         if (r.rol === "grupo-base") return true;
-        if (r.rol === "admin") return false; // Admin no admite apoyos.
+        if (r.rol === "admin") return true; // Admin no rota: se conserva.
         if (r.tipo !== "apoyo") return false;
         const nuevoTitular = titulares.find((t) => t.rol === r.rol)?.uid;
         return r.uid !== nuevoTitular;

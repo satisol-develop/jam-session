@@ -140,10 +140,14 @@ está en `.gitignore`; cópialo desde tu equipo).
 4. **Primera vez solamente**: ejecuta `setup()` (menú ▶). Crea el
    spreadsheet **Jam Session — Datos** y guarda `SPREADSHEET_ID` en
    Propiedades del script. Después, en la hoja **`Roles`**, añade la fila del
-   bootstrap del admin (paso 2.5):
-   | mes | rol | uid | tipo |
-   |---|---|---|---|
-   | `2026-10` | `admin` | `TU-UID` | `titular` |
+    bootstrap del admin (paso 2.5):
+    | mes | rol | uid | tipo |
+    |---|---|---|---|
+    | `cualquiera` | `admin` | `TU-UID` | `titular` |
+
+    El rol **admin es permanente**: no depende del mes, no rota y su fila no
+    se borra al guardar una rotación. Para dar admin a otra persona, añade
+    otra fila igual con su uid (a mano).
     - ⚠️ Si el spreadsheet ya existía de una configuración anterior, **no
       vuelvas a ejecutar `setup()`** (crearía otro): ejecuta **`migrate()`**
       (actualiza hojas y columnas conservando los datos). **Ejecuta
@@ -244,7 +248,8 @@ comprueba en este orden:
    (luego verifica el correo).
 6. **Rotación**: asigna titulares en la matriz → **Guardar rotación** → cada
    titular recibe su rol en la hoja `Roles` (y puede entrar en su panel tras
-   refrescar).
+   refrescar). **Admin y Grupo Base no rotan** (el admin es permanente; el GB
+   lo elige el General).
 7. **General** (`/panel/general`): edita datos (`event.update`), aprueba la
    sesión (`general.approve` → tareas con subtareas), elige el Grupo Base
    (`gb.set`), valida propuestas en bloque y, en «Auditoría», cierra la caja
@@ -290,7 +295,8 @@ la hoja **`LogActividad`** del spreadsheet.
 
 - **Rotación mensual** (recomendado antes del día 25): Admin → matriz →
   Guardar. Los apoyos los elige cada titular en su panel; el Grupo Base, el
-  General.
+  General. Admin no aparece en la matriz: es permanente (se asigna a mano en
+  `Roles`).
 - **Repertorio**: el Grupo Base lo define desde su panel; el sync de Drive
   (`syncCatalogFromDrive`) solo toca los temas con origen `drive` (nunca los
   añadidos a mano o por propuesta).

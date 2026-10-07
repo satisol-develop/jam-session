@@ -10,8 +10,8 @@ import type { RoleAssignment, Rol, Usuario } from "@/types";
 
 type AsignacionRol = { titular: string; apoyo: string };
 
-/** El Grupo Base no rota: lo elige el General. */
-const MATRIZ_ROLES = ROLES.filter((r) => r !== "grupo-base");
+/** El Grupo Base no rota: lo elige el General. Admin no rota: es permanente (se asigna a mano). */
+const MATRIZ_ROLES = ROLES.filter((r) => r !== "grupo-base" && r !== "admin");
 
 function emptyAssignments(): Record<Rol, AsignacionRol> {
   const out = {} as Record<Rol, AsignacionRol>;
@@ -171,12 +171,10 @@ export function RotationPanel() {
                 apoyo (en su panel)
               </span>
               <p className="db-muted py-2 text-xs">
-                {rol === "admin"
-                  ? "No aplica: Admin no tiene apoyo."
-                  : asignaciones[rol].apoyo
-                    ? usuarios.find((u) => u.uid === asignaciones[rol].apoyo)
-                        ?.nombre ?? asignaciones[rol].apoyo
-                    : "— Sin apoyos —"}
+                {asignaciones[rol].apoyo
+                  ? usuarios.find((u) => u.uid === asignaciones[rol].apoyo)
+                      ?.nombre ?? asignaciones[rol].apoyo
+                  : "— Sin apoyos —"}
               </p>
             </div>
           </div>
@@ -185,6 +183,13 @@ export function RotationPanel() {
           <span className="db-title self-center text-sm">grupo-base</span>
           <p className="db-muted self-center text-xs">
             No rota: lo elige el General desde su panel.
+          </p>
+        </div>
+        <div className="grid gap-2 rounded-xl border border-dashed border-white/12 p-3 sm:grid-cols-[10rem_1fr]">
+          <span className="db-title self-center text-sm">admin</span>
+          <p className="db-muted self-center text-xs">
+            No rota: es permanente y se asigna a mano en la hoja Roles del
+            spreadsheet (mes indiferente).
           </p>
         </div>
       </div>
