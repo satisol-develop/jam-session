@@ -100,6 +100,9 @@ export function DifusionKit({ editable }: { editable: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [ok, setOk] = useState<string | null>(null);
+  const [borrador, setBorrador] = useState<{ fileId: string; webViewLink: string } | null>(null);
+  const [creandoBorrador, setCreandoBorrador] = useState(false);
+  const [publicando, setPublicando] = useState(false);
 
   useEffect(() => {
     api<{ evento: Evento | null }>("public.event")
@@ -158,6 +161,50 @@ export function DifusionKit({ editable }: { editable: boolean }) {
       setError(err instanceof Error ? err.message : "No se pudo subir el cartel.");
     } finally {
       setSubiendo(false);
+    }
+  }
+
+  async function reutilizarPlantilla() {
+    if (creandoBorrador) return;
+    setCreandoBorrador(true);
+    setError(null);
+    setOk(null);
+    try {
+      const res = await api<{ fileId: string; webViewLink: string; reusado?: boolean }>(
+        "event.borradorCartel",
+        {},
+      );
+      setBorrador({ fileId: res.fileId, webViewLink: res.webViewLink });
+      if (res.webViewLink) {
+        window.open(res.webViewLink, "_blank", "noopener,noreferrer");
+      }
+      setOk(
+        res.reusado
+          ? "Ya había un borrador en Drive: se ha abierto para seguir editándolo."
+          : "Copia de la plantilla creada en Drive con los datos del evento: edítala allí y vuelve aquí para publicarla.",
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo crear el borrador.");
+    } finally {
+      setCreandoBorrador(false);
+    }
+  }
+
+  async function publicarDesdeDrive() {
+    if (publicando) return;
+    setPublicando(true);
+    setError(null);
+    setOk(null);
+    try {
+      const res = await api<{ cartelUrl: string }>("event.publicarCartel", {
+        fileId: borrador?.fileId || "",
+      });
+      setEvento((prev) => (prev ? { ...prev, cartelUrl: res.cartelUrl } : prev));
+      setOk("Cartel publicado desde Drive: ya se ve en la portada de la web.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo publicar el cartel.");
+    } finally {
+      setPublicando(false);
     }
   }
 
@@ -235,10 +282,51 @@ export function DifusionKit({ editable }: { editable: boolean }) {
           )}
         </div>
 
+        {editable && (
+          <div className="mt-3 rounded-xl border border-white/12 p-3">
+            <p className="db-kicker mb-2">Plantilla en Drive</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={reutilizarPlantilla}
+                disabled={creandoBorrador}
+                className="db-btn text-xs!"
+              >
+                {creandoBorrador ? "Creando…" : "Reutilizar plantilla"}
+              </button>
+              <button
+                type="button"
+                onClick={publicarDesdeDrive}
+                disabled={publicando}
+                className="db-ghost text-xs!"
+              >
+                {publicando ? "Publicando…" : "Publicar desde Drive"}
+              </button>
+              {borrador && (
+                <a
+                  href={borrador.webViewLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="db-ghost text-xs!"
+                >
+                  Abrir borrador
+                </a>
+              )}
+            </div>
+            <p className="db-muted mt-2 text-xs">
+              «Reutilizar plantilla» copia la plantilla de Drive con el título,
+              fecha, hora y lugar del evento y la abre para que la edites;
+              cuando la tengas, «Publicar desde Drive» la exporta y la pone en
+              la portada.
+            </p>
+          </div>
+        )}
+
         <p className="db-muted mt-2 text-xs">
-          Descarga la plantilla (SVG), edita el título, fecha, hora y lugar en
-          Illustrator, Inkscape, Figma o el navegador; expórtala como PNG o JPG
-          y súbrela aquí. Formatos: JPG, PNG, WEBP o SVG (máx. 6 MB).
+          Alternativa manual: descarga la plantilla (SVG), edita el título,
+          fecha, hora y lugar en Illustrator, Inkscape, Figma o el navegador;
+          expórtala como PNG o JPG y súbrela aquí. Formatos: JPG, PNG, WEBP o
+          SVG (máx. 6 MB).
         </p>
         {ok && <p className="db-badge mt-2 inline-flex">{ok}</p>}
         {error && <p className="db-error mt-2">{error}</p>}
