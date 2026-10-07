@@ -94,30 +94,33 @@ export function PanelInicio({
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat
-                valor={`${estado.tareasHechas}/${estado.tareasTotal}`}
-                label={esAdmin ? "tareas del equipo" : "tareas hechas"}
-              />
-              {verCuadrantes && (
+            {/* En admin las tarjetas KPI superiores ya muestran estos datos */}
+            {!esAdmin && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Stat
-                  valor={String(estado.propuestasPendientes)}
-                  label="propuestas pendientes"
+                  valor={`${estado.tareasHechas}/${estado.tareasTotal}`}
+                  label="tareas hechas"
                 />
-              )}
-              {verCuadrantes && (
-                <Stat
-                  valor={String(estado.inscripcionesPendientes)}
-                  label="inscripciones sin estado"
-                />
-              )}
-              {estado.cajaCerrada !== null && (
-                <Stat
-                  valor={estado.cajaCerrada ? "Cerrada" : "Abierta"}
-                  label="caja"
-                />
-              )}
-            </div>
+                {verCuadrantes && (
+                  <Stat
+                    valor={String(estado.propuestasPendientes)}
+                    label="propuestas pendientes"
+                  />
+                )}
+                {verCuadrantes && (
+                  <Stat
+                    valor={String(estado.inscripcionesPendientes)}
+                    label="inscripciones sin estado"
+                  />
+                )}
+                {estado.cajaCerrada !== null && (
+                  <Stat
+                    valor={estado.cajaCerrada ? "Cerrada" : "Abierta"}
+                    label="caja"
+                  />
+                )}
+              </div>
+            )}
 
             {consultas && <div className="flex flex-wrap gap-2">{consultas}</div>}
           </div>

@@ -25,6 +25,8 @@ import { PanelInicio } from "@/components/panel/panel-inicio";
 import { ProtocoloModal } from "@/components/panel/protocolo-modal";
 import { usePanelStatus } from "@/components/panel/use-panel-status";
 import { PanelTabs, type PanelTab } from "@/components/panel/panel-tabs";
+import { AdminSidebar } from "@/components/panel/admin-sidebar";
+import { AdminKpis } from "@/components/panel/admin-kpis";
 import { proximoPaso } from "@/lib/panel/proximo-paso";
 
 function Seccion({
@@ -456,35 +458,77 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     }
   }
 
+  const tabActual = tabs.find((t) => t.id === activo) ?? tabs[0];
+
+  const cabecera = (
+    <header className="mb-4">
+      <Link href="/panel" className="db-kicker underline">
+        ← Paneles
+      </Link>
+      <div className="mt-1 flex flex-wrap items-center gap-2.5">
+        <h1 className="db-title text-2xl sm:text-4xl">
+          {ROLES_META[rol].label}
+        </h1>
+        <span
+          className={`db-badge ${
+            tipo === "titular" ? "db-badge-solid" : "db-badge-line"
+          }`}
+        >
+          {tipo}
+        </span>
+        <button
+          type="button"
+          onClick={abrirProtocolo}
+          className="db-ghost ml-auto min-h-10 px-3 py-2 text-xs!"
+        >
+          Protocolo
+        </button>
+      </div>
+      <p className="db-muted mt-1 hidden text-sm sm:block">
+        {ROLES_META[rol].description}
+      </p>
+    </header>
+  );
+
+  // Administración: sidebar lateral + tarjetas KPI (estilo plantilla admin).
+  if (rol === "admin") {
+    return (
+      <>
+        {cabecera}
+        <div className="md:flex md:items-start md:gap-6">
+          <AdminSidebar
+            tabs={tabs}
+            activo={tabActual.id}
+            onSeleccionar={seleccionar}
+            onProtocolo={abrirProtocolo}
+          />
+          <div className="min-w-0 flex-1 pb-24 sm:pb-0">
+            <PanelTabs
+              tabs={tabs}
+              activo={tabActual.id}
+              onSeleccionar={seleccionar}
+              onProtocolo={abrirProtocolo}
+              paraSidebar
+            />
+            <div className="mt-3 space-y-3 sm:mt-4 sm:space-y-4">
+              <AdminKpis estado={estado} />
+              <div key={tabActual.id} className="db-fade">
+                {tabActual.node}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {protocolo && (
+          <ProtocoloModal rol={rol} onCerrar={cerrarProtocolo} irA={irA} />
+        )}
+      </>
+    );
+  }
+
   return (
     <>
-      <header className="mb-4">
-        <Link href="/panel" className="db-kicker underline">
-          ← Paneles
-        </Link>
-        <div className="mt-1 flex flex-wrap items-center gap-2.5">
-          <h1 className="db-title text-2xl sm:text-4xl">
-            {ROLES_META[rol].label}
-          </h1>
-          <span
-            className={`db-badge ${
-              tipo === "titular" ? "db-badge-solid" : "db-badge-line"
-            }`}
-          >
-            {tipo}
-          </span>
-          <button
-            type="button"
-            onClick={abrirProtocolo}
-            className="db-ghost ml-auto min-h-10 px-3 py-2 text-xs!"
-          >
-            Protocolo
-          </button>
-        </div>
-        <p className="db-muted mt-1 hidden text-sm sm:block">
-          {ROLES_META[rol].description}
-        </p>
-      </header>
+      {cabecera}
 
       <PanelTabs
         tabs={tabs}
@@ -541,7 +585,11 @@ export function RolPanelClient({ rol: rolParam }: { rol: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 pt-5 pb-16 sm:pt-6">
+    <div
+      className={`mx-auto px-4 pt-5 pb-16 sm:pt-6 ${
+        rol === "admin" ? "max-w-6xl" : "max-w-4xl"
+      }`}
+    >
       <PanelBody rol={rol} tipo={tipo} />
     </div>
   );

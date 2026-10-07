@@ -8,20 +8,126 @@ import { DEMO_MODE } from "@/lib/demo";
 import { FirebaseError } from "firebase/app";
 
 /**
- * Bloquea el interior de la plataforma hasta completar el primer acceso:
- * 1) cuentas creadas por el admin → cambiar la contraseña por defecto;
- * 2) todo el mundo → tener el correo verificado.
- * La cabecera (con «Salir») sigue visible fuera del gate.
+ * Capa de verificación: mientras la plataforma comprueba sesión y roles no
+ * se pinta el interior (cargando a pantalla completa); si la verificación
+ * falla, pantalla de error con Reintentar/Salir. La cabecera (con «Salir»)
+ * sigue visible fuera del gate.
  */
+
+function CargandoVerificacion() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-white dark:bg-black"
+    >
+      <span
+        aria-hidden
+        className="size-10 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-800 dark:border-t-[#FFE600]"
+      />
+      <p className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">
+        Verificando sesión…
+      </p>
+    </div>
+  );
+}
+
+function ErrorVerificacion({
+  mensaje,
+  onReintentar,
+  onSalir,
+  busy,
+}: {
+  mensaje: string;
+  onReintentar: () => void;
+  onSalir: () => void;
+  busy: boolean;
+}) {
+  return (
+    <div
+      role="alert"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-white p-4 dark:bg-black"
+    >
+      <div className="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 text-center shadow-xl dark:border-neutral-800 dark:bg-neutral-950">
+        <h1 className="text-lg font-bold">No se pudo verificar tu sesión</h1>
+        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+          {mensaje}
+        </p>
+        <div className="mt-5 space-y-2">
+          <button
+            type="button"
+            onClick={onReintentar}
+            disabled={busy}
+            className="w-full rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+          >
+            {busy ? "Reintentando…" : "Reintentar"}
+          </button>
+          <button
+            type="button"
+            onClick={onSalir}
+            className="w-full px-4 py-2 text-sm text-neutral-500 underline"
+          >
+            Salir
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SessionGate({ children }: { children: ReactNode }) {
-  const { user, loading, clavePendiente, refreshUser, logout } = useAuth();
+  const {
+    user,
+    loading,
+    rolesError,
+    clavePendiente,
+    refreshUser,
+    reintentar,
+    logout,
+  } = useAuth();
   const [clave, setClave] = useState("");
   const [clave2, setClave2] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [reintentando, setReintentando] = useState(false);
 
-  if (loading || !user || DEMO_MODE) return <>{children}</>;
+  // 1) Verificación en curso: nada del interior se pinta sin confirmar.
+  if (loading) {
+    return (
+      <>
+        {children}
+        <CargandoVerificacion />
+      </>
+    );
+  }
+
+  if (DEMO_MODE || !user) return <>{children}</>;
+
+  // 2) La verificación falló (token rechazado, sin red…): bloquea todo.
+  if (rolesError) {
+    return (
+      <>
+        {children}
+        <ErrorVerificacion
+          mensaje={rolesError}
+          busy={reintentando}
+          onReintentar={() => {
+            setReintentando(true);
+            void (async () => {
+              try {
+                await reintentar();
+              } finally {
+                setReintentando(false);
+              }
+            })();
+          }}
+          onSalir={() => void logout()}
+        />
+      </>
+    );
+  }
+
   const u = user;
 
   if (clavePendiente) {

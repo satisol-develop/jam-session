@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -39,10 +40,14 @@ interface AuthContextValue {
   loading: boolean;
   /** La cuenta creada por el admin aún usa la contraseña por defecto. */
   clavePendiente: boolean;
+  /** La primera verificación de sesión/roles falló: mensaje del error. */
+  rolesError: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   register: (nombre: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshRoles: () => Promise<RolesMap>;
+  /** Reintenta la verificación de sesión/roles tras un fallo. */
+  reintentar: () => Promise<void>;
   /** Recarga el usuario de Firebase (p. ej. tras verificar el correo). */
   refreshUser: () => Promise<void>;
 }
@@ -83,6 +88,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<RolesMap>({});
   const [loading, setLoading] = useState(true);
   const [clavePendiente, setClavePendiente] = useState(false);
+  const [rolesError, setRolesError] = useState<string | null>(null);
+  // Solo el primer fallo bloquea: fallos posteriores dejan el estado anterior.
+  const verificadoRef = useRef(false);
 
   const loadRoles = useCallback(async (u: User): Promise<RolesMap> => {
     // Los roles y el estado de la contraseña viven en Apps Script (user.me).
@@ -95,10 +103,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRoles(map);
       setClavePendiente(me?.usuario?.clavePendiente === true);
       setSessionCookies(u, map);
+      verificadoRef.current = true;
+      setRolesError(null);
       return map;
-    } catch {
-      // Sin red: no se toca el flag de contraseña (se mantiene el anterior).
+    } catch (err) {
+      // Sin red o sesión rechazada: no se toca el flag de contraseña.
       setSessionCookies(u, {});
+      if (!verificadoRef.current) {
+        setRolesError(
+          err instanceof Error && err.message
+            ? err.message
+            : "No se pudo verificar tu sesión.",
+        );
+      }
       return {};
     }
   }, []);
@@ -120,7 +137,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const auth = getFirebaseAuth();
+    // Red de seguridad: si onAuthStateChanged no llega (Firebase caído o
+    // bloqueado), no dejamos la pantalla de carga eterna.
+    const fallback = setTimeout(() => setLoading(false), 10000);
     const unsub = onAuthStateChanged(auth, async (u) => {
+      clearTimeout(fallback);
       setUser(u);
       if (u) {
         await loadRoles(u).catch(() => setSessionCookies(u, {}));
@@ -130,7 +151,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setLoading(false);
     });
-    return () => unsub();
+    return () => {
+      clearTimeout(fallback);
+      unsub();
+    };
   }, [loadRoles]);
 
   const signIn = useCallback(async (email: string, _password: string) => {
@@ -183,10 +207,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearDemoSession();
       setUser(null);
       setRoles({});
+      setRolesError(null);
       setSessionCookies(null, {});
       return;
     }
     await signOut(getFirebaseAuth());
+    setRolesError(null);
   }, []);
 
   const refreshRoles = useCallback(async () => {
@@ -199,6 +225,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const auth = getFirebaseAuth();
     if (!auth.currentUser) return {};
     return loadRoles(auth.currentUser);
+  }, [loadRoles]);
+
+  const reintentar = useCallback(async () => {
+    if (DEMO_MODE) return;
+    setRolesError(null);
+    const auth = getFirebaseAuth();
+    if (auth.currentUser) {
+      await loadRoles(auth.currentUser);
+    } else {
+      // Sesión caducada en el cliente: se reevalúa desde cero.
+      verificadoRef.current = false;
+      setLoading(true);
+      await auth.authStateReady().catch(() => undefined);
+      setLoading(false);
+    }
   }, [loadRoles]);
 
   const refreshUser = useCallback(async () => {
@@ -218,10 +259,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       roles,
       loading,
       clavePendiente,
+      rolesError,
       signIn,
       register,
       logout,
       refreshRoles,
+      reintentar,
       refreshUser,
     }),
     [
@@ -229,10 +272,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       roles,
       loading,
       clavePendiente,
+      rolesError,
       signIn,
       register,
       logout,
       refreshRoles,
+      reintentar,
       refreshUser,
     ],
   );

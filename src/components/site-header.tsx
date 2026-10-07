@@ -68,12 +68,14 @@ export function SiteHeader() {
           {!loading && user && <ThemeToggle />}
           {!loading && user ? (
             <>
-              <Link
-                href="/mi"
-                className={`${linkCls} ${isActive("/mi") ? linkActivo : ""}`}
-              >
-                Mi zona
-              </Link>
+              {!tieneRoles && (
+                <Link
+                  href="/mi"
+                  className={`${linkCls} ${isActive("/mi") ? linkActivo : ""}`}
+                >
+                  Mi zona
+                </Link>
+              )}
               {tieneRoles && (
                 <Link
                   href="/panel"

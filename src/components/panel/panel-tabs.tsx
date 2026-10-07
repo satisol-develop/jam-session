@@ -36,12 +36,18 @@ export function PanelTabs({
   activo,
   onSeleccionar,
   onProtocolo,
+  paraSidebar = false,
 }: {
   tabs: PanelTab[];
   activo: string;
   onSeleccionar: (id: string) => void;
   /** Abre el modal de protocolo desde la hoja «Más» (móvil). */
   onProtocolo?: () => void;
+  /**
+   * Solo navegación (chips en tablet + bottom bar en móvil): el contenido
+   * lo pinta el padre y la navegación en escritorio es el sidebar.
+   */
+  paraSidebar?: boolean;
 }) {
   const [masAbierto, setMasAbierto] = useState(false);
   const [sombraDcha, setSombraDcha] = useState(true);
@@ -87,11 +93,13 @@ export function PanelTabs({
   const secundarias = tabs.filter((t) => !t.primaria);
 
   return (
-    <div className="space-y-3 pb-24 sm:space-y-4 sm:pb-0">
-      {/* Chips (desktop) */}
+    <div className={paraSidebar ? "" : "space-y-3 pb-24 sm:space-y-4 sm:pb-0"}>
+      {/* Chips (tablet; en modo sidebar la navegación de escritorio es el aside) */}
       <nav
         aria-label="Secciones del panel"
-        className="db-tabs sticky top-[calc(4rem+env(safe-area-inset-top))] z-30 -mx-4 hidden sm:block"
+        className={`db-tabs sticky top-[calc(4rem+env(safe-area-inset-top))] z-30 -mx-4 hidden sm:block ${
+          paraSidebar ? "md:hidden" : ""
+        }`}
       >
         <div
           ref={chipsRef}
@@ -132,10 +140,12 @@ export function PanelTabs({
         )}
       </nav>
 
-      {/* Contenido de la pestaña activa */}
-      <div key={actual?.id} className="db-fade">
-        {actual?.node}
-      </div>
+      {/* Contenido de la pestaña activa (en modo sidebar lo pinta el padre) */}
+      {!paraSidebar && (
+        <div key={actual?.id} className="db-fade">
+          {actual?.node}
+        </div>
+      )}
 
       {/* Bottom bar (móvil) */}
       <nav
