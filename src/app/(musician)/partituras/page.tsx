@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import {
   flexRender,
   getCoreRowModel,
@@ -88,7 +89,7 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
       )}
 
       {archivos === null ? (
-        <p className="text-sm text-neutral-500">Cargando archivos…</p>
+        <SkeletonFilas n={3} />
       ) : archivos.length === 0 ? (
         <p className="text-sm text-neutral-500">
           Este tema aún no tiene archivos.
@@ -254,7 +255,7 @@ export default function PartiturasPage() {
       )}
 
       {catalogo === null ? (
-        <p className="text-sm text-neutral-500">Cargando repertorio…</p>
+        <SkeletonFilas n={5} />
       ) : total === 0 ? (
         <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">
           Todavía no hay material publicado para este repertorio.

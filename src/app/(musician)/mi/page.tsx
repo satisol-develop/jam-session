@@ -8,6 +8,7 @@ import { api } from "@/lib/api/client";
 import { SubscribeForm } from "@/components/musician/subscribe-form";
 import { ProposeForm } from "@/components/musician/propose-form";
 import { AttendeesList } from "@/components/musician/attendees-list";
+import { PantallaCargando } from "@/components/loading";
 import type { Evento, Inscripcion } from "@/types";
 
 function Section({
@@ -38,6 +39,9 @@ export default function MiZonaPage() {
   const [cargado, setCargado] = useState(false);
 
   useEffect(() => {
+    // Salvaguarda: a los 12 s se pinta la zona aunque un endpoint tarde;
+    // lo que llegue después sobrescribe.
+    const salvamento = setTimeout(() => setCargado(true), 12000);
     Promise.all([
       api<{ evento: Evento | null }>("public.event"),
       api<{ inscripcion: Inscripcion | null }>("musician.subscription"),
@@ -48,6 +52,7 @@ export default function MiZonaPage() {
       })
       .catch(() => undefined)
       .finally(() => setCargado(true));
+    return () => clearTimeout(salvamento);
   }, []);
 
   if (pendiente) {
@@ -56,6 +61,11 @@ export default function MiZonaPage() {
         Cargando…
       </div>
     );
+  }
+
+  // Primer lote de endpoints: nada de «Mi zona» hasta que terminen.
+  if (!cargado) {
+    return <PantallaCargando texto="Cargando tu zona…" />;
   }
 
   const roleEntries = Object.entries(roles);
@@ -72,8 +82,7 @@ export default function MiZonaPage() {
               : ` Inscripción abierta: ${evento.titulo || "Jam Session"}.`
             : ""}
         </p>
-        {!cargado && <p className="mt-2 text-sm text-neutral-500">Cargando…</p>}
-        {cargado && !evento && (
+        {!evento && (
           <p className="mt-2 text-sm text-amber-600">
             No hay ningún evento activo ahora mismo.
           </p>

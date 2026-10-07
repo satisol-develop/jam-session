@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api/client";
@@ -200,7 +201,7 @@ export default function EscaletaPage() {
       {error && <p className="db-error mb-4">{error}</p>}
 
       {turnos === null ? (
-        <p className="db-muted text-sm">Cargando escaleta…</p>
+        <SkeletonFilas n={4} />
       ) : turnos.length === 0 ? (
         <p className="db-card p-6 text-center text-sm db-muted">
           La escaleta está vacía. Añade el primer turno.

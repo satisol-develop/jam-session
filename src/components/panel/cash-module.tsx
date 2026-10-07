@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import type { MovimientoCaja, ResumenCaja, TipoMovimiento } from "@/types";
 
@@ -107,7 +108,10 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
   }
 
   if (!data) {
-    return <p className="db-muted text-sm">{error ?? "Cargando caja…"}</p>;
+    if (error) {
+      return <p className="db-muted text-sm">{error}</p>;
+    }
+    return <SkeletonFilas n={3} />;
   }
 
   const cobradoEfectivo = data.movimientos

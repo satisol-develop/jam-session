@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 
 interface UsuarioAdmin {
@@ -115,7 +116,7 @@ export function UsuariosPanel() {
           Usuarios ({usuarios === null ? "…" : usuarios.length})
         </p>
         {usuarios === null ? (
-          <p className="db-muted text-sm">Cargando usuarios…</p>
+          <SkeletonFilas n={4} />
         ) : usuarios.length === 0 ? (
           <p className="db-muted text-sm">Todavía no hay usuarios dados de alta.</p>
         ) : (

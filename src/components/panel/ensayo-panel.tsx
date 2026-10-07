@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { api } from "@/lib/api/client";
 import type { Evento } from "@/types";
@@ -84,7 +85,7 @@ export function EnsayoPanel() {
   }
 
   if (evento === undefined) {
-    return <p className="db-muted text-sm">Cargando…</p>;
+    return <SkeletonFilas n={3} />;
   }
   if (!evento) {
     return (

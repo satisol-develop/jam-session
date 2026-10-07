@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import { INSTRUMENTOS } from "@/lib/constants";
 import type { Cancion, Inscripcion, SolicitudTema } from "@/types";
@@ -162,7 +163,7 @@ export function SubscribeForm({ inscripcion, onSaved, cerradas, ensayo }: Props)
           Temas en los que quieres participar
         </legend>
         {catalogo === null ? (
-          <p className="text-sm text-neutral-500">Cargando repertorio…</p>
+          <SkeletonFilas n={3} />
         ) : catalogo.length === 0 ? (
           <p className="text-sm text-neutral-500">
             Aún no hay repertorio publicado.

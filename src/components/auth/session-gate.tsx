@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth/auth-provider";
 import { api } from "@/lib/api/client";
 import { DEMO_MODE } from "@/lib/demo";
 import { FirebaseError } from "firebase/app";
+import { PantallaCargando } from "@/components/loading";
 
 /**
  * Capa de verificación: mientras la plataforma comprueba sesión y roles no
@@ -13,24 +14,6 @@ import { FirebaseError } from "firebase/app";
  * falla, pantalla de error con Reintentar/Salir. La cabecera (con «Salir»)
  * sigue visible fuera del gate.
  */
-
-function CargandoVerificacion() {
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-white dark:bg-black"
-    >
-      <span
-        aria-hidden
-        className="size-10 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-800 dark:border-t-[#FFE600]"
-      />
-      <p className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">
-        Verificando sesión…
-      </p>
-    </div>
-  );
-}
 
 function ErrorVerificacion({
   mensaje,
@@ -97,7 +80,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
     return (
       <>
         {children}
-        <CargandoVerificacion />
+        <PantallaCargando texto="Verificando sesión…" />
       </>
     );
   }

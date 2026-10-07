@@ -85,7 +85,13 @@ export function usePanelStatus(rol: Rol): EstadoPanel & { recargar: () => void }
   }, [rol]);
 
   useEffect(() => {
+    // Salvaguarda: si un endpoint no responde, a los 12 s se pinta el panel
+    // igualmente; cuando lleguen, los datos reales sobrescriben.
+    const salvamento = setTimeout(() => {
+      setEstado((prev) => (prev.cargando ? { ...prev, cargando: false } : prev));
+    }, 12000);
     recargar();
+    return () => clearTimeout(salvamento);
   }, [recargar]);
 
   return { ...estado, recargar };

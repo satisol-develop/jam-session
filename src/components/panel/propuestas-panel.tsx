@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import type { Propuesta } from "@/types";
 
@@ -64,7 +65,7 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
   }
 
   if (propuestas === null) {
-    return <p className="db-muted text-sm">Cargando propuestas…</p>;
+    return <SkeletonFilas n={3} />;
   }
 
   if (propuestas.length === 0) {

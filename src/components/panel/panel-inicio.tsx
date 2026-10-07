@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { diasPara, type PasoSiguiente } from "@/lib/panel/proximo-paso";
 import type { EstadoPanel } from "@/components/panel/use-panel-status";
 import type { Rol } from "@/types";
@@ -49,7 +50,7 @@ export function PanelInicio({
         </p>
 
         {estado.cargando ? (
-          <p className="db-muted text-sm">Cargando estado…</p>
+          <SkeletonFilas n={3} />
         ) : (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2 text-sm">

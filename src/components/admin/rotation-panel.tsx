@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import { DEMO_MODE } from "@/lib/demo";
 import { demoApi } from "@/lib/demo/api";
@@ -114,7 +115,7 @@ export function RotationPanel() {
   }
 
   if (usuarios === null) {
-    return <p className="db-muted text-sm">Cargando matriz de usuarios…</p>;
+    return <SkeletonFilas n={4} />;
   }
 
   const selectUser = (value: string, onChange: (uid: string) => void) => (

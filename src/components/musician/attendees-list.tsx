@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 
 interface Asistente {
@@ -28,7 +29,7 @@ export function AttendeesList() {
     );
   }
   if (asistentes === null) {
-    return <p className="text-sm text-neutral-500">Cargando asistentes…</p>;
+    return <SkeletonFilas n={4} />;
   }
   if (asistentes.length === 0) {
     return (

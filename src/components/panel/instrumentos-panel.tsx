@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import type { Inscripcion } from "@/types";
 
@@ -47,7 +48,7 @@ export function InstrumentosPanel() {
   }, []);
 
   if (lineas === null) {
-    return <p className="db-muted text-sm">Cargando instrumentos…</p>;
+    return <SkeletonFilas n={4} />;
   }
 
   if (lineas.length === 0) {

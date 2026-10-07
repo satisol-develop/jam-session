@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import type { Cancion } from "@/types";
 
@@ -107,7 +108,7 @@ export function RepertorioPanel({ editable }: { editable: boolean }) {
       )}
 
       {catalogo === null ? (
-        <p className="db-muted text-sm">Cargando repertorio…</p>
+        <SkeletonFilas n={3} />
       ) : catalogo.length === 0 ? (
         <p className="db-card p-6 text-center text-sm db-muted">
           El repertorio está vacío. Añade el primer tema.

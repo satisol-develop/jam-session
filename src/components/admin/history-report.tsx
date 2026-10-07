@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import type {
   CierreCaja,
@@ -182,7 +183,7 @@ export function HistoryReport() {
   }, []);
 
   if (error) return <p className="db-error">{error}</p>;
-  if (historial === null) return <p className="db-muted text-sm">Cargando historial…</p>;
+  if (historial === null) return <SkeletonFilas n={4} />;
   if (historial.length === 0) {
     return (
       <p className="db-muted text-sm">

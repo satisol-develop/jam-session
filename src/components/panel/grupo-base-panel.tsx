@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { api } from "@/lib/api/client";
 import type { RoleAssignment, Usuario } from "@/types";
@@ -64,7 +65,7 @@ export function GrupoBasePanel() {
   }
 
   if (usuarios === null) {
-    return <p className="db-muted text-sm">Cargando Grupo Base…</p>;
+    return <SkeletonFilas n={3} />;
   }
 
   const nombre = (uid: string) =>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
 import type { Rol, Tarea } from "@/types";
@@ -107,7 +108,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
   }
 
   if (tareas === null) {
-    return <p className="db-muted text-sm">Cargando tareas…</p>;
+    return <SkeletonFilas n={3} />;
   }
 
   const hechas = tareas.filter((t) => t.estado === "hecha").length;

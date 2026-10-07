@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import type { Evento } from "@/types";
 
@@ -129,7 +130,7 @@ export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
   }
 
   if (evento === undefined) {
-    return <p className="db-muted text-sm">Cargando evento…</p>;
+    return <SkeletonFilas n={3} />;
   }
   if (!evento) {
     return (

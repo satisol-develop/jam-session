@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ChangeEvent } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import type { Evento } from "@/types";
 
@@ -137,7 +138,7 @@ export function DifusionKit({ editable }: { editable: boolean }) {
   }, []);
 
   if (evento === undefined) {
-    return <p className="db-muted text-sm">Cargando evento…</p>;
+    return <SkeletonFilas n={3} />;
   }
   if (error && !evento) {
     return <p className="db-error">{error}</p>;

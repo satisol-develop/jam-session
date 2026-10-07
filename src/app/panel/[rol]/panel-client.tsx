@@ -27,6 +27,7 @@ import { usePanelStatus } from "@/components/panel/use-panel-status";
 import { PanelTabs, type PanelTab } from "@/components/panel/panel-tabs";
 import { AdminSidebar } from "@/components/panel/admin-sidebar";
 import { AdminKpis } from "@/components/panel/admin-kpis";
+import { PantallaCargando } from "@/components/loading";
 import { proximoPaso } from "@/lib/panel/proximo-paso";
 
 function Seccion({
@@ -68,6 +69,11 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   const [protocolo, setProtocolo] = useState(false);
   const cerrarProtocolo = useCallback(() => setProtocolo(false), []);
   const abrirProtocolo = useCallback(() => setProtocolo(true), []);
+
+  // Primer lote de endpoints: no se pinta nada del panel hasta que terminen.
+  if (estado.cargando) {
+    return <PantallaCargando texto="Cargando panel…" />;
+  }
 
   function seleccionar(id: string) {
     setActivo(id);

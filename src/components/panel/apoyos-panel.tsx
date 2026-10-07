@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SkeletonFilas } from "@/components/loading";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { api } from "@/lib/api/client";
 import type { RoleAssignment, Rol, Usuario } from "@/types";
@@ -66,7 +67,7 @@ export function ApoyosPanel({ rol }: { rol: Rol }) {
   }
 
   if (usuarios === null) {
-    return <p className="db-muted text-sm">Cargando apoyos…</p>;
+    return <SkeletonFilas n={3} />;
   }
 
   const nombre = (uid: string) =>
