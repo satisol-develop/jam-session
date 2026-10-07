@@ -125,9 +125,10 @@ está en `.gitignore`; cópialo desde tu equipo).
 1. Ve a <https://script.google.com> → **Nuevo proyecto** → nómbralo `Jam Session API`.
 2. **Project Settings (engranaje) → ☐ Show "appsscript.json"** → sustituye su
    contenido por el de `apps-script/appsscript.json`.
-3. Crea un archivo por cada `.gs` de la carpeta y pega su contenido
-   (`main`, `sheets`, `routes`, `musicians`, `roles`, `eventos`, `caja`,
-   `escaleta`, `drive`, `files`, `seed`, `seed-repertorio`, `init`).
+3. Crea **5 archivos** en el editor y pega el contenido de la carpeta local
+   `apps-script/`: `main`, `datos`, `drive`, `evento`, `equipo` (los `.gs`
+   sueltos antiguos quedan archivados en `apps-script/individuales/`; en el
+   editor, **borra los ficheros antiguos** para no duplicar funciones).
    Alternativa rápida con `clasp`:
    `npm i -g @google/clasp && clasp login && clasp create --type sheets && clasp push`
    (desde dentro de `apps-script/`).
