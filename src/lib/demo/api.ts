@@ -724,27 +724,18 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       return { cartelUrl: s.evento.cartelUrl } as T;
     }
 
-    case "event.borradorCartel": {
-      requiereEventoAbierto(s);
-      validarTitular("redes");
+    case "plantilla.list": {
       return {
-        fileId: `demo-borrador-${s.evento.id}`,
-        webViewLink: "",
-        nombre: `Cartel — ${s.evento.titulo}`,
-        reusado: false,
+        plantillas: [
+          {
+            id: "demo-plantilla",
+            nombre: "cartel-jam-session.svg",
+            mimeType: "image/svg+xml",
+            bytes: 4_000,
+            url: `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/plantillas/cartel.svg`,
+          },
+        ],
       } as T;
-    }
-
-    case "event.publicarCartel": {
-      requiereEventoAbierto(s);
-      validarTitular("redes");
-      const evCartel = s.evento;
-      const esc = (t: string) =>
-        t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000"><rect width="800" height="1000" fill="#101014"/><text x="60" y="160" fill="#f5f5f7" font-size="54" font-weight="bold" font-family="sans-serif">${esc(evCartel.titulo)}</text><text x="60" y="260" fill="#cfcfd6" font-size="34" font-family="sans-serif">${esc(evCartel.fecha)}</text><text x="60" y="330" fill="#cfcfd6" font-size="34" font-family="sans-serif">${esc(evCartel.hora)} · ${esc(evCartel.lugar)}</text><text x="60" y="920" fill="#8f8f9a" font-size="28" font-family="sans-serif">#DebarockKolektiboa</text></svg>`;
-      s.evento.cartelUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-      bumpDemoVersion(s);
-      return { cartelUrl: s.evento.cartelUrl } as T;
     }
 
     case "gb.set": {

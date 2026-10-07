@@ -4,9 +4,22 @@ import { useEffect, useState, type ChangeEvent } from "react";
 import { api } from "@/lib/api/client";
 import type { Evento } from "@/types";
 
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const CARTEL_MIME_OK = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
 const MAX_CARTEL_BYTES = 6 * 1024 * 1024;
+
+interface Plantilla {
+  id: string;
+  nombre: string;
+  mimeType: string;
+  bytes: number;
+  url: string;
+}
+
+function formatBytes(n: number): string {
+  if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  if (n >= 1024) return `${Math.round(n / 1024)} KB`;
+  return `${n} B`;
+}
 
 const fmtFecha = new Intl.DateTimeFormat("es-ES", {
   weekday: "long",
@@ -100,9 +113,10 @@ export function DifusionKit({ editable }: { editable: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [ok, setOk] = useState<string | null>(null);
-  const [borrador, setBorrador] = useState<{ fileId: string; webViewLink: string } | null>(null);
-  const [creandoBorrador, setCreandoBorrador] = useState(false);
-  const [publicando, setPublicando] = useState(false);
+  const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
+  const [plantillasEstado, setPlantillasEstado] = useState<
+    "cargando" | "ok" | "error"
+  >("cargando");
 
   useEffect(() => {
     api<{ evento: Evento | null }>("public.event")
@@ -111,6 +125,15 @@ export function DifusionKit({ editable }: { editable: boolean }) {
         setError(err instanceof Error ? err.message : "No se pudo cargar.");
         setEvento(null);
       });
+  }, []);
+
+  useEffect(() => {
+    api<{ plantillas: Plantilla[] }>("plantilla.list")
+      .then((res) => {
+        setPlantillas(res.plantillas ?? []);
+        setPlantillasEstado("ok");
+      })
+      .catch(() => setPlantillasEstado("error"));
   }, []);
 
   if (evento === undefined) {
@@ -164,50 +187,6 @@ export function DifusionKit({ editable }: { editable: boolean }) {
     }
   }
 
-  async function reutilizarPlantilla() {
-    if (creandoBorrador) return;
-    setCreandoBorrador(true);
-    setError(null);
-    setOk(null);
-    try {
-      const res = await api<{ fileId: string; webViewLink: string; reusado?: boolean }>(
-        "event.borradorCartel",
-        {},
-      );
-      setBorrador({ fileId: res.fileId, webViewLink: res.webViewLink });
-      if (res.webViewLink) {
-        window.open(res.webViewLink, "_blank", "noopener,noreferrer");
-      }
-      setOk(
-        res.reusado
-          ? "Ya había un borrador en Drive: se ha abierto para seguir editándolo."
-          : "Copia de la plantilla creada en Drive con los datos del evento: edítala allí y vuelve aquí para publicarla.",
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo crear el borrador.");
-    } finally {
-      setCreandoBorrador(false);
-    }
-  }
-
-  async function publicarDesdeDrive() {
-    if (publicando) return;
-    setPublicando(true);
-    setError(null);
-    setOk(null);
-    try {
-      const res = await api<{ cartelUrl: string }>("event.publicarCartel", {
-        fileId: borrador?.fileId || "",
-      });
-      setEvento((prev) => (prev ? { ...prev, cartelUrl: res.cartelUrl } : prev));
-      setOk("Cartel publicado desde Drive: ya se ve en la portada de la web.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo publicar el cartel.");
-    } finally {
-      setPublicando(false);
-    }
-  }
-
   const datos: [string, string][] = [
     ["Título", evento.titulo],
     ["Fecha", fecha],
@@ -258,15 +237,47 @@ export function DifusionKit({ editable }: { editable: boolean }) {
           </p>
         )}
 
-        <div className="flex flex-wrap items-center gap-2">
-          <a
-            href={`${BASE_PATH}/plantillas/cartel.svg`}
-            download="cartel-jam-session.svg"
-            className="db-btn text-xs!"
-          >
-            Descargar plantilla
-          </a>
-          {editable && (
+        <div className="mb-3">
+          <p className="db-kicker mb-1">Plantillas descargables</p>
+          {plantillasEstado === "cargando" && (
+            <p className="db-muted text-xs">Cargando plantillas…</p>
+          )}
+          {plantillasEstado === "error" && (
+            <p className="db-error text-xs">
+              No se pudieron cargar las plantillas.
+            </p>
+          )}
+          {plantillasEstado === "ok" && plantillas.length === 0 && (
+            <p className="db-muted text-xs">
+              Aún no hay plantillas: sube los archivos (PSD, AI, SVG, PNG,
+              ZIP…) a la carpeta «Jam Session — Plantillas» de Drive y
+              aparecerán aquí.
+            </p>
+          )}
+          {plantillas.length > 0 && (
+            <ul className="space-y-1">
+              {plantillas.map((p) => (
+                <li key={p.id} className="flex items-center gap-2">
+                  <a
+                    href={p.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="db-ghost truncate text-xs!"
+                  >
+                    {p.nombre}
+                  </a>
+                  <span className="db-badge db-badge-line shrink-0 text-[10px]!">
+                    {(p.nombre.split(".").pop() || "?").toUpperCase()} ·{" "}
+                    {formatBytes(p.bytes)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {editable && (
+          <div className="flex flex-wrap items-center gap-2">
             <label
               className={`db-ghost text-xs! ${subiendo ? "pointer-events-none opacity-50" : ""}`}
             >
@@ -279,54 +290,14 @@ export function DifusionKit({ editable }: { editable: boolean }) {
                 disabled={subiendo}
               />
             </label>
-          )}
-        </div>
-
-        {editable && (
-          <div className="mt-3 rounded-xl border border-white/12 p-3">
-            <p className="db-kicker mb-2">Plantilla en Drive</p>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={reutilizarPlantilla}
-                disabled={creandoBorrador}
-                className="db-btn text-xs!"
-              >
-                {creandoBorrador ? "Creando…" : "Reutilizar plantilla"}
-              </button>
-              <button
-                type="button"
-                onClick={publicarDesdeDrive}
-                disabled={publicando}
-                className="db-ghost text-xs!"
-              >
-                {publicando ? "Publicando…" : "Publicar desde Drive"}
-              </button>
-              {borrador && (
-                <a
-                  href={borrador.webViewLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="db-ghost text-xs!"
-                >
-                  Abrir borrador
-                </a>
-              )}
-            </div>
-            <p className="db-muted mt-2 text-xs">
-              «Reutilizar plantilla» copia la plantilla de Drive con el título,
-              fecha, hora y lugar del evento y la abre para que la edites;
-              cuando la tengas, «Publicar desde Drive» la exporta y la pone en
-              la portada.
-            </p>
           </div>
         )}
 
         <p className="db-muted mt-2 text-xs">
-          Alternativa manual: descarga la plantilla (SVG), edita el título,
-          fecha, hora y lugar en Illustrator, Inkscape, Figma o el navegador;
-          expórtala como PNG o JPG y súbrela aquí. Formatos: JPG, PNG, WEBP o
-          SVG (máx. 6 MB).
+          Descarga una plantilla, edítala en el editor que quieras (Photoshop,
+          Figma, Illustrator…) y vuelve a subirla aquí: JPG, PNG, WEBP o SVG
+          (máx. 6 MB). Solo se publica un cartel en la portada: al subir uno
+          nuevo sustituye al anterior.
         </p>
         {ok && <p className="db-badge mt-2 inline-flex">{ok}</p>}
         {error && <p className="db-error mt-2">{error}</p>}

@@ -44,12 +44,15 @@ Resumen rápido (detalle en cada sección):
 4. `artista` y `tonalidad` se rellenan a mano en la hoja `Repertorio`, desde
    la pestaña Repertorio del panel del Grupo Base/General, o en el propio
    Sheet (no hace falta para que funcione).
-5. **Cartel**: desde el panel **Redes → Kit de difusión** se descarga la
-   plantilla (`public/plantillas/cartel.svg`), se edita y el cartel final se
-   sube con «Subir cartel» (JPG/PNG/WEBP/SVG, máx. 6 MB): va a Drive con
-   enlace público y aparece en la portada. Alternativa manual: sube el
-   cartel, compártelo con **«Cualquier persona con el enlace»** y guarda la
-   URL en `Eventos.cartel_url`.
+5. **Cartel**: en el panel **Redes → Kit de difusión** aparecen las
+   **plantillas descargables** de la carpeta Drive «Jam Session — Plantillas»
+   (se crea sola en la raíz en el primer uso; sube ahí tus plantillas en
+   cualquier formato: PSD, AI, SVG, PNG, ZIP…). Se descargan, se editan en el
+   editor que quieras y el cartel final se sube con «Subir cartel»
+   (JPG/PNG/WEBP/SVG, máx. 6 MB): va a Drive con enlace público y aparece en
+   la portada. **Solo se publica uno**: subir otro sustituye al anterior.
+   Alternativa manual: sube el cartel, compártelo con **«Cualquier persona
+   con el enlace»** y guarda la URL en `Eventos.cartel_url`.
 
 ## 2. Firebase — identidad (login)
 
