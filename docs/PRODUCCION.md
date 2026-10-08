@@ -165,8 +165,6 @@ está en `.gitignore`; cópialo desde tu equipo).
       p. ej. `["https://satisol-develop.github.io"]`. Sin esta propiedad se
       acepta cualquier origen: la seguridad real es el token + los roles de la
       hoja `Roles`.
-    - `CLAVE_DEFECTO` *(opcional)* = contraseña por defecto de las cuentas
-      creadas por el admin (por defecto `jam2026`).
     - `AVISOS_MAIL` *(opcional)* = `1` para activar los avisos por correo
       (tarea nueva → al rol, propuesta resuelta → al proponente, evento
       cerrado → a todos). Sin la propiedad no se envía nada.
@@ -248,8 +246,8 @@ comprueba en este orden:
 4. **Tu cuenta admin**: con la fila de `Roles` del paso 3.4, entra en
    `/panel/admin` y comprueba que la matriz carga (`admin.users`).
 5. **Alta de participantes**: `/panel/admin` → pestaña **Usuarios** → crea
-   una cuenta (`admin.createUser`): se da de alta con la contraseña por
-   defecto (`CLAVE_DEFECTO`, por defecto `jam2026`), recibe el correo de
+   una cuenta (`admin.createUser`): se da de alta con la contraseña
+   `nombre#jamsession2026`, recibe el correo de
    verificación y, al entrar, la web le **fuerza a cambiar la contraseña**
    (luego verifica el correo). Desde la fila expandida también puedes
    editar nombre/teléfono (`admin.updateUser`), **dar de baja/reactivar**,

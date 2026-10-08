@@ -606,7 +606,12 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       };
       s.usuarios.push(nuevo);
       bumpDemoVersion(s);
-      return { uid: nuevo.uid, email, clave: "jam2026" } as T;
+      return {
+        uid: nuevo.uid,
+        email,
+        clave: (nombreNuevo || email.split("@")[0]) + "#jamsession2026",
+        correo: true,
+      } as T;
     }
 
     case "admin.updateUser": {

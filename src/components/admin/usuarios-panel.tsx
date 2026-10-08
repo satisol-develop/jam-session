@@ -26,7 +26,9 @@ export function UsuariosPanel() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [creado, setCreado] = useState<string | null>(null);
+  const [creado, setCreado] = useState<{ texto: string; ok: boolean } | null>(
+    null,
+  );
 
   const [expandido, setExpandido] = useState<string | null>(null);
   const [draft, setDraft] = useState({ nombre: "", telefono: "" });
@@ -59,12 +61,22 @@ export function UsuariosPanel() {
     setCreado(null);
     setBusy(true);
     try {
-      const res = await api<{ uid: string; email: string; clave: string }>(
-        "admin.createUser",
-        { nombre: nombre.trim(), email: email.trim() },
-      );
+      const res = await api<{
+        uid: string;
+        email: string;
+        clave: string;
+        correo?: boolean;
+      }>("admin.createUser", { nombre: nombre.trim(), email: email.trim() });
       setCreado(
-        `Cuenta creada para ${res.email}. Contraseña por defecto: ${res.clave} — compártela y el usuario la cambiará al entrar.`,
+        res.correo === false
+          ? {
+              ok: false,
+              texto: `Cuenta creada para ${res.email}, pero NO se envió el correo de verificación: el usuario deberá reenviarlo desde su primer acceso. Contraseña: ${res.clave}.`,
+            }
+          : {
+              ok: true,
+              texto: `Cuenta creada para ${res.email}. Correo de verificación enviado. Contraseña: ${res.clave} — compártela y el usuario la cambiará al entrar.`,
+            },
       );
       setNombre("");
       setEmail("");
@@ -224,6 +236,7 @@ export function UsuariosPanel() {
               type="text"
               required
               autoComplete="off"
+              disabled={busy}
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Nombre del usuario"
@@ -239,6 +252,7 @@ export function UsuariosPanel() {
               type="email"
               required
               autoComplete="off"
+              disabled={busy}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="correo@ejemplo.com"
@@ -253,18 +267,43 @@ export function UsuariosPanel() {
           </p>
         )}
         {creado && (
-          <p className="db-ok" role="status">
-            {creado}
+          <p
+            className={creado.ok ? "db-ok" : "db-error"}
+            role={creado.ok ? "status" : "alert"}
+          >
+            {creado.texto}
           </p>
         )}
 
-        <button type="submit" disabled={busy} className="db-btn">
-          {busy ? "Creando…" : "Crear cuenta"}
+        <button
+          type="submit"
+          disabled={busy}
+          aria-busy={busy}
+          className="db-btn"
+        >
+          {busy ? (
+            <>
+              <span
+                aria-hidden="true"
+                className="size-4 animate-spin rounded-full border-2 border-black/30 border-t-black"
+              />
+              Creando cuenta y enviando correo…
+            </>
+          ) : (
+            "Crear cuenta"
+          )}
         </button>
+        {busy && (
+          <p className="db-muted text-xs">
+            Creando la cuenta en Firebase y enviando el correo de verificación…
+            puede tardar unos segundos.
+          </p>
+        )}
         <p className="db-muted text-xs">
-          Se da de alta con la contraseña por defecto del script (propiedad
-          CLAVE_DEFECTO) y se le envía un correo de verificación; al entrar,
-          la plataforma le pedirá cambiar la contraseña.
+          La contraseña es el nombre del usuario + «#jamsession2026» (si no
+          hay nombre, la parte antes de la «@» del correo) y se le envía un
+          correo de verificación; al entrar, la plataforma le pedirá
+          cambiarla.
         </p>
       </form>
 

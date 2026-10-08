@@ -38,7 +38,7 @@ interface AuthContextValue {
   user: User | null;
   roles: RolesMap;
   loading: boolean;
-  /** La cuenta creada por el admin aún usa la contraseña por defecto. */
+  /** La cuenta creada por el admin aún usa la contraseña con la que se creó. */
   clavePendiente: boolean;
   /** La primera verificación de sesión/roles falló: mensaje del error. */
   rolesError: string | null;
