@@ -134,16 +134,15 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   if (rol === "admin") {
     tabs.push(
       {
-        id: "tareas",
-        label: "Tareas",
+        id: "usuarios",
+        label: "Usuarios",
         primaria: true,
-        conteo: pendTareas,
         node: (
           <Seccion
-            titulo="Tareas de todos los roles"
-            nota="Progreso global del equipo, etiquetado por rol. Solo lectura."
+            titulo="Gestión de usuarios"
+            nota="Alta, edición, baja, restablecer contraseña y roles del mes."
           >
-            <TaskList rol="admin" todas soloLectura />
+            <UsuariosPanel />
           </Seccion>
         ),
       },
@@ -176,38 +175,15 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         ),
       },
       {
-        id: "instrumentos",
-        label: "Instrumentos",
+        id: "tareas",
+        label: "Tareas",
+        conteo: pendTareas,
         node: (
           <Seccion
-            titulo="Instrumentos confirmados"
-            nota="Líneas por instrumento para la planificación técnica."
+            titulo="Tareas de todos los roles"
+            nota="Progreso global del equipo, etiquetado por rol. Solo lectura."
           >
-            <InstrumentosPanel />
-          </Seccion>
-        ),
-      },
-      {
-        id: "caja",
-        label: "Caja",
-        node: (
-          <Seccion
-            titulo="Caja y fondos"
-            nota="Movimientos y totales. Solo el rol Caja escribe."
-          >
-            <CashModule puedeEscribir={false} />
-          </Seccion>
-        ),
-      },
-      {
-        id: "historial",
-        label: "Historial",
-        node: (
-          <Seccion
-            titulo="Historial de sesiones"
-            nota="Sesiones cerradas: roles, tareas y resultado de caja."
-          >
-            <HistoryReport />
+            <TaskList rol="admin" todas soloLectura />
           </Seccion>
         ),
       },
@@ -231,14 +207,38 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         ),
       },
       {
-        id: "usuarios",
-        label: "Usuarios",
+        id: "caja",
+        label: "Caja",
         node: (
           <Seccion
-            titulo="Gestión de usuarios"
-            nota="Alta, edición, baja, restablecer contraseña y roles del mes."
+            titulo="Caja y fondos"
+            nota="Movimientos y totales. Solo el rol Caja escribe."
           >
-            <UsuariosPanel />
+            <CashModule puedeEscribir={false} />
+          </Seccion>
+        ),
+      },
+      {
+        id: "instrumentos",
+        label: "Instrumentos",
+        node: (
+          <Seccion
+            titulo="Instrumentos confirmados"
+            nota="Líneas por instrumento para la planificación técnica."
+          >
+            <InstrumentosPanel />
+          </Seccion>
+        ),
+      },
+      {
+        id: "historial",
+        label: "Historial",
+        node: (
+          <Seccion
+            titulo="Historial de sesiones"
+            nota="Sesiones cerradas: roles, tareas y resultado de caja."
+          >
+            <HistoryReport />
           </Seccion>
         ),
       },

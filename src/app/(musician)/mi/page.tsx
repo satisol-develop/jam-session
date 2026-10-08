@@ -195,15 +195,18 @@ export default function MiZonaPage() {
       <Section
         title="Inscripción"
         description={
-          evento?.inscripcionesCerradas
-            ? "Inscripciones cerradas por el Grupo Base."
-            : "Elige instrumentos y temas en los que quieres tocar."
+          !evento
+            ? "No hay ninguna sesión abierta."
+            : evento.inscripcionesCerradas
+              ? "Inscripciones cerradas por el Grupo Base."
+              : "Elige instrumentos y temas en los que quieres tocar."
         }
       >
         <SubscribeForm
           key={inscripcion?.id ?? "sin-inscripcion"}
           inscripcion={inscripcion}
           onSaved={setInscripcion}
+          sinSesion={!evento}
           cerradas={evento?.inscripcionesCerradas ?? false}
           ensayo={evento?.ensayo || undefined}
         />

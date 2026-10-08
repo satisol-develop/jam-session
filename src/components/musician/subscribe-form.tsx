@@ -11,6 +11,8 @@ interface Props {
   onSaved: (inscripcion: Inscripcion) => void;
   /** El Grupo Base ha cerrado las inscripciones. */
   cerradas?: boolean;
+  /** No hay ninguna sesión abierta: no se puede elegir nada. */
+  sinSesion?: boolean;
   ensayo?: string;
 }
 
@@ -22,7 +24,13 @@ function initialSelection(inscripcion: Inscripcion | null): Record<string, strin
   return map;
 }
 
-export function SubscribeForm({ inscripcion, onSaved, cerradas, ensayo }: Props) {
+export function SubscribeForm({
+  inscripcion,
+  onSaved,
+  cerradas,
+  sinSesion,
+  ensayo,
+}: Props) {
   const [catalogo, setCatalogo] = useState<Cancion[] | null>(null);
   const [instrumentos, setInstrumentos] = useState<string[]>(
     inscripcion?.instrumentos ?? [],
@@ -109,6 +117,18 @@ export function SubscribeForm({ inscripcion, onSaved, cerradas, ensayo }: Props)
 
   const opcionesInstrumento =
     instrumentos.length > 0 ? instrumentos : [...INSTRUMENTOS];
+
+  if (sinSesion) {
+    return (
+      <div className="space-y-2 rounded-xl border border-neutral-200 p-4 text-sm dark:border-neutral-800">
+        <p className="font-semibold">No hay ninguna sesión abierta</p>
+        <p className="text-neutral-500 dark:text-neutral-400">
+          No podrás elegir temas hasta que el Grupo Base abra la próxima
+          jam.
+        </p>
+      </div>
+    );
+  }
 
   if (cerradas) {
     return (
