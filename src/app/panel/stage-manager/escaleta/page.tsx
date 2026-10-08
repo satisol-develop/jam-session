@@ -42,7 +42,7 @@ export default function EscaletaPage() {
   const puedeEditar =
     roles["stage-manager"] === "titular" || roles["grupo-base"] === "titular";
   const puedeVer = Boolean(
-    roles["stage-manager"] || roles["grupo-base"] || roles["admin"],
+    roles["stage-manager"] || roles["grupo-base"] || roles["general"] || roles["admin"],
   );
 
   const [turnos, setTurnos] = useState<Turno[] | null>(null);
@@ -164,8 +164,8 @@ export default function EscaletaPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
         <p className="db-muted text-sm">
-          Este panel es para Stage Manager y Grupo Base (y el administrador en
-          modo lectura).
+          Este panel es para Stage Manager y Grupo Base (y el General y el
+          administrador en modo lectura).
         </p>
         <Link href="/panel" className="mt-2 text-sm text-[#FFE600] underline">
           Volver a paneles

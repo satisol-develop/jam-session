@@ -180,12 +180,13 @@ export const ROLE_GUIDES: Record<Rol, PasoGuia[]> = {
     {
       fase: "semana",
       texto: "Revisa que GB ha fijado el ensayo y que Redes difunde la fecha.",
-      irA: "sesion",
+      irA: "ensayo",
     },
     {
       fase: "dia",
       texto:
         "Día de la Jam: coordina imprevistos con Stage Manager y Técnico.",
+      irA: "escaleta",
     },
     {
       fase: "cierre",

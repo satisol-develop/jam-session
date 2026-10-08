@@ -237,10 +237,10 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       },
       {
         id: "auditoria",
-        label: "Auditoría",
+        label: "Actividad",
         node: (
           <Seccion
-            titulo="Auditoría de actividad"
+            titulo="Actividad de la plataforma"
             nota="Últimos 200 movimientos registrados en la plataforma."
           >
             <AuditPanel />
@@ -316,6 +316,32 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
               nota="Tu grupo del mes: no rota y tiene acceso a su panel."
             >
               <GrupoBasePanel />
+            </Seccion>
+          ),
+        },
+        {
+          id: "ensayo",
+          label: "Ensayo",
+          node: (
+            <Seccion
+              titulo="Ensayo general y cierre de inscripciones"
+              nota="Consulta: el ensayo y el cierre de inscripciones los gestiona el Grupo Base."
+            >
+              <EnsayoPanel />
+            </Seccion>
+          ),
+        },
+        {
+          id: "escaleta",
+          label: "Escaleta",
+          node: (
+            <Seccion
+              titulo="Escaleta en directo"
+              nota="Consulta: la operan Stage Manager y Grupo Base durante la Jam."
+            >
+              <Link href="/panel/stage-manager/escaleta" className="db-btn">
+                Abrir escaleta
+              </Link>
             </Seccion>
           ),
         },
