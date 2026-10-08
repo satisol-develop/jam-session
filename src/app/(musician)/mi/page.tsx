@@ -10,7 +10,7 @@ import { ROLES_META } from "@/lib/constants";
 import { SubscribeForm } from "@/components/musician/subscribe-form";
 import { ProposeForm } from "@/components/musician/propose-form";
 import { AttendeesList } from "@/components/musician/attendees-list";
-import { PantallaCargando, SkeletonFilas } from "@/components/loading";
+import { Skeleton, SkeletonFilas } from "@/components/loading";
 import type { Evento, Inscripcion, Turno } from "@/types";
 
 function Section({
@@ -91,9 +91,18 @@ export default function MiZonaPage() {
     );
   }
 
-  // Primer lote de endpoints: nada de «Mi zona» hasta que terminen.
+  // Primer lote de endpoints: en cuanto lleguen roles y correo verificado
+  // (gate) se pinta la zona con skeletons, sin pantalla completa.
   if (!cargado) {
-    return <PantallaCargando texto="Cargando tu zona…" />;
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
+        <header>
+          <Skeleton className="h-8 w-40 rounded-xl" />
+          <Skeleton className="mt-3 h-4 w-3/4 rounded-lg" />
+        </header>
+        <SkeletonFilas n={3} />
+      </div>
+    );
   }
 
   const roleEntries = Object.entries(roles);

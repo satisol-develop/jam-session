@@ -22,6 +22,7 @@ export function RegistroForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [acepta, setAcepta] = useState(false);
 
   const captchaHostRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<number | null>(null);
@@ -40,21 +41,36 @@ export function RegistroForm() {
         setError(
           "La verificación anti-spam ha fallado. Recarga la página e inténtalo de nuevo.",
         ),
-    ).then((id) => {
-      if (vivo) widgetIdRef.current = id;
-    });
+    )
+      .then((id) => {
+        if (vivo) widgetIdRef.current = id;
+      })
+      .catch(() => {
+        /* si no monta al cargar, el envío lo reintenta */
+      });
     return () => {
       vivo = false;
       tokenResolverRef.current = null;
     };
   }, [captchaActivo]);
 
-  function pedirTokenCaptcha(): Promise<string> {
+  async function pedirTokenCaptcha(): Promise<string> {
+    // Si el widget aún no montó (script lento o bloqueado), reintenta ahora.
+    if (widgetIdRef.current === null && captchaHostRef.current) {
+      widgetIdRef.current = await montarCaptcha(
+        captchaHostRef.current,
+        (token) => tokenResolverRef.current?.(token),
+        () =>
+          setError(
+            "La verificación anti-spam ha fallado. Recarga la página e inténtalo de nuevo.",
+          ),
+      );
+    }
     const id = widgetIdRef.current;
     if (id === null) {
       return Promise.reject(
         new Error(
-          "No se pudo cargar la verificación anti-spam. Recarga la página e inténtalo de nuevo.",
+          "No se pudo cargar la verificación anti-spam (¿bloqueador de anuncios o sin conexión a Google?). Desactívalo o recarga la página e inténtalo de nuevo.",
         ),
       );
     }
@@ -79,6 +95,10 @@ export function RegistroForm() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!acepta) {
+      setError("Debes aceptar la política de privacidad y los términos de uso.");
+      return;
+    }
     setBusy(true);
     try {
       if (captchaActivo) {
@@ -177,6 +197,39 @@ export function RegistroForm() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white sm:text-sm"
             />
+          </div>
+
+          <div className="flex items-start gap-2">
+            <input
+              id="acepta"
+              type="checkbox"
+              required
+              checked={acepta}
+              onChange={(e) => setAcepta(e.target.checked)}
+              className="mt-1 size-4 shrink-0 accent-neutral-900 dark:accent-white"
+            />
+            <label
+              htmlFor="acepta"
+              className="text-xs text-neutral-600 dark:text-neutral-400"
+            >
+              He leído y acepto la{" "}
+              <Link
+                href="/privacidad"
+                target="_blank"
+                className="font-medium text-neutral-900 underline dark:text-white"
+              >
+                política de privacidad
+              </Link>{" "}
+              y los{" "}
+              <Link
+                href="/terminos"
+                target="_blank"
+                className="font-medium text-neutral-900 underline dark:text-white"
+              >
+                términos de uso
+              </Link>
+              .
+            </label>
           </div>
 
           {error && (

@@ -49,6 +49,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        {/* Acelera la primera llamada al backend (Apps Script). React 19
+            eleva estos <link> al <head>. */}
+        <link rel="preconnect" href="https://script.google.com" />
         <script dangerouslySetInnerHTML={{ __html: TEMA_INICIAL }} />
         <AuthProvider>
           <SiteHeader />

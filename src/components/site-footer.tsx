@@ -37,6 +37,18 @@ export function SiteFooter() {
           >
             Registro
           </Link>
+          <Link
+            href="/privacidad"
+            className="inline-flex min-h-10 items-center text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+          >
+            Privacidad
+          </Link>
+          <Link
+            href="/terminos"
+            className="inline-flex min-h-10 items-center text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+          >
+            Términos
+          </Link>
         </nav>
       </div>
     </footer>

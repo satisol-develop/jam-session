@@ -28,7 +28,7 @@ import { usePanelStatus } from "@/components/panel/use-panel-status";
 import { PanelTabs, type PanelTab } from "@/components/panel/panel-tabs";
 import { AdminSidebar } from "@/components/panel/admin-sidebar";
 import { AdminKpis } from "@/components/panel/admin-kpis";
-import { PantallaCargando } from "@/components/loading";
+import { PantallaCargando, Skeleton, SkeletonFilas } from "@/components/loading";
 import { proximoPaso } from "@/lib/panel/proximo-paso";
 
 function Seccion({
@@ -81,9 +81,16 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  // Primer lote de endpoints: no se pinta nada del panel hasta que terminen.
+  // Primer lote de endpoints: el rol ya se sabe (paso el gate); se pinta el
+  // esqueleto del panel en cuanto hay sesión, sin pantalla completa.
   if (estado.cargando) {
-    return <PantallaCargando texto="Cargando panel…" />;
+    return (
+      <div className="mx-auto max-w-6xl space-y-4 px-4 py-10">
+        <Skeleton className="h-8 w-52 rounded-xl" />
+        <Skeleton className="h-4 w-80 max-w-full rounded-lg" />
+        <SkeletonFilas n={4} />
+      </div>
+    );
   }
 
   function seleccionar(id: string) {

@@ -29,6 +29,12 @@ function cargarScript(): Promise<void> {
   if (window.grecaptcha) return Promise.resolve();
   if (!cargando) {
     cargando = new Promise<void>((resolve, reject) => {
+      if (!document.querySelector('link[rel="preconnect"][href="https://www.google.com"]')) {
+        const pc = document.createElement("link");
+        pc.rel = "preconnect";
+        pc.href = "https://www.google.com";
+        document.head.appendChild(pc);
+      }
       const s = document.createElement("script");
       s.src = "https://www.google.com/recaptcha/api.js?render=explicit";
       s.async = true;
@@ -44,7 +50,7 @@ function cargarScript(): Promise<void> {
 /**
  * Monta el widget invisible en `contenedor`. `alRecibirToken` se invoca con
  * el token cuando Google lo emite (tras execute). Devuelve el id del widget
- * o null si no hay key o el script no carga.
+ * o null si no hay key o el script no carga. Idempotente por contenedor.
  */
 export async function montarCaptcha(
   contenedor: HTMLElement,
@@ -52,19 +58,28 @@ export async function montarCaptcha(
   alError: () => void,
 ): Promise<number | null> {
   if (!RECAPTCHA_SITE_KEY) return null;
+  const host = contenedor as HTMLElement & { __captchaId?: number };
+  if (host.__captchaId !== undefined) return host.__captchaId;
   try {
     await cargarScript();
   } catch {
     return null;
   }
   const g = window.grecaptcha;
-  if (!g) return null;
-  return g.render(contenedor, {
-    sitekey: RECAPTCHA_SITE_KEY,
-    size: "invisible",
-    callback: alRecibirToken,
-    "error-callback": alError,
-  });
+  if (!g || typeof g.render !== "function") return null;
+  try {
+    const id = g.render(contenedor, {
+      sitekey: RECAPTCHA_SITE_KEY,
+      size: "invisible",
+      callback: alRecibirToken,
+      "error-callback": alError,
+    });
+    host.__captchaId = id;
+    return id;
+  } catch (err) {
+    console.error("reCAPTCHA: no se pudo montar el widget", err);
+    return null;
+  }
 }
 
 /** Dispara la resolución del widget (el token llega por callback). */
