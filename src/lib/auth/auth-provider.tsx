@@ -19,6 +19,7 @@ import {
   updateProfile,
   type User,
 } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
 import { getFirebaseAuth } from "@/lib/firebase/client";
 import { api } from "@/lib/api/client";
 import { DEMO_MODE } from "@/lib/demo";
@@ -51,9 +52,36 @@ interface AuthContextValue {
   reintentar: () => Promise<void>;
   /** Recarga el usuario de Firebase (p. ej. tras verificar el correo). */
   refreshUser: () => Promise<void>;
+  /** Aviso tras el registro (p. ej. si falló el correo de verificación). */
+  registroAviso: string | null;
+  setRegistroAviso: (v: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+/** Tope para las llamadas directas a Firebase: sin él, una llamada rara
+ *  que no resuelve deja la pantalla de carga eterna. */
+function conTimeout<T>(p: Promise<T>, ms: number, mensaje: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return Promise.race([
+    p,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(mensaje)), ms);
+    }),
+  ]).finally(() => clearTimeout(timer));
+}
+
+/** Traduce un fallo de `sendEmailVerification` a un aviso para el usuario. */
+export function mensajeCorreoError(err: unknown): string {
+  if (err instanceof FirebaseError) {
+    if (err.code === "auth/too-many-requests") {
+      return "Demasiados correos seguidos: espera unos minutos y pulsa «Reenviar».";
+    }
+    return `No se pudo enviar el correo de verificación (${err.code}). Pulsa «Reenviar» más tarde.`;
+  }
+  if (err instanceof Error && err.message) return err.message;
+  return "No se pudo enviar el correo de verificación. Pulsa «Reenviar» más tarde.";
+}
 
 function demoUser(account: DemoAccount): User {
   return {
@@ -90,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [clavePendiente, setClavePendiente] = useState(false);
   const [rolesError, setRolesError] = useState<string | null>(null);
+  const [registroAviso, setRegistroAviso] = useState<string | null>(null);
   // Solo el primer fallo bloquea: fallos posteriores dejan el estado anterior.
   const verificadoRef = useRef(false);
 
@@ -171,11 +200,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSessionCookies(u, map);
         return map;
       }
-      await signInWithEmailAndPassword(getFirebaseAuth(), email, _password);
-      // Carga aquí los roles para que el login pueda decidir a dónde ir
-      // (panel si tiene roles, Mi zona si es músico sin roles).
-      const u = getFirebaseAuth().currentUser;
-      return u ? await loadRoles(u) : {};
+      // Mientras Firebase valida y se cargan roles, `loading` se mantiene:
+      // el gate tapa todo (incluido el topbar, que mostraría «…») y solo se
+      // revela la interfaz cuando los datos están completos.
+      setLoading(true);
+      try {
+        await conTimeout(
+          signInWithEmailAndPassword(getFirebaseAuth(), email, _password),
+          30_000,
+          "Firebase no responde. Reinténtalo en unos segundos.",
+        );
+        // Carga aquí los roles para que el login pueda decidir a dónde ir
+        // (panel si tiene roles, Mi zona si es músico sin roles).
+        const u = getFirebaseAuth().currentUser;
+        return u ? await loadRoles(u) : {};
+      } finally {
+        setLoading(false);
+      }
     },
     [loadRoles],
   );
@@ -193,19 +234,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSessionCookies(u, map);
         return;
       }
-      const cred = await createUserWithEmailAndPassword(
-        getFirebaseAuth(),
-        email,
-        password,
-      );
-      await updateProfile(cred.user, { displayName: nombre });
+      // Igual que en signIn: el topbar no cambia hasta que la cuenta y la
+      // sesión están listas (el gate muestra la pantalla de verificación).
+      setRegistroAviso(null);
+      setLoading(true);
       try {
-        // El registro solo se completa tras verificar el correo.
-        await sendEmailVerification(cred.user);
-      } catch {
-        // Si Firebase ya lo envió al crear la cuenta, se ignora.
+        const cred = await conTimeout(
+          createUserWithEmailAndPassword(getFirebaseAuth(), email, password),
+          30_000,
+          "Firebase no responde al crear la cuenta. Reinténtalo en unos segundos.",
+        );
+        // De aquí en adelante la cuenta YA existe: no se lanza (el registro
+        // no debe quedarse a medias); los problemas se avisan en la pantalla
+        // «Verifica tu correo».
+        try {
+          await conTimeout(
+            updateProfile(cred.user, { displayName: nombre }),
+            15_000,
+            "Firebase no responde al guardar el nombre.",
+          );
+        } catch {
+          /* el nombre se recupera luego; no bloquea el registro */
+        }
+        try {
+          await conTimeout(
+            sendEmailVerification(cred.user),
+            20_000,
+            "Firebase tardó demasiado en enviar el correo de verificación.",
+          );
+          setRegistroAviso(null);
+        } catch (err) {
+          setRegistroAviso(mensajeCorreoError(err));
+        }
+        try {
+          await cred.user.getIdToken(true);
+        } catch {
+          /* el token se refresca solo; no bloquea el registro */
+        }
+      } finally {
+        setLoading(false);
       }
-      await cred.user.getIdToken(true);
     },
     [],
   );
@@ -274,6 +342,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshRoles,
       reintentar,
       refreshUser,
+      registroAviso,
+      setRegistroAviso,
     }),
     [
       user,
@@ -287,6 +357,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshRoles,
       reintentar,
       refreshUser,
+      registroAviso,
     ],
   );
 

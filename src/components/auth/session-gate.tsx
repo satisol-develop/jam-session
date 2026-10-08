@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import { sendEmailVerification, updatePassword } from "firebase/auth";
-import { useAuth } from "@/lib/auth/auth-provider";
+import { useAuth, mensajeCorreoError } from "@/lib/auth/auth-provider";
 import { api } from "@/lib/api/client";
 import { DEMO_MODE } from "@/lib/demo";
 import { FirebaseError } from "firebase/app";
@@ -67,6 +67,8 @@ export function SessionGate({ children }: { children: ReactNode }) {
     refreshUser,
     reintentar,
     logout,
+    registroAviso,
+    setRegistroAviso,
   } = useAuth();
   const [clave, setClave] = useState("");
   const [clave2, setClave2] = useState("");
@@ -133,8 +135,9 @@ export function SessionGate({ children }: { children: ReactNode }) {
         if (!u.emailVerified) {
           try {
             await sendEmailVerification(u);
-          } catch {
-            // Correo ya enviado hace un momento: se ignora.
+            setRegistroAviso(null);
+          } catch (err) {
+            setRegistroAviso(mensajeCorreoError(err));
           }
         }
         await refreshUser();
@@ -231,6 +234,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
       setBusy(true);
       try {
         await sendEmailVerification(u);
+        setRegistroAviso(null);
         setAviso("Correo de verificación reenviado.");
       } catch (err) {
         setError(
@@ -269,6 +273,12 @@ export function SessionGate({ children }: { children: ReactNode }) {
           <span className="font-semibold break-all">{user.email}</span>. Abre el
           enlace de ese correo para activar tu cuenta (revisa también el spam).
         </p>
+
+        {registroAviso && (
+          <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+            {registroAviso}
+          </p>
+        )}
 
         {error && (
           <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">

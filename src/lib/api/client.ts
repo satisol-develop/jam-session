@@ -54,8 +54,21 @@ export async function api<T = unknown>(route: string, body?: unknown): Promise<T
       }),
       redirect: "follow",
       cache: "no-store",
+      // Tope de 30 s: sin él, un Apps Script colgado deja la pantalla en
+      // «cargando» para siempre. En el error se nombra la ruta para saber
+      // cuál fue la que no respondió.
+      signal: AbortSignal.timeout(30_000),
     });
-  } catch {
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      (err.name === "TimeoutError" || err.name === "AbortError")
+    ) {
+      throw new ApiError(
+        `Sin respuesta del backend (${route}). Reinténtalo en unos segundos.`,
+        0,
+      );
+    }
     throw new ApiError("Error de red. Comprueba tu conexión.", 0);
   }
 

@@ -37,8 +37,12 @@ export function LoginForm() {
     } catch (err) {
       setError(
         err instanceof FirebaseError
-          ? "Credenciales incorrectas o usuario no encontrado."
-          : "Error inesperado. Inténtalo de nuevo.",
+          ? err.code === "auth/too-many-requests"
+            ? "Demasiados intentos: espera unos minutos antes de probar."
+            : "Credenciales incorrectas o usuario no encontrado."
+          : err instanceof Error && err.message
+            ? err.message
+            : "Error inesperado. Inténtalo de nuevo.",
       );
     } finally {
       setBusy(false);

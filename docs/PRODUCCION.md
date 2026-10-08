@@ -122,6 +122,42 @@ botón de Google).
 > Los roles se leen de la hoja `Roles` en cada `user.me`: **no hay claims ni
 > service account**. Tras una rotación, los permisos valen al instante.
 
+### 2.6 Correo de verificación (SMTP de Firebase)
+
+Los correos (verificación y restablecer contraseña) los manda **Firebase**:
+**Authentication → Templates → SMTP settings**. Si configuras un SMTP ahí,
+**todos** los correos salen por ese servidor; si lo dejas vacío, salen del
+emisor por defecto `noreply@<proyecto>.firebaseapp.com` (suele acabar en
+spam o bloqueado).
+
+Configuración con Gmail:
+
+1. **SMTP settings**: host `smtp.gmail.com`, puerto **587**, TLS/STARTTLS ✓.
+   - Username: la dirección Gmail completa.
+   - Password: una **contraseña de aplicación** de 16 caracteres
+     (<https://myaccount.google.com/apppasswords>; requiere tener activada la
+     **verificación en dos pasos**). La contraseña normal de Gmail **no sirve**.
+   - Sender: **la misma dirección Gmail** (Gmail rechaza enviar desde otra
+     dirección). Pulsa **Save** y espera unos minutos: Firebase tarda en
+     aplicar el cambio.
+2. **Prueba**: dispara un correo real — en la web, botón «Reenviar» de la
+   pantalla *Verifica tu correo*; o desde el panel admin, «Restablecer la
+   contraseña».
+3. Comprueba en esa Gmail la carpeta **Enviados**:
+   - **No aparece** → Firebase no está conectando: vuelve a copiar la
+     contraseña de aplicación y guardar; revisa también **Cloud Logging**
+     (Google Cloud Console del proyecto → Logs Explorer) filtrando por
+     `smtp` o `email`.
+   - **Sí aparece** → el correo sale: mira **bandeja de entrada y spam** del
+     destinatario.
+4. La plantilla «Notificación sobre la inscripción de varios factores»
+   muestra `firebaseapp.com`, pero **no aplica** (la app no usa MFA).
+5. El enlace del correo apunta a la web: comprueba los **dominios
+   autorizados** del paso 2.3.
+
+> Los avisos internos (`AVISOS_MAIL = 1`) son otro canal: usa `MailApp` con
+> la cuenta que ejecuta el script, no el SMTP de Firebase.
+
 ## 3. Apps Script — backend (Sheets + Drive)
 
 El código está en la carpeta local `apps-script/` (**no va en el repo**:

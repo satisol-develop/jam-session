@@ -29,11 +29,15 @@ export function RegistroForm() {
       if (err instanceof FirebaseError) {
         setError(
           err.code === "auth/email-already-in-use"
-            ? "Ya existe una cuenta con ese correo."
+            ? "Ya existe una cuenta con ese correo. Prueba a entrar."
             : err.code === "auth/weak-password"
               ? "La contraseña debe tener al menos 6 caracteres."
-              : "No se pudo crear la cuenta. Revisa los datos.",
+              : err.code === "auth/too-many-requests"
+                ? "Demasiados intentos: espera unos minutos."
+                : "No se pudo crear la cuenta. Revisa los datos.",
         );
+      } else if (err instanceof Error && err.message) {
+        setError(err.message);
       } else {
         setError("Error inesperado. Inténtalo de nuevo.");
       }
