@@ -14,6 +14,7 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { api } from "@/lib/api/client";
+import { useAuth } from "@/lib/auth/auth-provider";
 import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import type { Cancion } from "@/types";
 
@@ -170,7 +171,10 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
 }
 
 export default function PartiturasPage() {
+  const { roles } = useAuth();
   const { pendiente } = useRequireAuth();
+  // El admin no pasa por Mi zona (le redirige), así que vuelve a su panel.
+  const esAdmin = Boolean(roles.admin);
   const [catalogo, setCatalogo] = useState<Cancion[] | null>(null);
   const [cancionId, setCancionId] = useState("");
   const [busqueda, setBusqueda] = useState("");
@@ -265,10 +269,10 @@ export default function PartiturasPage() {
     <div className="mx-auto max-w-3xl px-4 py-10">
       <header className="mb-6">
         <Link
-          href="/mi"
+          href={esAdmin ? "/panel" : "/mi"}
           className="mb-1 inline-flex min-h-10 items-center text-sm font-semibold text-neutral-500 underline transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
         >
-          ← Mi zona
+          {esAdmin ? "← Panel" : "← Mi zona"}
         </Link>
         <h1 className="text-2xl font-bold">Partituras y material</h1>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">

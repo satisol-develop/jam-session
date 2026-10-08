@@ -23,7 +23,7 @@ export const ROLES_META: Record<
   admin: {
     label: "Administrador",
     description:
-      "Vista global de solo lectura y rotación mensual de roles (única edición).",
+      "Vista global de solo lectura, gestión de usuarios y rotación mensual de roles.",
   },
   general: {
     label: "General · Coordinador",
@@ -33,7 +33,7 @@ export const ROLES_META: Record<
   "grupo-base": {
     label: "Grupo Base · House Band",
     description:
-      "Repertorio activo del mes (grupo que nombra el General), inscripciones y quién toca cada tema.",
+      "Repertorio activo del mes (grupo que nombra el General), inscripciones y escaleta base.",
   },
   "stage-manager": {
     label: "Stage Manager · Gestión del Día",

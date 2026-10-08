@@ -42,7 +42,8 @@ interface AuthContextValue {
   clavePendiente: boolean;
   /** La primera verificación de sesión/roles falló: mensaje del error. */
   rolesError: string | null;
-  signIn: (email: string, password: string) => Promise<void>;
+  /** Devuelve los roles del usuario tras entrar (para elegir destino). */
+  signIn: (email: string, password: string) => Promise<RolesMap>;
   register: (nombre: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshRoles: () => Promise<RolesMap>;
@@ -157,20 +158,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [loadRoles]);
 
-  const signIn = useCallback(async (email: string, _password: string) => {
-    if (DEMO_MODE) {
-      const account = demoAccountFor(email);
-      ensureDemoUsuario(demoStore(), account);
-      const u = demoUser(account);
-      const map = demoRolesFor(account);
-      writeDemoSession(email, account.nombre);
-      setUser(u);
-      setRoles(map);
-      setSessionCookies(u, map);
-      return;
-    }
-    await signInWithEmailAndPassword(getFirebaseAuth(), email, _password);
-  }, []);
+  const signIn = useCallback(
+    async (email: string, _password: string): Promise<RolesMap> => {
+      if (DEMO_MODE) {
+        const account = demoAccountFor(email);
+        ensureDemoUsuario(demoStore(), account);
+        const u = demoUser(account);
+        const map = demoRolesFor(account);
+        writeDemoSession(email, account.nombre);
+        setUser(u);
+        setRoles(map);
+        setSessionCookies(u, map);
+        return map;
+      }
+      await signInWithEmailAndPassword(getFirebaseAuth(), email, _password);
+      // Carga aquí los roles para que el login pueda decidir a dónde ir
+      // (panel si tiene roles, Mi zona si es músico sin roles).
+      const u = getFirebaseAuth().currentUser;
+      return u ? await loadRoles(u) : {};
+    },
+    [loadRoles],
+  );
 
   const register = useCallback(
     async (nombre: string, email: string, password: string) => {

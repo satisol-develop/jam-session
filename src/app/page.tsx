@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-provider";
+import { ROLES } from "@/types";
 import type { EventoPublico } from "@/types";
 
 function formatFecha(fecha: string): string {
@@ -27,7 +28,8 @@ function formatEnsayo(valor: string): string {
 }
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, roles } = useAuth();
+  const tieneRoles = ROLES.some((r) => roles[r]);
   const [data, setData] = useState<EventoPublico | null>(null);
   const [cargando, setCargado] = useState(true);
 
@@ -153,10 +155,10 @@ export default function Home() {
         <div className="mt-5 flex flex-wrap justify-center gap-3">
           {user ? (
             <Link
-              href="/mi"
+              href={tieneRoles ? "/panel" : "/mi"}
               className="rounded-lg bg-[#FFE600] px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-white"
             >
-              Mi zona
+              {tieneRoles ? "Mi panel" : "Mi zona"}
             </Link>
           ) : (
             <>

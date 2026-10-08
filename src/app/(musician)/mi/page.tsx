@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { useRequireAuth } from "@/lib/auth/use-require-auth";
 import { api } from "@/lib/api/client";
@@ -37,10 +38,18 @@ function Section({
 export default function MiZonaPage() {
   const { user, roles } = useAuth();
   const { pendiente } = useRequireAuth();
+  const router = useRouter();
   const [evento, setEvento] = useState<Evento | null>(null);
   const [inscripcion, setInscripcion] = useState<Inscripcion | null>(null);
   const [cargado, setCargado] = useState(false);
   const [turnos, setTurnos] = useState<Turno[] | null>(null);
+
+  // Mi zona es para participantes: el admin es el único rol que no
+  // participa, así que él solo se redirige a su panel.
+  const esAdmin = Boolean(roles.admin);
+  useEffect(() => {
+    if (!pendiente && esAdmin) router.replace("/panel");
+  }, [pendiente, esAdmin, router]);
 
   // Escaleta en directo (se muestra sola a medida que llega).
   useEffect(() => {
@@ -70,6 +79,14 @@ export default function MiZonaPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-neutral-500 dark:text-neutral-400">
         Cargando…
+      </div>
+    );
+  }
+
+  if (esAdmin) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-neutral-500 dark:text-neutral-400">
+        Abriendo tu panel…
       </div>
     );
   }

@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth/auth-provider";
 import { DEMO_MODE } from "@/lib/demo";
 import { DEMO_ACCOUNTS } from "@/lib/demo/data";
 import { ROLES_META } from "@/lib/constants";
+import { ROLES, type RolesMap } from "@/types";
 import { FirebaseError } from "firebase/app";
 
 export function LoginForm() {
@@ -18,15 +19,21 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const next = search.get("next") ?? "/mi";
+  const next = search.get("next");
+
+  /** Sin `next`: el equipo va a su panel y los músicos a Mi zona. */
+  function destinoPostLogin(mapa: RolesMap): string {
+    if (next) return next;
+    return ROLES.some((r) => mapa[r]) ? "/panel" : "/mi";
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
     try {
-      await signIn(email, password);
-      router.replace(next);
+      const mapa = await signIn(email, password);
+      router.replace(destinoPostLogin(mapa));
     } catch (err) {
       setError(
         err instanceof FirebaseError
@@ -42,8 +49,8 @@ export function LoginForm() {
     setError(null);
     setBusy(true);
     try {
-      await signIn(email, "demo");
-      router.replace(next);
+      const mapa = await signIn(email, "demo");
+      router.replace(destinoPostLogin(mapa));
     } catch {
       setError("No se pudo iniciar la sesión de demo.");
     } finally {

@@ -10,9 +10,9 @@ import { TabIcon } from "@/components/panel/panel-icons";
 
 /**
  * Acceso a los paneles desde la topbar:
- * - un solo rol → enlace directo a ese panel;
- * - varios roles → hoja inferior con todos tus roles (un toque para
- *   cambiar de «entorno» desde cualquier pantalla, móvil o escritorio).
+ * - un solo rol sin más opciones → enlace directo a ese panel;
+ * - el resto → hoja inferior con tus roles + la opción «Participante · Mi zona»
+ *   (no-admin) para cambiar de «entorno» desde cualquier pantalla.
  */
 export function RoleSwitcher({
   linkCls,
@@ -28,7 +28,11 @@ export function RoleSwitcher({
   const asignados = ROLES.filter((r) => roles[r]);
 
   const enPanel = pathname.startsWith("/panel");
+  const enMiZona = pathname === "/mi";
   const clase = `${linkCls} ${enPanel ? linkActivo : ""}`;
+
+  /** Solo el admin es «puro equipo»: el resto puede pasar a participante. */
+  const puedeParticipante = !roles.admin;
 
   /* La hoja bloquea el scroll de fondo y cierra con Escape. */
   useEffect(() => {
@@ -47,7 +51,8 @@ export function RoleSwitcher({
 
   if (loading || asignados.length === 0) return null;
 
-  if (asignados.length === 1) {
+  // Admin con un solo rol: no hay nada más que abrir, enlace directo.
+  if (asignados.length === 1 && !puedeParticipante) {
     return (
       <Link href={`/panel/${asignados[0]}`} className={clase}>
         Panel
@@ -130,6 +135,37 @@ export function RoleSwitcher({
                   </li>
                 );
               })}
+              {puedeParticipante && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => irA("/mi")}
+                    aria-current={enMiZona ? "page" : undefined}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition ${
+                      enMiZona
+                        ? "bg-[#FFE600] text-black"
+                        : "text-white/80 hover:bg-white/5"
+                    }`}
+                  >
+                    <TabIcon
+                      id="inscripciones"
+                      className={`size-5 shrink-0 ${enMiZona ? "text-black" : "text-[#FFE600]"}`}
+                    />
+                    <span className="min-w-0 flex-1 truncate">
+                      Participante
+                    </span>
+                    <span
+                      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase ${
+                        enMiZona
+                          ? "bg-black/20 text-black"
+                          : "border border-white/20 text-white/60"
+                      }`}
+                    >
+                      Mi zona
+                    </span>
+                  </button>
+                </li>
+              )}
               <li className="mt-1 border-t border-white/10 pt-1">
                 <Link
                   href="/panel"

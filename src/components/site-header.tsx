@@ -7,11 +7,13 @@ import { useAuth } from "@/lib/auth/auth-provider";
 import { DEMO_MODE } from "@/lib/demo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { RoleSwitcher } from "@/components/role-switcher";
+import { ROLES } from "@/types";
 
 export function SiteHeader() {
-  const { user, loading, logout } = useAuth();
+  const { user, roles, loading, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const tieneRoles = ROLES.some((r) => roles[r]);
 
   // El modo oscuro es una opción de la plataforma (logueado); fuera siempre claro.
   useEffect(() => {
@@ -68,14 +70,16 @@ export function SiteHeader() {
           {!loading && user && <ThemeToggle enPanel={enPanel} />}
           {!loading && user ? (
             <>
-              {/* «Mi zona» siempre visible: sin ella, un músico con roles no
-                  tiene forma de llegar a /mi ni a /partituras desde el panel. */}
-              <Link
-                href="/mi"
-                className={`${linkCls} ${isActive("/mi") ? linkActivo : ""}`}
-              >
-                Mi zona
-              </Link>
+              {/* Mi zona por defecto solo para músicos; el equipo que entra
+                  como participante la ve mientras está dentro. */}
+              {(!tieneRoles || (isActive("/mi") && !roles.admin)) && (
+                <Link
+                  href="/mi"
+                  className={`${linkCls} ${isActive("/mi") ? linkActivo : ""}`}
+                >
+                  Mi zona
+                </Link>
+              )}
               <RoleSwitcher linkCls={linkCls} linkActivo={linkActivo} />
               <span className={mutedCls}>
                 {user.displayName ?? user.email}

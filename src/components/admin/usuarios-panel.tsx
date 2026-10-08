@@ -16,7 +16,7 @@ interface UsuarioAdmin {
 }
 
 /**
- * Gestión de cuentas (solo admin): crea participantes, edita nombre/teléfono,
+ * Gestión de cuentas (solo admin): crea usuarios, edita nombre/teléfono,
  * restablece contraseñas, da de baja y asigna roles del mes con un toque.
  */
 export function UsuariosPanel() {
@@ -64,7 +64,7 @@ export function UsuariosPanel() {
         { nombre: nombre.trim(), email: email.trim() },
       );
       setCreado(
-        `Cuenta creada para ${res.email}. Contraseña por defecto: ${res.clave} — compártela y el participante la cambiará al entrar.`,
+        `Cuenta creada para ${res.email}. Contraseña por defecto: ${res.clave} — compártela y el usuario la cambiará al entrar.`,
       );
       setNombre("");
       setEmail("");
@@ -213,7 +213,7 @@ export function UsuariosPanel() {
   return (
     <div className="space-y-4">
       <form onSubmit={onCreate} className="db-card space-y-3 p-4 sm:p-5">
-        <p className="db-kicker">Crear participante</p>
+        <p className="db-kicker">Crear usuario</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="u-nombre" className="mb-1 block text-xs font-semibold">
@@ -226,7 +226,7 @@ export function UsuariosPanel() {
               autoComplete="off"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              placeholder="Nombre del participante"
+              placeholder="Nombre del usuario"
               className="db-input"
             />
           </div>
