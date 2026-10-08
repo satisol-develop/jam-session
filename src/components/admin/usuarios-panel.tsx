@@ -17,7 +17,8 @@ interface UsuarioAdmin {
 
 /**
  * Gestión de cuentas (solo admin): crea usuarios, edita nombre/teléfono,
- * restablece contraseñas, da de baja y asigna roles del mes con un toque.
+ * restablece contraseñas, da de baja, elimina definitivamente, quita todos
+ * los roles y asigna roles del mes con un toque.
  */
 export function UsuariosPanel() {
   const [usuarios, setUsuarios] = useState<UsuarioAdmin[] | null>(null);
@@ -34,6 +35,12 @@ export function UsuariosPanel() {
   const [draft, setDraft] = useState({ nombre: "", telefono: "" });
   const [accionUid, setAccionUid] = useState<string | null>(null);
   const [confirmarBaja, setConfirmarBaja] = useState<string | null>(null);
+  const [confirmarQuitarRoles, setConfirmarQuitarRoles] = useState<
+    string | null
+  >(null);
+  const [confirmarEliminar, setConfirmarEliminar] = useState<string | null>(
+    null,
+  );
   const [resultado, setResultado] = useState<{
     ok: boolean;
     texto: string;
@@ -106,6 +113,8 @@ export function UsuariosPanel() {
   function abrir(u: UsuarioAdmin) {
     setResultado(null);
     setConfirmarBaja(null);
+    setConfirmarQuitarRoles(null);
+    setConfirmarEliminar(null);
     if (expandido === u.uid) {
       setExpandido(null);
       return;
@@ -190,6 +199,73 @@ export function UsuariosPanel() {
         ok: false,
         texto:
           err instanceof Error ? err.message : "No se pudo enviar el correo.",
+      });
+    } finally {
+      setAccionUid(null);
+    }
+  }
+
+  async function quitarTodosLosRoles(u: UsuarioAdmin) {
+    setAccionUid(u.uid);
+    setConfirmarQuitarRoles(null);
+    setResultado(null);
+    try {
+      const res = await api<{ uid: string; email: string; eliminados: number }>(
+        "admin.clearRoles",
+        { uid: u.uid },
+      );
+      setRoles((prev) => prev.filter((r) => r.uid !== u.uid));
+      setResultado({
+        ok: true,
+        texto:
+          res.eliminados === 0
+            ? `${u.nombre || u.email} no tenía roles asignados.`
+            : `Se ${res.eliminados === 1 ? "quitó" : "quitaron"} ${
+                res.eliminados
+              } ${res.eliminados === 1 ? "rol" : "roles"} de ${
+                u.nombre || u.email
+              } (todos los meses).`,
+      });
+    } catch (err) {
+      setResultado({
+        ok: false,
+        texto:
+          err instanceof Error ? err.message : "No se pudieron quitar los roles.",
+      });
+    } finally {
+      setAccionUid(null);
+    }
+  }
+
+  async function eliminarDefinitivo(u: UsuarioAdmin) {
+    setAccionUid(u.uid);
+    setConfirmarEliminar(null);
+    setResultado(null);
+    try {
+      const res = await api<{
+        uid: string;
+        email: string;
+        rolesQuitados: number;
+        auth: boolean;
+        authError?: string;
+      }>("admin.deleteUser", { uid: u.uid });
+      setUsuarios((prev) => (prev ? prev.filter((x) => x.uid !== u.uid) : prev));
+      setRoles((prev) => prev.filter((r) => r.uid !== u.uid));
+      setExpandido((prev) => (prev === u.uid ? null : prev));
+      setResultado({
+        ok: res.auth,
+        texto:
+          `${u.nombre || u.email} eliminado: fila y ${res.rolesQuitados} roles borrados.` +
+          (res.auth
+            ? " Cuenta de Firebase borrada."
+            : ` La cuenta de Firebase NO se pudo borrar (${
+                res.authError || "sin detalle"
+              }): bórrala desde la consola de Firebase.`),
+      });
+    } catch (err) {
+      setResultado({
+        ok: false,
+        texto: err instanceof Error ? err.message : "No se pudo eliminar.",
       });
     } finally {
       setAccionUid(null);
@@ -486,6 +562,64 @@ export function UsuariosPanel() {
                             className="db-ghost border-red-400/40! text-red-300!"
                           >
                             Dar de baja
+                          </button>
+                        )}
+                        {confirmarQuitarRoles === u.uid ? (
+                          <span className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              disabled={ocupado}
+                              onClick={() => quitarTodosLosRoles(u)}
+                              className="db-ghost border-red-400/60! text-red-300!"
+                            >
+                              Sí, quitar todos
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmarQuitarRoles(null)}
+                              className="db-ghost"
+                            >
+                              Cancelar
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={ocupado}
+                            onClick={() => setConfirmarQuitarRoles(u.uid)}
+                            title="Quita todos los roles de todos los meses"
+                            className="db-ghost"
+                          >
+                            Quitar todos los roles
+                          </button>
+                        )}
+                        {confirmarEliminar === u.uid ? (
+                          <span className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              disabled={ocupado}
+                              onClick={() => eliminarDefinitivo(u)}
+                              className="db-ghost border-red-400/60! text-red-300!"
+                            >
+                              Sí, eliminar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmarEliminar(null)}
+                              className="db-ghost"
+                            >
+                              Cancelar
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={ocupado}
+                            onClick={() => setConfirmarEliminar(u.uid)}
+                            title="Borra la fila, todos sus roles e intenta borrar la cuenta de Firebase. No se puede deshacer."
+                            className="db-ghost border-red-400/40! text-red-300!"
+                          >
+                            Eliminar
                           </button>
                         )}
                       </div>

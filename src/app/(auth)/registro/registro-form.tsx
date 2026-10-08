@@ -1,12 +1,18 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { api } from "@/lib/api/client";
 import { DEMO_MODE } from "@/lib/demo";
 import { FirebaseError } from "firebase/app";
+import {
+  RECAPTCHA_SITE_KEY,
+  ejecutarCaptcha,
+  montarCaptcha,
+  reiniciarCaptcha,
+} from "@/lib/recaptcha";
 
 export function RegistroForm() {
   const { register } = useAuth();
@@ -17,11 +23,75 @@ export function RegistroForm() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const captchaHostRef = useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<number | null>(null);
+  const tokenResolverRef = useRef<((token: string) => void) | null>(null);
+  const captchaActivo = Boolean(RECAPTCHA_SITE_KEY) && !DEMO_MODE;
+
+  useEffect(() => {
+    if (!captchaActivo) return;
+    const host = captchaHostRef.current;
+    if (!host) return;
+    let vivo = true;
+    void montarCaptcha(
+      host,
+      (token) => tokenResolverRef.current?.(token),
+      () =>
+        setError(
+          "La verificación anti-spam ha fallado. Recarga la página e inténtalo de nuevo.",
+        ),
+    ).then((id) => {
+      if (vivo) widgetIdRef.current = id;
+    });
+    return () => {
+      vivo = false;
+      tokenResolverRef.current = null;
+    };
+  }, [captchaActivo]);
+
+  function pedirTokenCaptcha(): Promise<string> {
+    const id = widgetIdRef.current;
+    if (id === null) {
+      return Promise.reject(
+        new Error(
+          "No se pudo cargar la verificación anti-spam. Recarga la página e inténtalo de nuevo.",
+        ),
+      );
+    }
+    return new Promise<string>((resolve, reject) => {
+      const temporizador = setTimeout(
+        () =>
+          reject(
+            new Error(
+              "La verificación anti-spam tardó demasiado. Inténtalo de nuevo.",
+            ),
+          ),
+        60_000,
+      );
+      tokenResolverRef.current = (token) => {
+        clearTimeout(temporizador);
+        resolve(token);
+      };
+      ejecutarCaptcha(id);
+    });
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
     try {
+      if (captchaActivo) {
+        try {
+          const captchaToken = await pedirTokenCaptcha();
+          await api("public.captchaVerify", { captchaToken });
+        } finally {
+          if (widgetIdRef.current !== null) {
+            reiniciarCaptcha(widgetIdRef.current);
+          }
+          tokenResolverRef.current = null;
+        }
+      }
       await register(nombre, email, password);
       await api("user.updateProfile", { nombre, email }).catch(() => undefined);
       router.replace("/mi");
@@ -123,6 +193,33 @@ export function RegistroForm() {
             {busy ? "Creando cuenta…" : "Crear cuenta"}
           </button>
         </form>
+
+        {captchaActivo && (
+          <>
+            <div ref={captchaHostRef} aria-hidden="true" />
+            <p className="mt-3 text-center text-[11px] text-neutral-400 dark:text-neutral-500">
+              Este sitio está protegido por reCAPTCHA y se aplican la{" "}
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Política de privacidad
+              </a>{" "}
+              y los{" "}
+              <a
+                href="https://policies.google.com/terms"
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Términos del Servicio
+              </a>{" "}
+              de Google.
+            </p>
+          </>
+        )}
 
         <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
           ¿Ya tienes cuenta?{" "}

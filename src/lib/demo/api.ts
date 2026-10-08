@@ -127,6 +127,9 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         dataVersion: String(s.dataVersion),
       } as T;
 
+    case "public.captchaVerify":
+      return { ok: true } as T;
+
     case "user.create":
     case "user.updateProfile":
       return { uid: uid || `demo-user-${Date.now()}` } as T;
@@ -674,6 +677,45 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         : sinEste;
       bumpDemoVersion(s);
       return { uid: target, rol, tipo } as T;
+    }
+
+    case "admin.clearRoles": {
+      validarTitular("admin");
+      const target = String(b.uid ?? "");
+      const u = s.usuarios.find((x) => x.uid === target);
+      if (!u) throw new Error("Usuario no encontrado.");
+      if (target === uid) {
+        throw new Error("No puedes quitar tus propios roles.");
+      }
+      const antes = s.roles.length;
+      s.roles = s.roles.filter((r) => r.uid !== target);
+      bumpDemoVersion(s);
+      return {
+        uid: target,
+        email: u.email,
+        eliminados: antes - s.roles.length,
+      } as T;
+    }
+
+    case "admin.deleteUser": {
+      validarTitular("admin");
+      const target = String(b.uid ?? "");
+      const u = s.usuarios.find((x) => x.uid === target);
+      if (!u) throw new Error("Usuario no encontrado.");
+      if (target === uid) {
+        throw new Error("No puedes eliminarte a ti mismo.");
+      }
+      const rolesQuitados = s.roles.filter((r) => r.uid === target).length;
+      s.roles = s.roles.filter((r) => r.uid !== target);
+      s.usuarios = s.usuarios.filter((x) => x.uid !== target);
+      bumpDemoVersion(s);
+      return {
+        uid: target,
+        email: u.email,
+        rolesQuitados,
+        auth: true,
+        authError: "",
+      } as T;
     }
 
     case "admin.audit": {

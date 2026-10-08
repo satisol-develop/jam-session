@@ -158,6 +158,37 @@ Configuración con Gmail:
 > Los avisos internos (`AVISOS_MAIL = 1`) son otro canal: usa `MailApp` con
 > la cuenta que ejecuta el script, no el SMTP de Firebase.
 
+### 2.7 Anti-bots en el registro (reCAPTCHA v2 invisible)
+
+El formulario de registro pide un token de **reCAPTCHA v2 invisible** y el
+backend lo valida con `public.captchaVerify` (siteverify) **antes** de crear
+la cuenta de Firebase: si la validación falla, no se crea nada (sin cuentas
+huérfanas). Si el usuario ya está logueado, «Mi zona» exige además el **correo
+verificado** (pantalla *Verifica tu correo* del SessionGate).
+
+1. En <https://www.google.com/recaptcha/admin> → **+ Crear** → tipo
+   **reCAPTCHA v2 → «No soy un robot» (invisible)**.
+   - Dominios: `satisol-develop.github.io` y, si pruebas en local,
+     `localhost`.
+2. **Clave del sitio** (site key, empieza por `6L…`):
+   - GitHub → Settings → Secrets and variables → Actions → secret
+     `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`.
+   - (Opcional) `.env.local` para probar el registro en local; **vacío = sin
+     captcha** (dev sin la key no se rompe).
+3. **Clave secreta** (empieza por `6L…`): en Apps Script → Propiedades del
+   script → `RECAPTCHA_SECRET`. **Sin esta propiedad el backend omite la
+   comprobación** (log en Ejecuciones); con ella, el registro exige token
+   válido.
+4. Tras cambiar propiedades/pegar código, reimplementa el Web App. Prueba:
+   registrar una cuenta nueva desde la web (el widget es invisible: personas
+   reales pasan sin reto; los bots se atascan).
+
+> Limitación conocida: esto frena bots que usan el formulario. Un atacante
+> que llame directamente a la API de Firebase con la API key pública puede
+> crear cuentas Auth sin pasar por la web; esas cuentas **no tienen fila en
+> la hoja `Usuarios`** y la plataforma no les muestra datos. Para cerrarlo al
+> 100 % haría Cloud Functions con bloqueo (plan Blaze).
+
 ## 3. Apps Script — backend (Sheets + Drive)
 
 El código está en la carpeta local `apps-script/` (**no va en el repo**:
@@ -165,7 +196,11 @@ está en `.gitignore`; cópialo desde tu equipo).
 
 1. Ve a <https://script.google.com> → **Nuevo proyecto** → nómbralo `Jam Session API`.
 2. **Project Settings (engranaje) → ☐ Show "appsscript.json"** → sustituye su
-   contenido por el de `apps-script/appsscript.json`.
+   contenido por el de `apps-script/appsscript.json`. Declara explícitamente
+   `oauthScopes` (incluido `…/auth/identitytoolkit`, que usa «Eliminar» del
+   panel para borrar la cuenta de Firebase Auth): tras pegarlo, ejecuta
+   cualquier función (p. ej. `setup`) → **«Revisar permisos» → Permitir** para
+   que el propietario vuelva a autorizar con los scopes nuevos.
 3. Crea **5 archivos** en el editor y pega el contenido de la carpeta local
    `apps-script/`: `main`, `datos`, `drive`, `evento`, `equipo` (los `.gs`
    sueltos antiguos quedan archivados en `apps-script/individuales/`; en el
@@ -197,6 +232,9 @@ está en `.gitignore`; cópialo desde tu equipo).
       backend la usa para verificar los tokens con `accounts:lookup` y para
       crear cuentas con `admin.createUser`; **sin esta propiedad el login
       real falla**.
+    - `FIREBASE_PROJECT_ID` = id del proyecto Firebase (p. ej.
+      `dr---jam-session`). Lo usa «Eliminar» del panel para borrar la cuenta
+      de Firebase Auth (API Admin `accounts:delete`).
     - `ALLOWED_ORIGINS` *(opcional)* = JSON array de orígenes permitidos,
       p. ej. `["https://satisol-develop.github.io"]`. Sin esta propiedad se
       acepta cualquier origen: la seguridad real es el token + los roles de la
