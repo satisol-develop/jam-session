@@ -191,9 +191,21 @@ export interface ItemCatalogoDrive {
   archivos: { id: string; nombre: string; mimeType: string }[];
 }
 
+/** Canción del ranking de la portada: nº de sesiones en la escaleta. */
+export interface TopCancion {
+  id: string;
+  titulo: string;
+  artista: string;
+  tonalidad: string;
+  /** Nº de sesiones distintas en las que apareció en la escaleta. */
+  veces: number;
+}
+
 export interface EventoPublico {
   evento: Evento | null;
   catalogo: Cancion[];
+  /** Top de canciones más tocadas (ausente en backends antiguos). */
+  masTocadas?: TopCancion[];
   dataVersion: string;
 }
 

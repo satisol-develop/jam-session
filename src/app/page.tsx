@@ -52,6 +52,8 @@ export default function Home() {
 
   const evento = data?.evento ?? null;
   const catalogo = data?.catalogo ?? [];
+  const top = data?.masTocadas ?? [];
+  const hayTop = top.length > 0;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
@@ -107,13 +109,39 @@ export default function Home() {
 
       <section className="mt-12">
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-xl font-bold">Repertorio del mes</h2>
+          <h2 className="text-xl font-bold">
+            {hayTop ? "Las más tocadas" : "Repertorio del mes"}
+          </h2>
           <span className="text-sm text-neutral-500 dark:text-neutral-400">
-            {catalogo.length} {catalogo.length === 1 ? "tema" : "temas"}
+            {hayTop
+              ? "por número de sesiones"
+              : `${catalogo.length} ${catalogo.length === 1 ? "tema" : "temas"}`}
           </span>
         </div>
 
-        {catalogo.length === 0 ? (
+        {hayTop ? (
+          <ol className="divide-y divide-neutral-200 rounded-2xl border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
+            {top.map((c, i) => (
+              <li
+                key={c.id}
+                className="flex items-center gap-4 px-4 py-3 sm:px-6"
+              >
+                <span className="w-6 shrink-0 text-sm tabular-nums text-neutral-500 dark:text-neutral-400">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1 truncate font-medium">
+                  {c.titulo}
+                </span>
+                <span className="min-w-0 max-w-[40%] shrink truncate text-sm text-neutral-500 dark:text-neutral-400">
+                  {c.artista || "—"}
+                </span>
+                <span className="shrink-0 rounded-full border border-neutral-200 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
+                  {c.veces} {c.veces === 1 ? "sesión" : "sesiones"}
+                </span>
+              </li>
+            ))}
+          </ol>
+        ) : catalogo.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
             {cargando
               ? "Cargando repertorio…"
@@ -144,6 +172,13 @@ export default function Home() {
             ))}
           </ol>
         )}
+
+        <Link
+          href="/partituras"
+          className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-red-500 underline-offset-4 hover:underline"
+        >
+          Ver todo el repertorio →
+        </Link>
       </section>
 
       <section className="mt-12 rounded-2xl bg-neutral-900 p-8 text-center text-white dark:bg-neutral-100 dark:text-black">

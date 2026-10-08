@@ -11,6 +11,7 @@ import type {
   Rol,
   Tarea,
   TipoMovimiento,
+  TopCancion,
   Turno,
   Usuario,
 } from "@/types";
@@ -66,6 +67,41 @@ function totalesDemo(movimientos: MovimientoCaja[]): ResumenCaja["totales"] {
   return totales;
 }
 
+function normTituloDemo(t: string): string {
+  return t
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Top de canciones por nº de sesiones en las que aparecieron en la escaleta. */
+function topCancionesDemo(s: DemoStore, limite: number): TopCancion[] {
+  const sesiones = new Map<string, Set<string>>();
+  for (const t of s.turnos) {
+    if (!t.eventoId) continue;
+    const cancion =
+      s.catalogo.find((c) => c.id === t.temaId) ??
+      s.catalogo.find((c) => normTituloDemo(c.titulo) === normTituloDemo(t.titulo));
+    if (!cancion) continue;
+    const set = sesiones.get(cancion.id) ?? new Set<string>();
+    set.add(t.eventoId);
+    sesiones.set(cancion.id, set);
+  }
+  return s.catalogo
+    .map((c) => ({
+      id: c.id,
+      titulo: c.titulo,
+      artista: c.artista,
+      tonalidad: c.tonalidad,
+      veces: sesiones.get(c.id)?.size ?? 0,
+    }))
+    .filter((c) => c.veces > 0)
+    .sort((a, b) => b.veces - a.veces || a.titulo.localeCompare(b.titulo))
+    .slice(0, limite);
+}
+
 export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
   await delay();
   const b = (body ?? {}) as Record<string, unknown>;
@@ -81,6 +117,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       return {
         evento: s.evento,
         catalogo: s.catalogo,
+        masTocadas: topCancionesDemo(s, 10),
         dataVersion: String(s.dataVersion),
       } as T;
 
@@ -445,7 +482,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       validarTitularAlguno(["stage-manager", "grupo-base"]);
       const turnos = Array.isArray(b.turnos) ? (b.turnos as Turno[]) : [];
       if (turnos.length > 100) throw new Error("Demasiados turnos.");
-      s.turnos = turnos.map((t, i) => ({
+      const delEvento: Turno[] = turnos.map((t, i) => ({
         ...t,
         id: t.id.startsWith("local-") ? demoId(s, "sc") : t.id,
         eventoId: s.evento.id,
@@ -455,11 +492,15 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         updatedAt: new Date().toISOString(),
         updatedBy: uid,
       }));
+      s.turnos = [
+        ...s.turnos.filter((t) => t.eventoId !== s.evento.id),
+        ...delEvento,
+      ];
       bumpDemoVersion(s);
       return {
         eventoId: s.evento.id,
         dataVersion: String(s.dataVersion),
-        turnos: s.turnos,
+        turnos: delEvento,
       } as T;
     }
 
