@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { FASES, ROLES_META, ROLE_GUIDES, ROLE_NOTAS } from "@/lib/constants";
 import type { Rol } from "@/types";
 
@@ -31,6 +31,12 @@ export function ProtocoloModal({
     };
   }, [onCerrar]);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    dialogRef.current?.focus();
+  }, []);
+
   const pasos = ROLE_GUIDES[rol];
   const nota = ROLE_NOTAS[rol];
 
@@ -47,6 +53,8 @@ export function ProtocoloModal({
         aria-modal="true"
         aria-label={`Protocolo de ${ROLES_META[rol].label}`}
         className="db-modal"
+        tabIndex={-1}
+        ref={dialogRef}
       >
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>

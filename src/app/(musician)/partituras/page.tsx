@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { SkeletonFilas } from "@/components/loading";
 import {
   flexRender,
@@ -91,7 +92,7 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
       {archivos === null ? (
         <SkeletonFilas n={3} />
       ) : archivos.length === 0 ? (
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
           Este tema aún no tiene archivos.
         </p>
       ) : (
@@ -119,7 +120,9 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
       )}
 
       {cargando && (
-        <p className="mt-4 text-sm text-neutral-500">Abriendo archivo…</p>
+        <p className="mt-4 text-sm text-neutral-500 dark:text-neutral-400">
+          Abriendo archivo…
+        </p>
       )}
 
       {contenido && blobUrl && (
@@ -129,7 +132,7 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
             <a
               href={blobUrl}
               download={contenido.nombre}
-              className="inline-block rounded-lg px-2 py-2 text-sm font-medium underline text-neutral-500"
+              className="inline-block rounded-lg px-2 py-2 text-sm font-medium underline text-neutral-500 dark:text-neutral-400"
             >
               Descargar
             </a>
@@ -176,6 +179,7 @@ export default function PartiturasPage() {
   ]);
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [error, setError] = useState<string | null>(null);
+  const visorRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     api<{ catalogo: Cancion[] }>("public.catalog")
@@ -184,6 +188,17 @@ export default function PartiturasPage() {
         setError(err instanceof Error ? err.message : "No se pudo cargar."),
       );
   }, []);
+
+  // Al abrir un tema, el visor queda fuera de pantalla en móvil: bajamos
+  // hasta él y le devolvemos el foco (accesible con teclado y claro).
+  useEffect(() => {
+    if (!cancionId) return;
+    const raf = requestAnimationFrame(() => {
+      visorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      visorRef.current?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [cancionId]);
 
   const columnas = useMemo<ColumnDef<Cancion>[]>(
     () => [
@@ -198,14 +213,18 @@ export default function PartiturasPage() {
         accessorKey: "artista",
         header: "Artista",
         cell: (ctx) => (
-          <span className="text-neutral-500">{ctx.row.original.artista || "—"}</span>
+          <span className="text-neutral-500 dark:text-neutral-400">
+            {ctx.row.original.artista || "—"}
+          </span>
         ),
       },
       {
         accessorKey: "categoria",
         header: "Género",
         cell: (ctx) => (
-          <span className="text-neutral-500">{ctx.row.original.categoria || "—"}</span>
+          <span className="text-neutral-500 dark:text-neutral-400">
+            {ctx.row.original.categoria || "—"}
+          </span>
         ),
       },
     ],
@@ -228,8 +247,8 @@ export default function PartiturasPage() {
 
   if (pendiente) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-neutral-500">
-        Cargando…
+      <div className="mx-auto max-w-3xl px-4 py-10">
+        <SkeletonFilas n={5} />
       </div>
     );
   }
@@ -237,12 +256,22 @@ export default function PartiturasPage() {
   const filas = table.getRowModel().rows;
   const cancion = catalogo?.find((c) => c.id === cancionId) ?? null;
   const total = catalogo?.length ?? 0;
+  // En móvil solo se muestra la columna «Título» (el resto se recupera
+  // a partir de sm): la tabla no llega a necesitar scroll horizontal.
+  const claseColumna = (id: string) =>
+    id === "artista" || id === "categoria" ? "hidden sm:table-cell" : "";
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <header className="mb-6">
+        <Link
+          href="/mi"
+          className="mb-1 inline-flex min-h-10 items-center text-sm font-semibold text-neutral-500 underline transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+        >
+          ← Mi zona
+        </Link>
         <h1 className="text-2xl font-bold">Partituras y material</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           Cifrados, partituras y guías de audio del repertorio. Acceso solo
           para músicos registrados.
         </p>
@@ -257,7 +286,7 @@ export default function PartiturasPage() {
       {catalogo === null ? (
         <SkeletonFilas n={5} />
       ) : total === 0 ? (
-        <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">
+        <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
           Todavía no hay material publicado para este repertorio.
         </p>
       ) : (
@@ -274,7 +303,7 @@ export default function PartiturasPage() {
               aria-label="Buscar en el repertorio"
               className="min-h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white sm:w-72 sm:text-sm"
             />
-            <label className="ml-auto flex items-center gap-2 text-xs text-neutral-500">
+            <label className="ml-auto flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
               Por página
               <select
                 value={pagination.pageSize}
@@ -285,7 +314,7 @@ export default function PartiturasPage() {
                     pageSize: Number(e.target.value),
                   }))
                 }
-                className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-xs text-black outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
+                className="min-h-10 rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-xs text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white"
               >
                 {[10, 25, 50].map((n) => (
                   <option key={n} value={n}>
@@ -296,13 +325,17 @@ export default function PartiturasPage() {
             </label>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800">
+          <div className="overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <table className="w-full border-collapse text-sm">
               <thead>
                 {table.getHeaderGroups().map((hg) => (
                   <tr key={hg.id} className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950">
                     {hg.headers.map((header) => (
-                      <th key={header.id} className="px-3 py-2.5 text-left">
+                      <th
+                        key={header.id}
+                        scope="col"
+                        className={`px-3 py-2.5 text-left ${claseColumna(header.column.id)}`}
+                      >
                         {header.isPlaceholder ? null : (
                           <button
                             type="button"
@@ -329,7 +362,7 @@ export default function PartiturasPage() {
                   <tr>
                     <td
                       colSpan={columnas.length}
-                      className="px-3 py-6 text-center text-neutral-500"
+                      className="px-3 py-6 text-center text-neutral-500 dark:text-neutral-400"
                     >
                       Ningún tema coincide con «{busqueda}».
                     </td>
@@ -345,9 +378,36 @@ export default function PartiturasPage() {
                           : "hover:bg-neutral-50 dark:hover:bg-neutral-900"
                       }`}
                     >
-                      {fila.getVisibleCells().map((celda) => (
-                        <td key={celda.id} className="px-3 py-2.5">
-                          {flexRender(celda.column.columnDef.cell, celda.getContext())}
+                      {fila.getVisibleCells().map((celda, i) => (
+                        <td
+                          key={celda.id}
+                          className={`px-3 py-2.5 ${claseColumna(celda.column.id)}`}
+                        >
+                          {i === 0 ? (
+                            // El título es el control real de la fila:
+                            // alcanzable con Tab/Enter (el onClick del <tr>
+                            // sigue funcionando con el ratón).
+                            <button
+                              type="button"
+                              onClick={() => setCancionId(fila.original.id)}
+                              aria-current={
+                                cancionId === fila.original.id
+                                  ? "true"
+                                  : undefined
+                              }
+                              className="w-full text-left"
+                            >
+                              {flexRender(
+                                celda.column.columnDef.cell,
+                                celda.getContext(),
+                              )}
+                            </button>
+                          ) : (
+                            flexRender(
+                              celda.column.columnDef.cell,
+                              celda.getContext(),
+                            )
+                          )}
                         </td>
                       ))}
                     </tr>
@@ -357,7 +417,7 @@ export default function PartiturasPage() {
             </table>
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500 dark:text-neutral-400">
             <span>
               Mostrando {filas.length} de{" "}
               {table.getFilteredRowModel().rows.length} temas
@@ -370,7 +430,7 @@ export default function PartiturasPage() {
                 type="button"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
-                className="rounded-lg border border-neutral-300 px-3 py-1.5 font-medium transition hover:bg-neutral-100 disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-900"
+                className="min-h-10 rounded-lg border border-neutral-300 px-3 py-1.5 font-medium transition hover:bg-neutral-100 disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-900"
               >
                 Anterior
               </button>
@@ -382,7 +442,7 @@ export default function PartiturasPage() {
                 type="button"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
-                className="rounded-lg border border-neutral-300 px-3 py-1.5 font-medium transition hover:bg-neutral-100 disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-900"
+                className="min-h-10 rounded-lg border border-neutral-300 px-3 py-1.5 font-medium transition hover:bg-neutral-100 disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-900"
               >
                 Siguiente
               </button>
@@ -390,12 +450,16 @@ export default function PartiturasPage() {
           </div>
 
           {cancion && (
-            <section className="mt-8 border-t border-neutral-200 pt-6 dark:border-neutral-800">
+            <section
+              ref={visorRef}
+              tabIndex={-1}
+              className="mt-8 border-t border-neutral-200 pt-6 dark:border-neutral-800"
+            >
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h2 className="text-lg font-bold">
                   {cancion.titulo}
                   {cancion.artista ? (
-                    <span className="text-neutral-500 font-normal">
+                    <span className="font-normal text-neutral-500 dark:text-neutral-400">
                       {" "}
                       — {cancion.artista}
                     </span>
@@ -404,7 +468,7 @@ export default function PartiturasPage() {
                 <button
                   type="button"
                   onClick={() => setCancionId("")}
-                  className="text-xs text-neutral-500 underline"
+                  className="inline-flex min-h-10 items-center text-xs text-neutral-500 underline dark:text-neutral-400"
                 >
                   Cerrar
                 </button>

@@ -5,6 +5,18 @@ import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import type { Evento } from "@/types";
 
+function fechaLegible(valor: string, conHora = false): string {
+  const d = new Date(valor);
+  if (Number.isNaN(d.getTime())) return valor;
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    month: "short",
+    ...(conHora
+      ? { hour: "2-digit", minute: "2-digit" }
+      : { year: "numeric" }),
+  }).format(d);
+}
+
 export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
   const [evento, setEvento] = useState<Evento | null | undefined>(undefined);
   const [form, setForm] = useState({ titulo: "", fecha: "", hora: "", lugar: "" });
@@ -152,13 +164,15 @@ export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
           {evento.estado}
         </span>
         <span className="db-muted text-xs">
-          {evento.fecha} · {evento.hora} · {evento.lugar}
+          {fechaLegible(evento.fecha)} · {evento.hora} · {evento.lugar}
         </span>
         {evento.inscripcionesCerradas && (
           <span className="db-badge db-badge-line">Inscripciones cerradas</span>
         )}
         {evento.ensayo && (
-          <span className="db-muted text-xs">Ensayo general: {evento.ensayo}</span>
+          <span className="db-muted text-xs">
+            Ensayo general: {fechaLegible(evento.ensayo, true)}
+          </span>
         )}
       </div>
 
@@ -325,8 +339,16 @@ export function ApproveCard({ puedeEditar }: { puedeEditar: boolean }) {
           </p>
         ))}
 
-      {ok && <p className="db-ok">{ok}</p>}
-      {error && <p className="db-error">{error}</p>}
+      {ok && (
+        <p className="db-ok" role="status">
+          {ok}
+        </p>
+      )}
+      {error && (
+        <p className="db-error" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

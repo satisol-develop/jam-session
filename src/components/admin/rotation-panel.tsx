@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
+import { ROLES_META } from "@/lib/constants";
 import { DEMO_MODE } from "@/lib/demo";
 import { demoApi } from "@/lib/demo/api";
 import { useAuth } from "@/lib/auth/auth-provider";
@@ -118,11 +119,16 @@ export function RotationPanel() {
     return <SkeletonFilas n={4} />;
   }
 
-  const selectUser = (value: string, onChange: (uid: string) => void) => (
+  const selectUser = (
+    value: string,
+    onChange: (uid: string) => void,
+    label: string,
+  ) => (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="db-input"
+      aria-label={label}
+      className="db-input min-h-10"
     >
       <option value="">— Sin asignar —</option>
       {usuarios.map((u) => (
@@ -160,11 +166,15 @@ export function RotationPanel() {
             key={rol}
             className="grid gap-2 rounded-xl border border-white/12 p-3 sm:grid-cols-[10rem_1fr_1fr]"
           >
-            <span className="db-title self-center text-sm">{rol}</span>
+            <span className="db-title self-center text-sm">
+              {ROLES_META[rol].label.split("·")[0].trim()}
+            </span>
             <div className="min-w-0">
               <span className="db-muted mb-1 block text-xs">titular</span>
-              {selectUser(asignaciones[rol].titular, (uid) =>
-                setRol(rol, "titular", uid),
+              {selectUser(
+                asignaciones[rol].titular,
+                (uid) => setRol(rol, "titular", uid),
+                `Titular de ${ROLES_META[rol].label.split("·")[0].trim()}`,
               )}
             </div>
             <div className="min-w-0">
@@ -181,13 +191,13 @@ export function RotationPanel() {
           </div>
         ))}
         <div className="grid gap-2 rounded-xl border border-dashed border-white/12 p-3 sm:grid-cols-[10rem_1fr]">
-          <span className="db-title self-center text-sm">grupo-base</span>
+          <span className="db-title self-center text-sm">Grupo Base</span>
           <p className="db-muted self-center text-xs">
             No rota: lo elige el General desde su panel.
           </p>
         </div>
         <div className="grid gap-2 rounded-xl border border-dashed border-white/12 p-3 sm:grid-cols-[10rem_1fr]">
-          <span className="db-title self-center text-sm">admin</span>
+          <span className="db-title self-center text-sm">Administrador</span>
           <p className="db-muted self-center text-xs">
             No rota: es permanente y se asigna a mano en la hoja Roles del
             spreadsheet (mes indiferente).
@@ -195,8 +205,16 @@ export function RotationPanel() {
         </div>
       </div>
 
-      {error && <p className="db-error">{error}</p>}
-      {ok && <p className="db-ok">{ok}</p>}
+      {error && (
+        <p className="db-error" role="alert">
+          {error}
+        </p>
+      )}
+      {ok && (
+        <p className="db-ok" role="status">
+          {ok}
+        </p>
+      )}
 
       <button type="submit" disabled={busy} className="db-btn w-full">
         {busy ? "Guardando rotación…" : "Guardar rotación del mes"}

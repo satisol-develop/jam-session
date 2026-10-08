@@ -162,8 +162,16 @@ export function EnsayoPanel() {
         después pide a Redes que difunda la fecha.
       </p>
 
-      {ok && <p className="db-ok">{ok}</p>}
-      {error && <p className="db-error">{error}</p>}
+      {ok && (
+        <p className="db-ok" role="status">
+          {ok}
+        </p>
+      )}
+      {error && (
+        <p className="db-error" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

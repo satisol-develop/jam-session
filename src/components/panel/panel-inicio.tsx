@@ -15,6 +15,18 @@ function Stat({ valor, label }: { valor: string; label: string }) {
   );
 }
 
+function fechaLegible(valor: string, conHora = false): string {
+  const d = new Date(valor);
+  if (Number.isNaN(d.getTime())) return valor;
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    month: "short",
+    ...(conHora
+      ? { hour: "2-digit", minute: "2-digit" }
+      : { year: "numeric" }),
+  }).format(d);
+}
+
 /**
  * Pestaña Inicio: resumen de lo que está pasando (estado en vivo) +
  * el siguiente paso recomendado. El paso a paso completo vive en el
@@ -78,12 +90,12 @@ export function PanelInicio({
                     </span>
                   )}
                   <span className="db-muted text-xs">
-                    {estado.evento.fecha} · {estado.evento.hora} ·{" "}
+                    {fechaLegible(estado.evento.fecha)} · {estado.evento.hora} ·{" "}
                     {estado.evento.lugar}
                   </span>
                   {estado.evento.ensayo && (
                     <span className="db-muted text-xs">
-                      Ensayo: {estado.evento.ensayo}
+                      Ensayo: {fechaLegible(estado.evento.ensayo, true)}
                     </span>
                   )}
                   {estado.evento.inscripcionesCerradas && (

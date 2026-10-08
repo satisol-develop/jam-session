@@ -21,19 +21,19 @@ export function SiteFooter() {
         <nav className="flex flex-wrap gap-x-4 gap-y-1">
           <Link
             href="/"
-            className="text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+            className="inline-flex min-h-10 items-center text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
           >
             Próxima sesión
           </Link>
           <Link
             href="/login"
-            className="text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+            className="inline-flex min-h-10 items-center text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
           >
             Entrar
           </Link>
           <Link
             href="/registro"
-            className="text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+            className="inline-flex min-h-10 items-center text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
           >
             Registro
           </Link>

@@ -55,7 +55,7 @@ export function LoginForm() {
     <div className="flex min-h-[calc(100dvh-3.5rem)] items-center justify-center px-4 sm:min-h-[calc(100dvh-4rem)]">
       <div className="w-full max-w-sm">
         <h1 className="mb-1 text-2xl font-bold">Entrar</h1>
-        <p className="mb-6 text-sm text-neutral-500">
+        <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
           Accede para inscribirte y ver el material.
         </p>
 

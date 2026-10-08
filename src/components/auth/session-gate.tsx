@@ -48,7 +48,7 @@ function ErrorVerificacion({
           <button
             type="button"
             onClick={onSalir}
-            className="w-full px-4 py-2 text-sm text-neutral-500 underline"
+            className="w-full px-4 py-2 text-sm text-neutral-500 underline dark:text-neutral-400"
           >
             Salir
           </button>
@@ -301,7 +301,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
           <button
             type="button"
             onClick={() => void logout()}
-            className="w-full px-4 py-2 text-sm text-neutral-500 underline"
+            className="w-full px-4 py-2 text-sm text-neutral-500 underline dark:text-neutral-400"
           >
             Salir
           </button>

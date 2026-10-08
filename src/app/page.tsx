@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api/client";
+import { useAuth } from "@/lib/auth/auth-provider";
 import type { EventoPublico } from "@/types";
 
 function formatFecha(fecha: string): string {
@@ -26,6 +27,7 @@ function formatEnsayo(valor: string): string {
 }
 
 export default function Home() {
+  const { user } = useAuth();
   const [data, setData] = useState<EventoPublico | null>(null);
   const [cargando, setCargado] = useState(true);
 
@@ -95,7 +97,7 @@ export default function Home() {
             className="mx-auto w-full max-w-lg rounded-2xl border border-neutral-200 shadow-sm dark:border-neutral-800"
           />
         ) : (
-          <div className="mx-auto flex h-64 w-full max-w-lg items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-gradient-to-br from-red-500/10 via-transparent to-amber-500/10 text-sm text-neutral-500 dark:border-neutral-700">
+          <div className="mx-auto flex h-64 w-full max-w-lg items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-gradient-to-br from-red-500/10 via-transparent to-amber-500/10 text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
             {cargando ? "Cargando cartel…" : "El cartel del mes se publicará aquí"}
           </div>
         )}
@@ -104,13 +106,13 @@ export default function Home() {
       <section className="mt-12">
         <div className="mb-4 flex items-baseline justify-between">
           <h2 className="text-xl font-bold">Repertorio del mes</h2>
-          <span className="text-sm text-neutral-500">
+          <span className="text-sm text-neutral-500 dark:text-neutral-400">
             {catalogo.length} {catalogo.length === 1 ? "tema" : "temas"}
           </span>
         </div>
 
         {catalogo.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700">
+          <p className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
             {cargando
               ? "Cargando repertorio…"
               : "El repertorio estará disponible en breve."}
@@ -122,13 +124,13 @@ export default function Home() {
                 key={c.id}
                 className="flex items-center gap-4 px-4 py-3 sm:px-6"
               >
-                <span className="w-6 shrink-0 text-sm tabular-nums text-neutral-500">
+                <span className="w-6 shrink-0 text-sm tabular-nums text-neutral-500 dark:text-neutral-400">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="min-w-0 flex-1 truncate font-medium">
                   {c.titulo}
                 </span>
-                <span className="shrink-0 text-sm text-neutral-500">
+                <span className="min-w-0 max-w-[40%] shrink truncate text-sm text-neutral-500 dark:text-neutral-400">
                   {c.artista || "—"}
                 </span>
                 {c.tonalidad && (
@@ -149,18 +151,29 @@ export default function Home() {
           el material de estudio.
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
-          <Link
-            href="/registro"
-            className="rounded-lg bg-[#FFE600] px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-white"
-          >
-            Inscribirme
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-lg border border-white/30 px-5 py-2.5 text-sm font-semibold transition hover:bg-white/10 dark:border-black/30 dark:hover:bg-black/5"
-          >
-            Entrar
-          </Link>
+          {user ? (
+            <Link
+              href="/mi"
+              className="rounded-lg bg-[#FFE600] px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-white"
+            >
+              Mi zona
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/registro"
+                className="rounded-lg bg-[#FFE600] px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-white"
+              >
+                Inscribirme
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-lg border border-white/30 px-5 py-2.5 text-sm font-semibold transition hover:bg-white/10 dark:border-black/30 dark:hover:bg-black/5"
+              >
+                Entrar
+              </Link>
+            </>
+          )}
         </div>
       </section>
     </div>

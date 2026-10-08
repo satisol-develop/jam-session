@@ -8,6 +8,13 @@ import type { Inscripcion } from "@/types";
 
 const ESTADOS = ["pendiente", "asignado", "parcial", "rechazado"] as const;
 
+const ESTADO_LABEL: Record<Inscripcion["estado"], string> = {
+  pendiente: "Pendiente",
+  asignado: "Asignado",
+  parcial: "Parcial",
+  rechazado: "Rechazado",
+};
+
 const ESTADO_BADGE: Record<Inscripcion["estado"], string> = {
   pendiente: "db-badge db-badge-line",
   asignado: "db-badge db-badge-solid",
@@ -79,7 +86,9 @@ export function InscripcionesPanel({ editable }: { editable: boolean }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         {error ? (
-          <p className="db-error">{error}</p>
+          <p className="db-error" role="alert">
+            {error}
+          </p>
         ) : (
           <p className="db-kicker">{inscripciones.length} inscripciones</p>
         )}
@@ -123,11 +132,12 @@ export function InscripcionesPanel({ editable }: { editable: boolean }) {
                   value={i.estado}
                   onChange={(e) => cambiarEstado(i.id, e.target.value)}
                   disabled={busy}
-                  className="db-input w-auto! py-1.5!"
+                  aria-label={`Estado de ${i.nombre}`}
+                  className="db-input w-auto! min-h-10!"
                 >
                   {ESTADOS.map((e) => (
                     <option key={e} value={e}>
-                      {e}
+                      {ESTADO_LABEL[e]}
                     </option>
                   ))}
                 </select>

@@ -4,8 +4,10 @@
  * Alterna el modo oscuro global: añade/quita la clase `.dark` en <html>
  * y la recuerda en localStorage. El estado inicial lo decide un script
  * inline en el layout (preferencia guardada o la del sistema).
+ * `enPanel` adapta los estilos al header oscuro de /panel (que no lleva
+ * la clase `.dark`, así que las variantes `dark:` no le alcanzan).
  */
-export function ThemeToggle() {
+export function ThemeToggle({ enPanel = false }: { enPanel?: boolean }) {
   function toggle() {
     const raiz = document.documentElement;
     const oscuro = !raiz.classList.contains("dark");
@@ -22,7 +24,11 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label="Cambiar entre modo claro y oscuro"
-      className="rounded-lg p-2 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-white"
+      className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg p-2 transition ${
+        enPanel
+          ? "text-white/60 hover:bg-white/10 hover:text-white"
+          : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-white"
+      }`}
     >
       {/* Luna (se muestra en claro → clic = oscuro) */}
       <svg

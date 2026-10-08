@@ -21,6 +21,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
   const cerrarPermitido = puedeCerrar ?? puedeEscribir;
   const [data, setData] = useState<ResumenCaja | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmarCierre, setConfirmarCierre] = useState(false);
 
@@ -40,6 +41,22 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
       );
   }, []);
 
+  /* El modal de cierre anticipada: Escape, sin scroll de fondo y foco
+     inicial en la acción principal (patrón de los modales del panel). */
+  useEffect(() => {
+    if (!confirmarCierre) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape" && !busy) setConfirmarCierre(false);
+    }
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [confirmarCierre, busy]);
+
   async function reload() {
     try {
       setData(await api<ResumenCaja>("cash.list"));
@@ -52,6 +69,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
     e.preventDefault();
     setBusy(true);
     setError(null);
+    setOk(null);
     try {
       await api<MovimientoCaja>("cash.add", {
         tipo,
@@ -61,6 +79,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
       });
       setConcepto("");
       setImporte("");
+      setOk("Movimiento añadido.");
       await reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo añadir.");
@@ -72,8 +91,10 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
   async function eliminar(id: string) {
     setBusy(true);
     setError(null);
+    setOk(null);
     try {
       await api("cash.delete", { id });
+      setOk("Movimiento anulado.");
       await reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo anular.");
@@ -110,7 +131,16 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
 
   if (!data) {
     if (error) {
-      return <p className="db-muted text-sm">{error}</p>;
+      return (
+        <div className="space-y-3">
+          <p className="db-error" role="alert">
+            {error}
+          </p>
+          <button type="button" onClick={() => reload()} className="db-ghost">
+            Reintentar
+          </button>
+        </div>
+      );
     }
     return <SkeletonFilas n={3} />;
   }
@@ -124,7 +154,16 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
 
   return (
     <div className="space-y-4">
-      {error && <p className="db-error">{error}</p>}
+      {error && (
+        <p className="db-error" role="alert">
+          {error}
+        </p>
+      )}
+      {ok && (
+        <p className="db-ok" role="status">
+          {ok}
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {(
@@ -158,6 +197,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
             <select
               value={tipo}
               onChange={(e) => setTipo(e.target.value as TipoMovimiento)}
+              aria-label="Tipo de movimiento"
               className="db-input"
             >
               <option value="consumible">Consumición</option>
@@ -167,6 +207,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
             <select
               value={metodo}
               onChange={(e) => setMetodo(e.target.value)}
+              aria-label="Método de pago"
               className="db-input"
             >
               <option value="efectivo">Efectivo</option>
@@ -177,6 +218,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
               value={concepto}
               onChange={(e) => setConcepto(e.target.value)}
               placeholder="Concepto (ej. Cerveza, Aportación barra)"
+              aria-label="Concepto del movimiento"
               maxLength={120}
               className="db-input"
             />
@@ -187,11 +229,14 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
                 value={importe}
                 onChange={(e) => setImporte(e.target.value)}
                 placeholder="Importe €"
+                aria-label="Importe en euros"
                 className="db-input"
               />
               <button
                 type="submit"
                 disabled={busy || !importe}
+                aria-label="Añadir movimiento"
+                title="Añadir movimiento"
                 className="db-btn shrink-0 px-4!"
               >
                 +
@@ -228,7 +273,10 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
           </div>
           <ul className="db-card divide-y divide-white/10">
           {data.movimientos.map((m) => (
-            <li key={m.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+            <li
+              key={m.id}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm transition hover:bg-white/5"
+            >
               <span className="min-w-0 flex-1 break-words">
                 <span className="font-medium">{m.concepto || m.tipo}</span>
                 <span
@@ -300,6 +348,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
                 value={fondoInicial}
                 onChange={(e) => setFondoInicial(e.target.value)}
                 placeholder="Fondo inicial €"
+                aria-label="Fondo inicial en euros"
                 className="db-input"
               />
               <input
@@ -308,6 +357,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
                 value={efectivoContado}
                 onChange={(e) => setEfectivoContado(e.target.value)}
                 placeholder="Efectivo contado €"
+                aria-label="Efectivo contado en euros"
                 className="db-input"
               />
             </div>
@@ -328,7 +378,13 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
 
       {confirmarCierre && (
         <>
-          <div className="db-modal-backdrop" aria-hidden="true" />
+          <button
+            type="button"
+            aria-label="Cerrar"
+            disabled={busy}
+            onClick={() => setConfirmarCierre(false)}
+            className="db-modal-backdrop"
+          />
           <div
             className="db-modal space-y-4"
             role="dialog"
@@ -348,6 +404,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
                 type="button"
                 onClick={ejecutarCierre}
                 disabled={busy}
+                autoFocus
                 className="db-btn flex-1"
               >
                 {busy ? "Cerrando…" : "Sí, cerrar caja"}

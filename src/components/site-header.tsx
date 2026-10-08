@@ -9,10 +9,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { RoleSwitcher } from "@/components/role-switcher";
 
 export function SiteHeader() {
-  const { user, roles, loading, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const tieneRoles = Object.keys(roles).length > 0;
 
   // El modo oscuro es una opción de la plataforma (logueado); fuera siempre claro.
   useEffect(() => {
@@ -47,7 +46,7 @@ export function SiteHeader() {
     : "bg-neutral-100 dark:bg-neutral-900";
   const mutedCls = enPanel
     ? "hidden max-w-[10rem] truncate px-2 text-white/50 sm:inline"
-    : "hidden max-w-[10rem] truncate px-2 text-neutral-500 sm:inline";
+    : "hidden max-w-[10rem] truncate px-2 text-neutral-500 dark:text-neutral-400 sm:inline";
 
   return (
     <header
@@ -66,17 +65,17 @@ export function SiteHeader() {
         </div>
 
         <nav className="flex min-w-0 items-center gap-0.5 text-sm sm:gap-1">
-          {!loading && user && <ThemeToggle />}
+          {!loading && user && <ThemeToggle enPanel={enPanel} />}
           {!loading && user ? (
             <>
-              {!tieneRoles && (
-                <Link
-                  href="/mi"
-                  className={`${linkCls} ${isActive("/mi") ? linkActivo : ""}`}
-                >
-                  Mi zona
-                </Link>
-              )}
+              {/* «Mi zona» siempre visible: sin ella, un músico con roles no
+                  tiene forma de llegar a /mi ni a /partituras desde el panel. */}
+              <Link
+                href="/mi"
+                className={`${linkCls} ${isActive("/mi") ? linkActivo : ""}`}
+              >
+                Mi zona
+              </Link>
               <RoleSwitcher linkCls={linkCls} linkActivo={linkActivo} />
               <span className={mutedCls}>
                 {user.displayName ?? user.email}
@@ -84,14 +83,18 @@ export function SiteHeader() {
               <button
                 onClick={onLogout}
                 className={`${linkCls} ${
-                  enPanel ? "text-white/60" : "text-neutral-500"
+                  enPanel ? "text-white/60" : "text-neutral-500 dark:text-neutral-400"
                 }`}
               >
                 Salir
               </button>
             </>
           ) : loading ? (
-            <span className={`px-3 ${enPanel ? "text-white/50" : "text-neutral-500"}`}>
+            <span
+              className={`px-3 ${
+                enPanel ? "text-white/50" : "text-neutral-500 dark:text-neutral-400"
+              }`}
+            >
               …
             </span>
           ) : (

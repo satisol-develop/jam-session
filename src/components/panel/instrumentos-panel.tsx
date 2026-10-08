@@ -61,7 +61,11 @@ export function InstrumentosPanel() {
 
   return (
     <div className="space-y-4">
-      {error && <p className="db-error">{error}</p>}
+      {error && (
+        <p className="db-error" role="alert">
+          {error}
+        </p>
+      )}
 
       <div className="flex flex-wrap gap-3 text-xs">
         <span className="db-badge db-badge-solid">

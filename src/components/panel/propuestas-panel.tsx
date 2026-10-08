@@ -15,6 +15,7 @@ const fmt = new Intl.DateTimeFormat("es-ES", {
 export function PropuestasPanel({ editable }: { editable: boolean }) {
   const [propuestas, setPropuestas] = useState<Propuesta[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [seleccion, setSeleccion] = useState<string[]>([]);
 
@@ -45,6 +46,7 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
     if (busy || seleccion.length === 0) return;
     setBusy(true);
     setError(null);
+    setOk(null);
     const resueltas: Propuesta[] = [];
     try {
       for (const id of seleccion) {
@@ -59,6 +61,11 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
           (prev ?? []).map((p) => resueltas.find((r) => r.id === p.id) ?? p),
         );
         setSeleccion((prev) => prev.filter((id) => !ids.has(id)));
+        setOk(
+          `${resueltas.length} ${resueltas.length === 1 ? "propuesta" : "propuestas"} ${
+            estado === "aprobada" ? "aprobada" : "rechazada"
+          }${resueltas.length === 1 ? "" : "s"}.`,
+        );
       }
       setBusy(false);
     }
@@ -81,7 +88,16 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
 
   return (
     <div className="space-y-4">
-      {error && <p className="db-error">{error}</p>}
+      {error && (
+        <p className="db-error" role="alert">
+          {error}
+        </p>
+      )}
+      {ok && (
+        <p className="db-ok" role="status">
+          {ok}
+        </p>
+      )}
 
       {editable && pendientes.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
@@ -89,7 +105,7 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
             onClick={marcarTodas}
             type="button"
             disabled={busy}
-            className="db-muted text-xs underline disabled:opacity-50"
+            className="db-muted inline-flex min-h-10 items-center text-xs underline transition hover:text-white disabled:opacity-50"
           >
             Seleccionar todas
           </button>
@@ -97,7 +113,7 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
             onClick={() => setSeleccion([])}
             type="button"
             disabled={busy}
-            className="db-muted text-xs underline disabled:opacity-50"
+            className="db-muted inline-flex min-h-10 items-center text-xs underline transition hover:text-white disabled:opacity-50"
           >
             Ninguna
           </button>
@@ -166,9 +182,11 @@ export function PropuestasPanel({ editable }: { editable: boolean }) {
             type="button"
             onClick={() => resolverLote("rechazada")}
             disabled={busy || seleccion.length === 0}
-            className="min-h-10 rounded-xl border border-red-500/40 px-3 py-2 text-xs font-semibold text-red-300 uppercase disabled:opacity-50"
+            className="min-h-10 rounded-xl border border-red-500/40 px-3 py-2 text-xs font-semibold text-red-300 uppercase transition hover:border-red-500 hover:text-red-200 disabled:opacity-50"
           >
-            Rechazar seleccionadas
+            {busy
+              ? "Validando…"
+              : `Rechazar seleccionadas (${seleccion.length})`}
           </button>
         </div>
       )}

@@ -50,8 +50,16 @@ export function RepertorioPanel({ editable }: { editable: boolean }) {
 
   return (
     <div>
-      {error && <p className="db-error mb-4">{error}</p>}
-      {ok && <p className="db-badge mb-4 inline-flex">{ok}</p>}
+      {error && (
+        <p className="db-error mb-4" role="alert">
+          {error}
+        </p>
+      )}
+      {ok && (
+        <p className="db-ok mb-4" role="status">
+          {ok}
+        </p>
+      )}
 
       {editable && (
         <form onSubmit={onSubmit} className="db-card mb-4 space-y-3 p-4">

@@ -211,8 +211,8 @@ export function UsuariosPanel() {
   }
 
   return (
-    <div className="space-y-6">
-      <form onSubmit={onCreate} className="db-card space-y-3">
+    <div className="space-y-4">
+      <form onSubmit={onCreate} className="db-card space-y-3 p-4 sm:p-5">
         <p className="db-kicker">Crear participante</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
@@ -247,8 +247,16 @@ export function UsuariosPanel() {
           </div>
         </div>
 
-        {error && <p className="db-error">{error}</p>}
-        {creado && <p className="db-ok">{creado}</p>}
+        {error && (
+          <p className="db-error" role="alert">
+            {error}
+          </p>
+        )}
+        {creado && (
+          <p className="db-ok" role="status">
+            {creado}
+          </p>
+        )}
 
         <button type="submit" disabled={busy} className="db-btn">
           {busy ? "Creando…" : "Crear cuenta"}
@@ -286,12 +294,17 @@ export function UsuariosPanel() {
                   >
                     <span className="min-w-0">
                       <span className="font-semibold">{u.nombre || "—"}</span>
-                      <span className="db-muted ml-2 text-xs">{u.email}</span>
+                      <span className="db-muted ml-2 break-all text-xs">
+                        {u.email}
+                      </span>
                     </span>
                     <span className="flex items-center gap-1.5">
                       {ROLES.filter((r) => tipoDe(u.uid, r)).map((r) => (
-                        <span key={r} className="db-badge db-badge-line !text-[10px]">
-                          {ROLES_META[r].label}
+                        <span
+                          key={r}
+                          className="db-badge db-badge-line !text-[11px]"
+                        >
+                          {ROLES_META[r].label.split("·")[0].trim()}
                           {tipoDe(u.uid, r) === "apoyo" ? " · apoyo" : ""}
                         </span>
                       ))}
@@ -304,7 +317,9 @@ export function UsuariosPanel() {
                       >
                         {u.estado || "activo"}
                       </span>
-                      <span className="db-muted text-xs">{abierto ? "▾" : "▸"}</span>
+                      <span aria-hidden className="db-muted text-xs">
+                        {abierto ? "▾" : "▸"}
+                      </span>
                     </span>
                   </button>
 
@@ -356,7 +371,7 @@ export function UsuariosPanel() {
                           onClick={() => guardar(u.uid)}
                           className="db-btn"
                         >
-                          {ocupado ? "…" : "Guardar datos"}
+                          {ocupado ? "Guardando…" : "Guardar datos"}
                         </button>
                         <button
                           type="button"
@@ -419,15 +434,15 @@ export function UsuariosPanel() {
                                 disabled={ocupado}
                                 onClick={() => ciclarRol(u.uid, r)}
                                 title={`${ROLES_META[r].label}: ${tipo ?? "sin rol"} (toque para cambiar)`}
-                                className={`rounded-lg px-2 py-1.5 text-xs font-semibold transition ${
+                                className={`min-h-10 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition ${
                                   tipo === "titular"
                                     ? "bg-[#FFE600] text-black"
                                     : tipo === "apoyo"
                                       ? "bg-white/15 text-white"
-                                      : "border border-white/15 text-white/40 hover:text-white/70"
+                                      : "border border-white/15 text-white/60 hover:border-white/40 hover:text-white"
                                 }`}
                               >
-                                {ROLES_META[r].label}
+                                {ROLES_META[r].label.split("·")[0].trim()}
                                 {tipo ? ` · ${tipo}` : ""}
                               </button>
                             );
@@ -446,8 +461,16 @@ export function UsuariosPanel() {
           </ul>
         )}
 
-        {nota && <p className="db-ok mt-3 text-sm">{nota}</p>}
-        {errorAccion && <p className="db-error mt-3 text-sm">{errorAccion}</p>}
+        {nota && (
+          <p className="db-ok mt-3 text-sm" role="status">
+            {nota}
+          </p>
+        )}
+        {errorAccion && (
+          <p className="db-error mt-3 text-sm" role="alert">
+            {errorAccion}
+          </p>
+        )}
       </div>
     </div>
   );

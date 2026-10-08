@@ -132,8 +132,16 @@ export function GrupoBasePanel() {
         la lista tiene acceso al panel de Grupo Base (mínimo un miembro).
       </p>
 
-      {ok && <p className="db-ok">{ok}</p>}
-      {error && <p className="db-error">{error}</p>}
+      {ok && (
+        <p className="db-ok" role="status">
+          {ok}
+        </p>
+      )}
+      {error && (
+        <p className="db-error" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

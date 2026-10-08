@@ -25,6 +25,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Red de seguridad: ningún token largo (emails, rutas) puede forzar
+     scroll horizontal. `clip` no crea contenedor de scroll (no rompe el
+     sticky header ni los fixed del panel). */
+  overflow-x: clip;
 }
 
 /* ================================================================
@@ -52,7 +56,6 @@ body {
 .db-zone :focus-visible {
   outline: 2px solid #ffe600;
   outline-offset: 2px;
-  border-radius: 6px;
 }
 
 .db-title {
@@ -65,7 +68,7 @@ body {
 
 .db-kicker {
   color: #ffe600;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.22em;
@@ -128,7 +131,7 @@ body {
 .db-bottombar-label {
   max-width: 100%;
   overflow: hidden;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -282,6 +285,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  /* Target táctil mínimo (40px) en todos los botones de la app */
+  min-height: 2.5rem;
   background: #ffe600;
   color: #0a0a0a;
   font-weight: 800;
@@ -309,6 +314,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  /* Target táctil mínimo (40px) */
+  min-height: 2.5rem;
   border: 1px solid rgba(255, 255, 255, 0.35);
   color: #ffffff;
   font-weight: 700;
@@ -434,11 +441,11 @@ body {
 
 .db-stat-label {
   margin-top: 0.3rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* Protocolo paso a paso con salto a pestañas */

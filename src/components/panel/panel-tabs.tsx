@@ -89,14 +89,17 @@ export function PanelTabs({
   }
 
   const actual = tabs.find((t) => t.id === activo) ?? tabs[0];
-  const primarias = tabs.filter((t) => t.primaria);
-  const secundarias = tabs.filter((t) => !t.primaria);
+  // Máx. 4 en la bottom bar (a 360px, 5+ etiquetas se cortan con «…»);
+  // lo que sobre (marcado como primario o no) va a la hoja «Más».
+  const primarias = tabs.filter((t) => t.primaria).slice(0, 4);
+  const idsPrimarias = new Set(primarias.map((t) => t.id));
+  const secundarias = tabs.filter((t) => !idsPrimarias.has(t.id));
 
   return (
     <div className={paraSidebar ? "" : "space-y-3 pb-24 sm:space-y-4 sm:pb-0"}>
       {/* Chips (tablet; en modo sidebar la navegación de escritorio es el aside) */}
       <nav
-        aria-label="Secciones del panel"
+        aria-label="Secciones del panel (barra)"
         className={`db-tabs sticky top-[calc(4rem+env(safe-area-inset-top))] z-30 -mx-4 hidden sm:block ${
           paraSidebar ? "md:hidden" : ""
         }`}
@@ -119,7 +122,7 @@ export function PanelTabs({
                 type="button"
                 onClick={() => seleccionar(t.id)}
                 aria-current={activa ? "page" : undefined}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold uppercase tracking-wider transition ${
+                className={`flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold uppercase tracking-wider transition ${
                   activa
                     ? "bg-[#FFE600] text-black"
                     : "border border-white/15 text-white/55 hover:border-[#FFE600]/50 hover:text-white"
@@ -149,7 +152,7 @@ export function PanelTabs({
 
       {/* Bottom bar (móvil) */}
       <nav
-        aria-label="Secciones del panel"
+        aria-label="Secciones del panel (inferior)"
         className="db-bottombar fixed inset-x-0 bottom-0 z-40 flex sm:hidden"
       >
         {primarias.map((t) => {
@@ -166,7 +169,7 @@ export function PanelTabs({
               <span className="relative">
                 <TabIcon id={t.id} className="size-5" />
                 {tieneConteo && !activa && (
-                  <span className="absolute -top-1.5 -right-2 rounded-full bg-[#FFE600] px-1 text-[9px] leading-4 font-black text-black tabular-nums">
+                  <span className="absolute -top-1.5 -right-2 rounded-full bg-[#FFE600] px-1 text-[10px] leading-4 font-black text-black tabular-nums">
                     {t.conteo}
                   </span>
                 )}
@@ -199,6 +202,7 @@ export function PanelTabs({
           />
           <div
             role="dialog"
+            aria-modal="true"
             aria-label="Más secciones"
             className="db-sheet sm:hidden"
           >

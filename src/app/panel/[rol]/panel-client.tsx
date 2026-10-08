@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { useRequireAuth } from "@/lib/auth/use-require-auth";
@@ -70,6 +70,16 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   const [protocolo, setProtocolo] = useState(false);
   const cerrarProtocolo = useCallback(() => setProtocolo(false), []);
   const abrirProtocolo = useCallback(() => setProtocolo(true), []);
+
+  // Hash compartido/cambiado desde fuera (p. ej. «atrás» o un enlace
+  // #tareas): la pestaña activa sigue al hash.
+  useEffect(() => {
+    function onHash() {
+      setActivo(decodeURIComponent(window.location.hash.slice(1)));
+    }
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
 
   // Primer lote de endpoints: no se pinta nada del panel hasta que terminen.
   if (estado.cargando) {
@@ -487,7 +497,10 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       {soloUnRol ? (
         <span className="db-kicker">Panel</span>
       ) : (
-        <Link href="/panel" className="db-kicker underline">
+        <Link
+          href="/panel"
+          className="db-kicker inline-flex min-h-10 items-center underline"
+        >
           ← Paneles
         </Link>
       )}
@@ -510,7 +523,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
           Protocolo
         </button>
       </div>
-      <p className="db-muted mt-1 hidden text-sm sm:block">
+      <p className="db-muted mt-1 text-sm">
         {ROLES_META[rol].description}
       </p>
     </header>
@@ -578,20 +591,20 @@ export function RolPanelClient({ rol: rolParam }: { rol: string }) {
   const tipo = roles[rol];
 
   if (pendiente || loading) {
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-10">
-        <p className="db-muted text-sm">Cargando…</p>
-      </div>
-    );
+    return <PantallaCargando texto="Cargando panel…" />;
   }
 
   if (!valido) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10">
-        <p className="db-muted text-sm">Rol no encontrado.</p>
-        <Link href="/panel" className="mt-2 text-sm text-[#FFE600] underline">
-          Volver a paneles
-        </Link>
+        <div className="db-card space-y-3 p-5">
+          <p className="db-error" role="alert">
+            Rol no encontrado.
+          </p>
+          <Link href="/panel" className="db-ghost">
+            Volver a paneles
+          </Link>
+        </div>
       </div>
     );
   }
@@ -599,13 +612,15 @@ export function RolPanelClient({ rol: rolParam }: { rol: string }) {
   if (!tipo) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10">
-        <p className="db-muted text-sm">
-          No tienes acceso al panel de {ROLES_META[rol].label}. Si crees que es
-          un error, contacta con el administrador.
-        </p>
-        <Link href="/panel" className="mt-2 text-sm text-[#FFE600] underline">
-          Volver a paneles
-        </Link>
+        <div className="db-card space-y-3 p-5">
+          <p className="db-error" role="alert">
+            No tienes acceso al panel de {ROLES_META[rol].label}. Si crees que
+            es un error, contacta con el administrador.
+          </p>
+          <Link href="/panel" className="db-ghost">
+            Volver a paneles
+          </Link>
+        </div>
       </div>
     );
   }

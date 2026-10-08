@@ -141,7 +141,11 @@ export function DifusionKit({ editable }: { editable: boolean }) {
     return <SkeletonFilas n={3} />;
   }
   if (error && !evento) {
-    return <p className="db-error">{error}</p>;
+    return (
+      <p className="db-error" role="alert">
+        {error}
+      </p>
+    );
   }
   if (!evento) {
     return (
@@ -244,7 +248,7 @@ export function DifusionKit({ editable }: { editable: boolean }) {
             <p className="db-muted text-xs">Cargando plantillas…</p>
           )}
           {plantillasEstado === "error" && (
-            <p className="db-error text-xs">
+            <p className="db-error text-xs" role="alert">
               No se pudieron cargar las plantillas.
             </p>
           )}
@@ -267,7 +271,7 @@ export function DifusionKit({ editable }: { editable: boolean }) {
                   >
                     {p.nombre}
                   </a>
-                  <span className="db-badge db-badge-line shrink-0 text-[10px]!">
+                  <span className="db-badge db-badge-line shrink-0 text-[11px]!">
                     {(p.nombre.split(".").pop() || "?").toUpperCase()} ·{" "}
                     {formatBytes(p.bytes)}
                   </span>
@@ -300,8 +304,16 @@ export function DifusionKit({ editable }: { editable: boolean }) {
           (máx. 6 MB). Solo se publica un cartel en la portada: al subir uno
           nuevo sustituye al anterior.
         </p>
-        {ok && <p className="db-badge mt-2 inline-flex">{ok}</p>}
-        {error && <p className="db-error mt-2">{error}</p>}
+        {ok && (
+          <p className="db-ok mt-2" role="status">
+            {ok}
+          </p>
+        )}
+        {error && (
+          <p className="db-error mt-2" role="alert">
+            {error}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

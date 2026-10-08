@@ -7,7 +7,13 @@ export const metadata = {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-sm text-neutral-500">Cargando…</div>}>
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
+          Cargando…
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

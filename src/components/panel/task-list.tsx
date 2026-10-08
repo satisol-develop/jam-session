@@ -166,7 +166,11 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
         </div>
       </div>
 
-      {error && <p className="db-error">{error}</p>}
+      {error && (
+        <p className="db-error" role="alert">
+          {error}
+        </p>
+      )}
 
       {total === 0 ? (
         <p className="db-muted text-sm">
@@ -205,18 +209,20 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                   <span className="min-w-0 flex-1 break-words">
                     <span
                       className={
-                        t.estado === "hecha" ? "line-through opacity-60" : ""
+                        t.estado === "hecha"
+                          ? "line-through text-white/60"
+                          : ""
                       }
                     >
                       {t.titulo}
                     </span>
                     {todas && (
-                      <span className="ml-2 rounded bg-[#FFE600]/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[#FFE600]">
+                      <span className="ml-2 rounded bg-[#FFE600]/15 px-1.5 py-0.5 text-[11px] font-semibold uppercase text-[#FFE600]">
                         {t.rol}
                       </span>
                     )}
                     {t.origen === "personal" && (
-                      <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white/60">
+                      <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold uppercase text-white/60">
                         personal
                       </span>
                     )}
@@ -229,14 +235,14 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                 </button>
 
                 {subtareas.length > 0 && (
-                  <ul className="ml-12 mr-4 mb-1 space-y-0.5 border-l border-white/10 pl-3">
+                  <ul className="ml-6 mr-4 mb-1 space-y-0.5 border-l border-white/10 pl-3 sm:ml-12">
                     {subtareas.map((st) => (
                       <li key={st.id}>
                         <button
                           type="button"
                           onClick={() => onToggleSub(t, st.id)}
                           disabled={!esTitular || busy}
-                          className={`flex min-h-9 w-full items-center gap-2 rounded px-1.5 py-1.5 text-left text-xs ${
+                          className={`flex min-h-10 w-full items-center gap-2 rounded px-1.5 py-1.5 text-left text-xs ${
                             esTitular ? "hover:bg-white/5" : "cursor-default"
                           }`}
                         >
@@ -251,7 +257,9 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                           </span>
                           <span
                             className={
-                              st.hecha ? "line-through opacity-60" : "text-white/75"
+                              st.hecha
+                                ? "line-through text-white/60"
+                                : "text-white/75"
                             }
                           >
                             {st.titulo}
@@ -265,7 +273,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                 {esTitular && (
                   <form
                     onSubmit={(e) => onAddSub(e, t)}
-                    className="ml-12 mr-4 mb-3 flex gap-1.5"
+                    className="ml-6 mr-4 mb-3 flex gap-1.5 sm:ml-12"
                   >
                     <input
                       type="text"
@@ -275,6 +283,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                       }
                       maxLength={120}
                       placeholder="+ subtarea…"
+                      aria-label={`Nueva subtarea en ${t.titulo}`}
                       className="db-input flex-1"
                     />
                     <button
@@ -287,16 +296,20 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                   </form>
                 )}
 
-                <div className="ml-12 mr-4 mb-3">
+                <div className="ml-6 mr-4 mb-3 sm:ml-12">
                   <button
                     type="button"
                     onClick={() =>
                       setHilos((prev) => ({ ...prev, [t.id]: !prev[t.id] }))
                     }
                     aria-expanded={hiloAbierto}
-                    className="db-kicker text-xs underline"
+                    className="db-kicker inline-flex min-h-10 items-center gap-1.5 text-xs underline"
                   >
-                    💬 {comentarios.length} {hiloAbierto ? "· ocultar" : "· comentar"}
+                    <span aria-hidden>💬</span>
+                    <span>
+                      Comentarios ({comentarios.length}){" "}
+                      {hiloAbierto ? "· ocultar" : "· comentar"}
+                    </span>
                   </button>
 
                   {hiloAbierto && (
@@ -365,6 +378,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
             onChange={(e) => setNueva(e.target.value)}
             maxLength={200}
             placeholder="Nueva tarea para este rol…"
+            aria-label="Nueva tarea para este rol"
             className="db-input flex-1"
           />
           <button

@@ -33,7 +33,7 @@ export function AttendeesList() {
   }
   if (asistentes.length === 0) {
     return (
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">
         Nadie se ha inscrito todavía. ¡Sé el primero!
       </p>
     );

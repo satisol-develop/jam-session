@@ -114,12 +114,12 @@ export function SubscribeForm({ inscripcion, onSaved, cerradas, ensayo }: Props)
     return (
       <div className="space-y-2 rounded-xl border border-neutral-200 p-4 text-sm dark:border-neutral-800">
         <p className="font-semibold">Inscripciones cerradas</p>
-        <p className="text-neutral-500">
+        <p className="text-neutral-500 dark:text-neutral-400">
           El Grupo Base ha cerrado la inscripción de esta sesión.
           {ensayo && ` Ensayo general: ${ensayo}.`}
         </p>
         {inscripcion && (
-          <p className="text-neutral-500">
+          <p className="text-neutral-500 dark:text-neutral-400">
             Tu inscripción enviada se conserva (solo lectura):{" "}
             {inscripcion.instrumentos.join(", ") || "—"} ·{" "}
             {inscripcion.temas.length}{" "}
@@ -165,7 +165,7 @@ export function SubscribeForm({ inscripcion, onSaved, cerradas, ensayo }: Props)
         {catalogo === null ? (
           <SkeletonFilas n={3} />
         ) : catalogo.length === 0 ? (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             Aún no hay repertorio publicado.
           </p>
         ) : (
@@ -185,7 +185,7 @@ export function SubscribeForm({ inscripcion, onSaved, cerradas, ensayo }: Props)
                       className="size-4 accent-red-500"
                     />
                     <span className="text-sm font-medium">{c.titulo}</span>
-                    <span className="text-xs text-neutral-500">
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
                       {c.artista}
                     </span>
                   </label>

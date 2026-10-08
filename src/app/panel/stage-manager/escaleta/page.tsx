@@ -125,6 +125,8 @@ export default function EscaletaPage() {
 
   function eliminar(index: number) {
     if (!turnos) return;
+    const titulo = turnos[index]?.titulo ?? "este turno";
+    if (!window.confirm(`¿Eliminar «${titulo}» de la escaleta?`)) return;
     guardar(turnos.filter((_, i) => i !== index));
   }
 
@@ -181,7 +183,7 @@ export default function EscaletaPage() {
             if (window.history.length > 1) window.history.back();
             else router.push("/panel");
           }}
-          className="db-kicker underline"
+          className="db-kicker inline-flex min-h-10 items-center underline"
         >
           ← Volver
         </button>
@@ -198,7 +200,11 @@ export default function EscaletaPage() {
         </p>
       </header>
 
-      {error && <p className="db-error mb-4">{error}</p>}
+      {error && (
+        <p className="db-error mb-4" role="alert">
+          {error}
+        </p>
+      )}
 
       {turnos === null ? (
         <SkeletonFilas n={4} />
@@ -218,7 +224,7 @@ export default function EscaletaPage() {
                   enEscena
                     ? "border-[#FFE600] bg-[#FFE600]/10"
                     : t.estado === "fin"
-                      ? "opacity-50"
+                      ? "opacity-60"
                       : ""
                 }`}
               >
@@ -300,6 +306,7 @@ export default function EscaletaPage() {
             value={nuevoTitulo}
             onChange={(e) => setNuevoTitulo(e.target.value)}
             placeholder="Título del turno"
+            aria-label="Título del turno"
             maxLength={120}
             className="db-input flex-1"
           />
@@ -308,6 +315,7 @@ export default function EscaletaPage() {
             value={nuevoInterprete}
             onChange={(e) => setNuevoInterprete(e.target.value)}
             placeholder="Intérpretes (opcional)"
+            aria-label="Intérpretes (opcional)"
             maxLength={120}
             className="db-input flex-1"
           />

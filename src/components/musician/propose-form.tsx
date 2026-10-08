@@ -161,7 +161,10 @@ export function ProposeForm() {
           </div>
           <div>
             <label htmlFor="artista" className="block text-sm font-semibold">
-              Artista <span className="font-normal text-neutral-500">(opcional)</span>
+              Artista{" "}
+              <span className="font-normal text-neutral-500 dark:text-neutral-400">
+                (opcional)
+              </span>
             </label>
             <input
               id="artista"
@@ -195,16 +198,20 @@ export function ProposeForm() {
         </div>
 
         <div>
-          <span className="block text-sm font-semibold">
+          <label
+            htmlFor="propuesta-ficheros"
+            className="block text-sm font-semibold"
+          >
             Ficheros (partitura, cifrado o guía)
-          </span>
-          <p className="mt-0.5 text-xs text-neutral-500">
+          </label>
+          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
             Si la propuesta se aprueba, estos ficheros pasan a formar parte del
             repertorio y se verán en «Partituras». Opcional: máx. {MAX_ARCHIVOS}{" "}
             ficheros, 6 MB cada uno.
           </p>
           <input
             ref={inputArchivos}
+            id="propuesta-ficheros"
             type="file"
             multiple
             accept=".pdf,.png,.jpg,.jpeg,.webp,.svg,.mp3,.wav,.m4a,.ogg,.txt,.zip"
@@ -219,14 +226,14 @@ export function ProposeForm() {
                   className="flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs dark:border-neutral-700 dark:bg-neutral-900"
                 >
                   <span className="max-w-40 truncate">{a.nombre}</span>
-                  <span className="text-neutral-500">
+                  <span className="text-neutral-500 dark:text-neutral-400">
                     {(a.bytes / 1024 / 1024).toFixed(1)} MB
                   </span>
                   <button
                     type="button"
                     onClick={() => quitarAdjunto(a.nombre)}
                     aria-label={`Quitar ${a.nombre}`}
-                    className="font-bold text-neutral-400 hover:text-red-500"
+                    className="inline-flex size-7 items-center justify-center rounded-full text-lg leading-none text-neutral-500 transition hover:bg-red-100 hover:text-red-600 dark:text-neutral-400 dark:hover:bg-red-950"
                   >
                     ×
                   </button>
@@ -237,12 +244,18 @@ export function ProposeForm() {
         </div>
 
         {error && (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+          <p
+            role="alert"
+            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
+          >
             {error}
           </p>
         )}
         {ok && (
-          <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-950 dark:text-green-300">
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-950 dark:text-green-300"
+          >
             Propuesta enviada. El Grupo Base la tendrá en cuenta y el General
             decide si entra al repertorio.
           </p>
@@ -255,6 +268,13 @@ export function ProposeForm() {
           {busy ? "Enviando…" : "Enviar propuesta"}
         </button>
       </form>
+
+      {propuestas.length === 0 && (
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          Aún no has enviado propuestas. Usa el formulario para proponer una
+          canción.
+        </p>
+      )}
 
       {propuestas.length > 0 && (
         <ul className="space-y-2">
@@ -273,7 +293,7 @@ export function ProposeForm() {
                     : ""}
                 </span>
               </span>
-              <span className="shrink-0 text-xs text-neutral-500">
+              <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
                 {ESTADO_LABEL[p.estado] ?? p.estado}
               </span>
             </li>
