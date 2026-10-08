@@ -169,7 +169,7 @@ export function UsuariosPanel() {
   async function ciclarRol(uid: string, rol: Rol) {
     const actual = tipoDe(uid, rol);
     let siguiente: TipoRol | "" = "";
-    if (rol === "admin") {
+    if (rol === "admin" || rol === "grupo-base") {
       siguiente = actual ? "" : "titular";
     } else if (!actual) {
       siguiente = "titular";
@@ -449,8 +449,9 @@ export function UsuariosPanel() {
                           })}
                         </div>
                         <p className="db-muted mt-1.5 text-[11px]">
-                          Ciclo: sin rol → titular → apoyo → sin rol (Admin solo
-                          titular y es permanente).
+                          Ciclo: sin rol → titular → apoyo → sin rol. Admin: solo
+                          titular y permanente. Grupo Base: solo titulares (los
+                          miembros los elige el General, sin apoyo).
                         </p>
                       </div>
                     </div>

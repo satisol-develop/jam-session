@@ -22,7 +22,7 @@ export function GrupoBasePanel() {
         setUsuarios(res.usuarios ?? []);
         setMiembros(
           (res.roles ?? [])
-            .filter((r) => r.rol === "grupo-base")
+            .filter((r) => r.rol === "grupo-base" && r.tipo === "titular")
             .map((r) => r.uid),
         );
       })
@@ -38,7 +38,7 @@ export function GrupoBasePanel() {
         setUsuarios(res.usuarios ?? []);
         setMiembros(
           (res.roles ?? [])
-            .filter((r) => r.rol === "grupo-base")
+            .filter((r) => r.rol === "grupo-base" && r.tipo === "titular")
             .map((r) => r.uid),
         );
       })

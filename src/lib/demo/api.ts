@@ -653,6 +653,11 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       if (tipo && tipo !== "titular" && tipo !== "apoyo") {
         throw new Error("Tipo inválido (titular | apoyo).");
       }
+      if (rol === "grupo-base" && tipo === "apoyo") {
+        throw new Error(
+          "El Grupo Base no tiene apoyos: sus miembros son titulares y los elige el General.",
+        );
+      }
       if (rol === "admin" && tipo) tipo = "titular";
       const mes = s.evento.mes;
       const sinEste = s.roles.filter(
@@ -755,6 +760,11 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       if (rol === "admin") {
         throw new Error(
           "El rol Admin no tiene apoyo: solo su titular accede a ese panel.",
+        );
+      }
+      if (rol === "grupo-base") {
+        throw new Error(
+          "El Grupo Base no tiene apoyos: sus miembros son titulares y los elige el General.",
         );
       }
       if (!ROLES.includes(rol)) throw new Error("Rol inválido.");
