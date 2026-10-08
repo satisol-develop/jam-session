@@ -611,6 +611,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
         email,
         clave: (nombreNuevo || email.split("@")[0]) + "#jamsession2026",
         correo: true,
+        correoError: "",
       } as T;
     }
 

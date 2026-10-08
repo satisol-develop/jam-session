@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { SkeletonFilas } from "@/components/loading";
+import { PantallaCargando, SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import { ROLES_META } from "@/lib/constants";
 import { ROLES, type RoleAssignment, type Rol, type TipoRol } from "@/types";
@@ -34,8 +34,10 @@ export function UsuariosPanel() {
   const [draft, setDraft] = useState({ nombre: "", telefono: "" });
   const [accionUid, setAccionUid] = useState<string | null>(null);
   const [confirmarBaja, setConfirmarBaja] = useState<string | null>(null);
-  const [nota, setNota] = useState<string | null>(null);
-  const [errorAccion, setErrorAccion] = useState<string | null>(null);
+  const [resultado, setResultado] = useState<{
+    ok: boolean;
+    texto: string;
+  } | null>(null);
 
   const recargar = useCallback(() => {
     api<{ mes: string; usuarios: UsuarioAdmin[]; roles: RoleAssignment[] }>(
@@ -55,6 +57,16 @@ export function UsuariosPanel() {
     recargar();
   }, [recargar]);
 
+  // El modal de resultado se cierra con Escape (patrón de la app).
+  useEffect(() => {
+    if (!resultado) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setResultado(null);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [resultado]);
+
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -66,12 +78,15 @@ export function UsuariosPanel() {
         email: string;
         clave: string;
         correo?: boolean;
+        correoError?: string;
       }>("admin.createUser", { nombre: nombre.trim(), email: email.trim() });
       setCreado(
         res.correo === false
           ? {
               ok: false,
-              texto: `Cuenta creada para ${res.email}, pero NO se envió el correo de verificación: el usuario deberá reenviarlo desde su primer acceso. Contraseña: ${res.clave}.`,
+              texto: `Cuenta creada para ${res.email}, pero NO se envió el correo de verificación${
+                res.correoError ? ` (${res.correoError})` : ""
+              }: el usuario deberá reenviarlo desde su primer acceso. Contraseña: ${res.clave}.`,
             }
           : {
               ok: true,
@@ -89,8 +104,7 @@ export function UsuariosPanel() {
   }
 
   function abrir(u: UsuarioAdmin) {
-    setNota(null);
-    setErrorAccion(null);
+    setResultado(null);
     setConfirmarBaja(null);
     if (expandido === u.uid) {
       setExpandido(null);
@@ -102,8 +116,7 @@ export function UsuariosPanel() {
 
   async function guardar(uid: string) {
     setAccionUid(uid);
-    setNota(null);
-    setErrorAccion(null);
+    setResultado(null);
     try {
       const res = await api<{
         uid: string;
@@ -124,9 +137,12 @@ export function UsuariosPanel() {
             )
           : prev,
       );
-      setNota("Datos guardados.");
+      setResultado({ ok: true, texto: "Datos guardados." });
     } catch (err) {
-      setErrorAccion(err instanceof Error ? err.message : "No se pudo guardar.");
+      setResultado({
+        ok: false,
+        texto: err instanceof Error ? err.message : "No se pudo guardar.",
+      });
     } finally {
       setAccionUid(null);
     }
@@ -136,22 +152,25 @@ export function UsuariosPanel() {
     const nuevo = u.estado === "baja" ? "activo" : "baja";
     setAccionUid(u.uid);
     setConfirmarBaja(null);
-    setNota(null);
-    setErrorAccion(null);
+    setResultado(null);
     try {
       await api("admin.updateUser", { uid: u.uid, estado: nuevo });
       setUsuarios((prev) =>
         prev ? prev.map((x) => (x.uid === u.uid ? { ...x, estado: nuevo } : x)) : prev,
       );
-      setNota(
-        nuevo === "baja"
-          ? `${u.nombre || u.email} ha sido dado de baja: ya no puede entrar.`
-          : `${u.nombre || u.email} vuelve a estar activo.`,
-      );
+      setResultado({
+        ok: true,
+        texto:
+          nuevo === "baja"
+            ? `${u.nombre || u.email} ha sido dado de baja: ya no puede entrar.`
+            : `${u.nombre || u.email} vuelve a estar activo.`,
+      });
     } catch (err) {
-      setErrorAccion(
-        err instanceof Error ? err.message : "No se pudo cambiar el estado.",
-      );
+      setResultado({
+        ok: false,
+        texto:
+          err instanceof Error ? err.message : "No se pudo cambiar el estado.",
+      });
     } finally {
       setAccionUid(null);
     }
@@ -159,15 +178,19 @@ export function UsuariosPanel() {
 
   async function restablecer(u: UsuarioAdmin) {
     setAccionUid(u.uid);
-    setNota(null);
-    setErrorAccion(null);
+    setResultado(null);
     try {
       await api("admin.resetPassword", { uid: u.uid });
-      setNota(`Correo de restablecer contraseña enviado a ${u.email}.`);
+      setResultado({
+        ok: true,
+        texto: `Correo de restablecer contraseña enviado a ${u.email}.`,
+      });
     } catch (err) {
-      setErrorAccion(
-        err instanceof Error ? err.message : "No se pudo enviar el correo.",
-      );
+      setResultado({
+        ok: false,
+        texto:
+          err instanceof Error ? err.message : "No se pudo enviar el correo.",
+      });
     } finally {
       setAccionUid(null);
     }
@@ -192,8 +215,7 @@ export function UsuariosPanel() {
     }
 
     setAccionUid(uid);
-    setNota(null);
-    setErrorAccion(null);
+    setResultado(null);
     try {
       const res = await api<{ uid: string; rol: Rol; tipo: string }>(
         "admin.setUserRole",
@@ -208,15 +230,18 @@ export function UsuariosPanel() {
             ]
           : sinEste;
       });
-      setNota(
-        res.tipo
+      setResultado({
+        ok: true,
+        texto: res.tipo
           ? `${ROLES_META[rol].label}: ${res.tipo}`
           : `${ROLES_META[rol].label} quitado.`,
-      );
+      });
     } catch (err) {
-      setErrorAccion(
-        err instanceof Error ? err.message : "No se pudo asignar el rol.",
-      );
+      setResultado({
+        ok: false,
+        texto:
+          err instanceof Error ? err.message : "No se pudo asignar el rol.",
+      });
     } finally {
       setAccionUid(null);
     }
@@ -224,6 +249,12 @@ export function UsuariosPanel() {
 
   return (
     <div className="space-y-4">
+      {(busy || accionUid) && (
+        <PantallaCargando
+          texto={busy ? "Creando cuenta…" : "Guardando…"}
+        />
+      )}
+
       <form onSubmit={onCreate} className="db-card space-y-3 p-4 sm:p-5">
         <p className="db-kicker">Crear usuario</p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -501,17 +532,42 @@ export function UsuariosPanel() {
           </ul>
         )}
 
-        {nota && (
-          <p className="db-ok mt-3 text-sm" role="status">
-            {nota}
-          </p>
-        )}
-        {errorAccion && (
-          <p className="db-error mt-3 text-sm" role="alert">
-            {errorAccion}
-          </p>
-        )}
       </div>
+
+      {resultado && (
+        <>
+          <button
+            type="button"
+            aria-label="Cerrar"
+            onClick={() => setResultado(null)}
+            className="db-modal-backdrop"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={resultado.ok ? "Guardado" : "Error"}
+            className="db-modal"
+            tabIndex={-1}
+          >
+            <p className="db-kicker">{resultado.ok ? "Listo" : "Error"}</p>
+            <p
+              className={`mt-2 text-sm ${resultado.ok ? "db-ok" : "db-error"}`}
+              role={resultado.ok ? "status" : "alert"}
+            >
+              {resultado.texto}
+            </p>
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setResultado(null)}
+                className="db-btn"
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
