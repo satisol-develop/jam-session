@@ -56,7 +56,10 @@ export function SiteHeader() {
     >
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:h-16">
         <div className="flex min-w-0 items-center gap-2">
-          <Link href="/" className="text-lg font-black tracking-tight">
+          <Link
+            href="/"
+            className="inline-flex min-h-11 items-center text-lg font-black tracking-tight"
+          >
             Jam<span className="text-red-500">Session</span>
           </Link>
           {DEMO_MODE && (
@@ -108,7 +111,7 @@ export function SiteHeader() {
               </Link>
               <Link
                 href="/registro"
-                className="rounded-lg bg-[#FFE600] px-3 py-2 font-semibold text-black transition hover:bg-white"
+                className="inline-flex min-h-10 items-center rounded-lg bg-[#FFE600] px-3 py-2 font-semibold text-black transition hover:bg-white"
               >
                 Registro
               </Link>

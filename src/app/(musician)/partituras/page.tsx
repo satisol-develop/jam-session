@@ -338,13 +338,13 @@ export default function PartiturasPage() {
                       <th
                         key={header.id}
                         scope="col"
-                        className={`px-3 py-2.5 text-left ${claseColumna(header.column.id)}`}
+                        className={`px-3 py-1 text-left ${claseColumna(header.column.id)}`}
                       >
                         {header.isPlaceholder ? null : (
                           <button
                             type="button"
                             onClick={header.column.getToggleSortingHandler()}
-                            className="flex items-center gap-1 font-semibold uppercase tracking-wide text-xs text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                            className="flex min-h-10 items-center gap-1 font-semibold uppercase tracking-wide text-xs text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
                           >
                             {flexRender(
                               header.column.columnDef.header,
