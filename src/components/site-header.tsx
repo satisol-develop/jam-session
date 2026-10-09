@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { DEMO_MODE } from "@/lib/demo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LangSwitcher } from "@/components/i18n/lang-switcher";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { ROLES } from "@/types";
 import { localeDeRuta, rutaLocalizada } from "@/i18n";
@@ -77,6 +78,7 @@ export function SiteHeader() {
         </div>
 
         <nav className="flex min-w-0 items-center gap-0.5 text-sm sm:gap-1">
+          <LangSwitcher />
           {!loading && user && <ThemeToggle enPanel={enPanel} />}
           {!loading && user ? (
             <>
