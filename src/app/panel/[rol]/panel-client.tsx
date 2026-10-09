@@ -28,6 +28,7 @@ import { usePanelStatus } from "@/components/panel/use-panel-status";
 import { PanelTabs, type PanelTab } from "@/components/panel/panel-tabs";
 import { AdminSidebar } from "@/components/panel/admin-sidebar";
 import { AdminKpis } from "@/components/panel/admin-kpis";
+import { EscaletaView } from "@/components/escaleta/escaleta-view";
 import { PantallaCargando, Skeleton, SkeletonFilas } from "@/components/loading";
 import { proximoPaso } from "@/lib/panel/proximo-paso";
 
@@ -116,16 +117,6 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
           paso={paso}
           irA={seleccionar}
           onProtocolo={abrirProtocolo}
-          consultas={
-            rol === "admin" ? (
-              <Link
-                href="/panel/stage-manager/escaleta"
-                className="db-ghost text-xs!"
-              >
-                Ver escaleta (consulta)
-              </Link>
-            ) : undefined
-          }
         />
       ),
     },
@@ -134,9 +125,22 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   if (rol === "admin") {
     tabs.push(
       {
+        id: "tareas",
+        label: "Tareas",
+        primaria: true,
+        conteo: pendTareas,
+        node: (
+          <Seccion
+            titulo="Tareas de todos los roles"
+            nota="Progreso global del equipo, etiquetado por rol. Solo lectura."
+          >
+            <TaskList rol="admin" todas soloLectura />
+          </Seccion>
+        ),
+      },
+      {
         id: "usuarios",
         label: "Usuarios",
-        primaria: true,
         node: (
           <Seccion
             titulo="Gestión de usuarios"
@@ -175,15 +179,26 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         ),
       },
       {
-        id: "tareas",
-        label: "Tareas",
-        conteo: pendTareas,
+        id: "escaleta",
+        label: "Escaleta",
         node: (
           <Seccion
-            titulo="Tareas de todos los roles"
-            nota="Progreso global del equipo, etiquetado por rol. Solo lectura."
+            titulo="Escaleta en directo"
+            nota="Consulta en vivo: la operan Stage Manager y Grupo Base durante la Jam."
           >
-            <TaskList rol="admin" todas soloLectura />
+            <EscaletaView puedeEditar={false} />
+          </Seccion>
+        ),
+      },
+      {
+        id: "caja",
+        label: "Caja",
+        node: (
+          <Seccion
+            titulo="Caja y fondos"
+            nota="Movimientos y totales. Solo el rol Caja escribe."
+          >
+            <CashModule puedeEscribir={false} />
           </Seccion>
         ),
       },
@@ -203,30 +218,6 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
                 modifiques.
               </p>
             )}
-          </Seccion>
-        ),
-      },
-      {
-        id: "caja",
-        label: "Caja",
-        node: (
-          <Seccion
-            titulo="Caja y fondos"
-            nota="Movimientos y totales. Solo el rol Caja escribe."
-          >
-            <CashModule puedeEscribir={false} />
-          </Seccion>
-        ),
-      },
-      {
-        id: "instrumentos",
-        label: "Instrumentos",
-        node: (
-          <Seccion
-            titulo="Instrumentos confirmados"
-            nota="Líneas por instrumento para la planificación técnica."
-          >
-            <InstrumentosPanel />
           </Seccion>
         ),
       },
@@ -256,6 +247,22 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
       }
     );
   } else {
+    // Tareas: 2ª pestaña de todos los roles (cada panel con sus tareas).
+    tabs.push({
+      id: "tareas",
+      label: "Tareas",
+      primaria: true,
+      conteo: pendTareas,
+      node: (
+        <Seccion
+          titulo="Lista de tareas"
+          nota="Tus tareas del evento: márcalas y ve añadiendo pasos."
+        >
+          <TaskList rol={rol} />
+        </Seccion>
+      ),
+    });
+
     if (rol === "general") {
       tabs.push({
         id: "sesion",
@@ -290,7 +297,6 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         {
           id: "repertorio",
           label: "Repertorio",
-          primaria: true,
           node: (
             <Seccion
               titulo="Repertorio del mes"
@@ -346,9 +352,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
               titulo="Escaleta en directo"
               nota="Consulta: la operan Stage Manager y Grupo Base durante la Jam."
             >
-              <Link href="/panel/stage-manager/escaleta" className="db-btn">
-                Abrir escaleta
-              </Link>
+              <EscaletaView puedeEditar={false} />
             </Seccion>
           ),
         },
@@ -372,7 +376,6 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         {
           id: "repertorio",
           label: "Repertorio",
-          primaria: true,
           node: (
             <Seccion
               titulo="Repertorio del mes"
@@ -430,9 +433,7 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
               titulo="Escaleta en directo"
               nota="Orden de actuación operable desde el móvil durante la Jam."
             >
-              <Link href="/panel/stage-manager/escaleta" className="db-btn">
-                Abrir escaleta
-              </Link>
+              <EscaletaView puedeEditar={esTitular} />
             </Seccion>
           ),
         }
@@ -488,21 +489,6 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
         ),
       });
     }
-
-    tabs.push({
-      id: "tareas",
-      label: "Tareas",
-      primaria: true,
-      conteo: pendTareas,
-      node: (
-        <Seccion
-          titulo="Lista de tareas"
-          nota="Tus tareas del evento: márcalas y ve añadiendo pasos."
-        >
-          <TaskList rol={rol} />
-        </Seccion>
-      ),
-    });
 
     if (rol !== "grupo-base") {
       tabs.push({

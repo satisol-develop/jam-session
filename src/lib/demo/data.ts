@@ -202,6 +202,30 @@ export const DEMO_TASK_TEMPLATES: Record<string, DemoTaskTemplate[]> = {
       ],
     },
     { titulo: "Asignar quién toca cada tema en la escaleta" },
+    {
+      titulo: "Fijar el ensayo general y cerrar las inscripciones",
+      subtareas: [
+        "Proponer fecha y lugar del ensayo",
+        "Cerrar las inscripciones desde la pestaña Ensayo",
+        "Avisar a los inscritos de la fecha definitiva",
+      ],
+    },
+    {
+      titulo: "Operar la escaleta en directo durante la Jam",
+      subtareas: [
+        "Coordinar los turnos con el Stage Manager",
+        "Actualizar el estado de cada turno",
+        "Cerrar la escaleta al terminar",
+      ],
+    },
+    {
+      titulo: "Preparar el material de la banda antes de la Jam",
+      subtareas: [
+        "Revisar cuerdas, pilas y cables",
+        "Confirmar quién trae cada equipo",
+        "Dejar el material listo el día del ensayo",
+      ],
+    },
   ],
   "stage-manager": [
     {

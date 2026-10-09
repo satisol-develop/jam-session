@@ -112,10 +112,10 @@ export const ROLE_GUIDES: Record<Rol, PasoGuia[]> = {
       irA: "propuestas",
     },
     {
-      fase: "preparacion",
+      fase: "dia",
       texto:
-        "Verifica los instrumentos confirmados para la planificación técnica.",
-      irA: "instrumentos",
+        "Durante la Jam: sigue la escaleta en directo para ver cómo va la sesión.",
+      irA: "escaleta",
     },
     {
       fase: "dia",
