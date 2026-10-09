@@ -444,7 +444,7 @@ export function UsuariosPanel() {
                         {u.email}
                       </span>
                     </span>
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-1.5">
                       {ROLES.filter((r) => tipoDe(u.uid, r)).map((r) => (
                         <span
                           key={r}

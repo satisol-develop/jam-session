@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { SkeletonFilas } from "@/components/loading";
+import { PantallaCargando, SkeletonFilas } from "@/components/loading";
 import {
   flexRender,
   getCoreRowModel,
@@ -255,11 +255,7 @@ export function PartiturasVista() {
   });
 
   if (pendiente) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
-        <SkeletonFilas n={5} />
-      </div>
-    );
+    return <PantallaCargando texto={d.partituras.cargandoRep} />;
   }
 
   const filas = table.getRowModel().rows;

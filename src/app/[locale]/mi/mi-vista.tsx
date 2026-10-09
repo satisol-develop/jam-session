@@ -10,7 +10,7 @@ import { ROLES_META } from "@/lib/constants";
 import { SubscribeForm } from "@/components/musician/subscribe-form";
 import { ProposeForm } from "@/components/musician/propose-form";
 import { AttendeesList } from "@/components/musician/attendees-list";
-import { Skeleton, SkeletonFilas } from "@/components/loading";
+import { PantallaCargando, Skeleton, SkeletonFilas } from "@/components/loading";
 import { fmt, rutaLocalizada } from "@/i18n";
 import { useDict, useLocale } from "@/i18n/use-locale";
 import type { Evento, Inscripcion, Turno } from "@/types";
@@ -80,19 +80,11 @@ export function MiVista() {
   }, []);
 
   if (pendiente) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-neutral-500 dark:text-neutral-400">
-        {d.mi.cargando}
-      </div>
-    );
+    return <PantallaCargando texto={d.mi.cargando} />;
   }
 
   if (esAdmin) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-neutral-500 dark:text-neutral-400">
-        {d.mi.abriendoPanel}
-      </div>
-    );
+    return <PantallaCargando texto={d.mi.abriendoPanel} />;
   }
 
   // Primer lote de endpoints: en cuanto lleguen roles y correo verificado
