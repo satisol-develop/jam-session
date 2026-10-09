@@ -274,7 +274,12 @@ export default function PartiturasPage() {
         >
           {esAdmin ? "← Panel" : "← Mi zona"}
         </Link>
-        <h1 className="text-2xl font-bold">Partituras y material</h1>
+        <p className="text-xs font-extrabold tracking-[0.22em] text-red-500 uppercase">
+          Qué tocamos
+        </p>
+        <h1 className="mt-1 text-3xl font-black tracking-tight uppercase italic">
+          Partituras y material
+        </h1>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           Cifrados, partituras y guías de audio del repertorio. Acceso solo
           para músicos registrados.

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s · Jam Session",
   },
   description:
-    "Coordinación, repertorio y materiales de las Jam Sessions periódicas.",
+    "La jam abierta de Debarock Kolektiboa: repertorio, inscripciones, escaleta y material para tocar en directo.",
 };
 
 export const viewport: Viewport = {

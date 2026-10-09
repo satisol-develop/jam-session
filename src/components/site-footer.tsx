@@ -15,8 +15,10 @@ export function SiteFooter() {
     <footer className="border-t border-neutral-200 bg-white/90 dark:border-neutral-800 dark:bg-black/80">
       <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-6 text-xs sm:flex-row sm:items-center sm:justify-between">
         <p className="text-neutral-500 dark:text-neutral-400">
-          © {new Date().getFullYear()} Debarock Kolektiboa ·
-          #DebarockKolektiboa
+          © {new Date().getFullYear()} Debarock Kolektiboa ·{" "}
+          <span className="font-semibold text-red-500">
+            #DebarockKolektiboa
+          </span>
         </p>
         <nav className="flex flex-wrap gap-x-4 gap-y-1">
           <Link

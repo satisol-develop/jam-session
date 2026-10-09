@@ -65,7 +65,12 @@ export function LoginForm() {
   return (
     <div className="flex min-h-[calc(100dvh-3.5rem)] items-center justify-center px-4 sm:min-h-[calc(100dvh-4rem)]">
       <div className="w-full max-w-sm">
-        <h1 className="mb-1 text-2xl font-bold">Entrar</h1>
+        <p className="text-xs font-extrabold tracking-[0.22em] text-red-500 uppercase">
+          Debarock Kolektiboa
+        </p>
+        <h1 className="mt-1 mb-1 text-3xl font-black tracking-tight uppercase italic">
+          Entrar
+        </h1>
         <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
           Accede para inscribirte y ver el material.
         </p>
@@ -109,7 +114,7 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+            className="w-full rounded-xl bg-[#FFE600] px-4 py-2.5 text-sm font-extrabold tracking-wide text-black uppercase transition hover:bg-neutral-950 hover:text-[#FFE600] disabled:opacity-50"
           >
             {busy ? "Entrando…" : "Entrar"}
           </button>
