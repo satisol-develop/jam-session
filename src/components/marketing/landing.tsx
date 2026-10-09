@@ -266,9 +266,11 @@ export function Landing() {
           <span className="shrink-0 text-sm text-neutral-500">
             {hayTop
               ? d.landing.porSesiones
-              : fmt(catalogo.length === 1 ? d.landing.nTema : d.landing.nTemas, {
-                  n: catalogo.length,
-                })}
+              : listado.length === 0
+                ? null
+                : fmt(listado.length === 1 ? d.landing.nTema : d.landing.nTemas, {
+                    n: listado.length,
+                  })}
           </span>
         </div>
 

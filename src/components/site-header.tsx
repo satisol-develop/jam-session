@@ -84,10 +84,16 @@ export function SiteHeader() {
             <>
               {/* Mi zona por defecto solo para músicos; el equipo que entra
                   como participante la ve mientras está dentro. */}
+              {/* Mi zona por defecto solo para músicos; el equipo que entra
+                  como participante la ve mientras está dentro. En móvil, con
+                  roles, el enlace se oculta: su espacio lo ocupa «Panel ▾»,
+                  cuya hoja incluye la fila «Participante · Mi zona». */}
               {(!tieneRoles || (pathname === hrefMi && !roles.admin)) && (
                 <Link
                   href={hrefMi}
-                  className={`${linkCls} ${pathname === hrefMi ? linkActivo : ""}`}
+                  className={`${linkCls} ${pathname === hrefMi ? linkActivo : ""} ${
+                    tieneRoles ? "max-sm:hidden" : ""
+                  }`}
                 >
                   {d.header.miZona}
                 </Link>

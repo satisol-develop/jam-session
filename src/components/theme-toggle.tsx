@@ -1,5 +1,7 @@
 "use client";
 
+import { useDict } from "@/i18n/use-locale";
+
 /**
  * Alterna el modo oscuro global: añade/quita la clase `.dark` en <html>
  * y la recuerda en localStorage. El estado inicial lo decide un script
@@ -8,6 +10,7 @@
  * la clase `.dark`, así que las variantes `dark:` no le alcanzan).
  */
 export function ThemeToggle({ enPanel = false }: { enPanel?: boolean }) {
+  const d = useDict();
   function toggle() {
     const raiz = document.documentElement;
     const oscuro = !raiz.classList.contains("dark");
@@ -23,7 +26,7 @@ export function ThemeToggle({ enPanel = false }: { enPanel?: boolean }) {
     <button
       type="button"
       onClick={toggle}
-      aria-label="Cambiar entre modo claro y oscuro"
+      aria-label={d.header.tema}
       className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg p-2 transition ${
         enPanel
           ? "text-white/60 hover:bg-white/10 hover:text-white"

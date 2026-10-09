@@ -98,6 +98,20 @@ resuelve **siempre en Apps Script** contra la hoja:
 
 Cada panel incluye su **guía de proceso** desplegable con los pasos a seguir.
 
+## Idiomas (es / eu)
+
+La parte pública y Mi zona están localizadas en **castellano y euskera**:
+
+- Rutas con segmento de idioma: `/es/...` y `/eu/...`. Las rutas antiguas
+  (`/login`, `/mi`, …) redirigen al idioma adecuado (`IrAIdioma`) y la cookie
+  `jam_lang` recuerda la elección (`LangSync` fija además `document.lang`).
+- Diccionarios en `src/i18n/es.ts` y `src/i18n/eu.ts` con paridad obligatoria
+  (`Dict = typeof es`); conmutador **ES · EU** en la cabecera (`LangSwitcher`).
+- El idioma de la URL rige también los mensajes generados fuera de los
+  componentes (`auth-provider`, `api/client` vía `localeActual()`).
+- **`/panel` y el backend (Apps Script) están en castellano**; las plantillas
+  de correo de Firebase (verificación) se gestionan en su consola.
+
 ## Arquitectura de seguridad
 
 ```
@@ -123,13 +137,15 @@ Navegador ──({route, body, token, origin})──▶ Apps Script Web App
 ```
 src/
   app/
-    page.tsx                  # Vista pública (cartel, fecha, repertorio)
-    (auth)/login|registro     # Firebase Auth
-    (musician)/mi             # Inscripción, propuestas, asistentes
-    (musician)/partituras     # Visor protegido de material (Drive)
-    panel/                    # Hub de paneles + /panel/[rol]
+    page.tsx                  # Ruta raíz → redirección al idioma elegido
+    [locale]/                 # es|eu: landing, login, registro, mi,
+                              # partituras, privacidad, terminos
+    panel/                    # Hub de paneles + /panel/[rol] (castellano)
     panel/stage-manager/escaleta  # Escaleta en directo (polling)
-  components/                 # UI por dominio (musician, panel, admin)
+    (auth)|(musician)|privacidad|terminos
+                              # Rutas antiguas → redirect con IrAIdioma
+  i18n/                       # Diccionarios es/eu, hooks, meta, switcher
+  components/                 # UI por dominio (marketing, musician, panel…)
   lib/                        # firebase, api/client (directo a GAS), auth, demo
   proxy.ts                    # Guard de UX en dev/build normal (Next 16);
                               # el export estático usa guards de cliente
@@ -161,3 +177,4 @@ a `main` y publica el resultado en GitHub Pages
 - **F5** Escaleta en directo con polling.
 - **F6** Módulo Caja y Barra.
 - **F7** Manifest PWA, seed de datos y documentación.
+- **F8** Localización es/eu de la parte pública, Mi zona y cabecera.

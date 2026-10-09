@@ -23,6 +23,7 @@ import { FirebaseError } from "firebase/app";
 import { getFirebaseAuth } from "@/lib/firebase/client";
 import { api } from "@/lib/api/client";
 import { DEMO_MODE } from "@/lib/demo";
+import { fmt, getDict, localeActual } from "@/i18n";
 import {
   clearDemoSession,
   demoAccountFor,
@@ -73,14 +74,15 @@ function conTimeout<T>(p: Promise<T>, ms: number, mensaje: string): Promise<T> {
 
 /** Traduce un fallo de `sendEmailVerification` a un aviso para el usuario. */
 export function mensajeCorreoError(err: unknown): string {
+  const d = getDict(localeActual()).errores;
   if (err instanceof FirebaseError) {
     if (err.code === "auth/too-many-requests") {
-      return "Demasiados correos seguidos: espera unos minutos y pulsa «Reenviar».";
+      return d.correoSeguido;
     }
-    return `No se pudo enviar el correo de verificación (${err.code}). Pulsa «Reenviar» más tarde.`;
+    return fmt(d.correoNoEnviado, { codigo: err.code });
   }
   if (err instanceof Error && err.message) return err.message;
-  return "No se pudo enviar el correo de verificación. Pulsa «Reenviar» más tarde.";
+  return d.correoNoEnviadoCorto;
 }
 
 function demoUser(account: DemoAccount): User {
@@ -143,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRolesError(
           err instanceof Error && err.message
             ? err.message
-            : "No se pudo verificar tu sesión.",
+            : getDict(localeActual()).errores.sesionNoVerificada,
         );
       }
       return {};
@@ -208,7 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await conTimeout(
           signInWithEmailAndPassword(getFirebaseAuth(), email, _password),
           30_000,
-          "Firebase no responde. Reinténtalo en unos segundos.",
+          getDict(localeActual()).errores.firebaseSinRespuesta,
         );
         // Carga aquí los roles para que el login pueda decidir a dónde ir
         // (panel si tiene roles, Mi zona si es músico sin roles).
@@ -242,7 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const cred = await conTimeout(
           createUserWithEmailAndPassword(getFirebaseAuth(), email, password),
           30_000,
-          "Firebase no responde al crear la cuenta. Reinténtalo en unos segundos.",
+          getDict(localeActual()).errores.firebaseRegistro,
         );
         // De aquí en adelante la cuenta YA existe: no se lanza (el registro
         // no debe quedarse a medias); los problemas se avisan en la pantalla
@@ -251,7 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await conTimeout(
             updateProfile(cred.user, { displayName: nombre }),
             15_000,
-            "Firebase no responde al guardar el nombre.",
+            getDict(localeActual()).errores.firebaseNombre,
           );
         } catch {
           /* el nombre se recupera luego; no bloquea el registro */
@@ -260,7 +262,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await conTimeout(
             sendEmailVerification(cred.user),
             20_000,
-            "Firebase tardó demasiado en enviar el correo de verificación.",
+            getDict(localeActual()).errores.firebaseCorreo,
           );
           setRegistroAviso(null);
         } catch (err) {

@@ -8,6 +8,7 @@ export const es = {
     idioma: "Idioma",
     cambiarAEu: "Euskara",
     cambiarAEs: "Castellano",
+    tema: "Cambiar entre modo claro y oscuro",
   },
   footer: {
     proxima: "Próxima sesión",
@@ -272,5 +273,57 @@ export const es = {
     siguiente: "Siguiente",
     pagina: "Pág. {a} de {b}",
     cerrar: "Cerrar",
+  },
+  gate: {
+    verificando: "Verificando sesión…",
+    tituloError: "No se pudo verificar tu sesión",
+    reintentar: "Reintentar",
+    reintentando: "Reintentando…",
+    salir: "Salir",
+    clavesNoCoinciden: "Las contraseñas no coinciden.",
+    claveActualizada: "Contraseña actualizada.",
+    intentos: "Demasiados intentos: espera unos minutos.",
+    sesionCaducada:
+      "Tu sesión ha caducado: sal y vuelve a entrar para cambiarla.",
+    claveNoActualizada: "No se pudo actualizar la contraseña.",
+    cambiarClave_t: "Cambia tu contraseña",
+    claveTemporal:
+      "Tu cuenta se creó con una contraseña temporal. Define la tuya para continuar usando la plataforma.",
+    claveNueva: "Nueva contraseña",
+    claveRepetir: "Repite la contraseña",
+    guardando: "Guardando…",
+    guardarClave: "Guardar contraseña",
+    correoReenviado: "Correo de verificación reenviado.",
+    correosSeguidos: "Demasiados correos seguidos: espera unos minutos.",
+    correoNoReenviado: "No se pudo reenviar el correo.",
+    verificarAun:
+      "Todavía no aparece como verificado. Abre el enlace del correo e inténtalo de nuevo.",
+    comprobarNo: "No se pudo comprobar. Inténtalo de nuevo.",
+    verifica_t: "Verifica tu correo",
+    enviadoPre: "Hemos enviado un correo de verificación a ",
+    enviadoSuf:
+      ". Abre el enlace de ese correo para activar tu cuenta (revisa también el spam).",
+    comprobando: "Comprobando…",
+    yaVerificado: "Ya he verificado mi correo",
+    reenviar: "Reenviar el correo",
+  },
+  errores: {
+    correoSeguido:
+      "Demasiados correos seguidos: espera unos minutos y pulsa «Reenviar».",
+    correoNoEnviado:
+      "No se pudo enviar el correo de verificación ({codigo}). Pulsa «Reenviar» más tarde.",
+    correoNoEnviadoCorto:
+      "No se pudo enviar el correo de verificación. Pulsa «Reenviar» más tarde.",
+    sesionNoVerificada: "No se pudo verificar tu sesión.",
+    firebaseSinRespuesta: "Firebase no responde. Reinténtalo en unos segundos.",
+    firebaseRegistro:
+      "Firebase no responde al crear la cuenta. Reinténtalo en unos segundos.",
+    firebaseNombre: "Firebase no responde al guardar el nombre.",
+    firebaseCorreo: "Firebase tardó demasiado en enviar el correo de verificación.",
+    desconocido: "Error desconocido.",
+    sinRespuesta:
+      "Sin respuesta del backend ({ruta}). Reinténtalo en unos segundos.",
+    red: "Error de red. Comprueba tu conexión.",
+    servidor: "Respuesta inválida del servidor.",
   },
 };

@@ -49,3 +49,15 @@ export function localeDeRuta(pathname: string): Locale | null {
   const seg = pathname.split("/")[1];
   return hasLocale(seg) ? seg : null;
 }
+
+/**
+ * Idioma vigente en cliente, para mensajes generados fuera de componentes
+ * (proveedor de auth, cliente de API): el segmento de la URL actual; fuera
+ * de /es|/eu (paneles) o en servidor, castellano. Como el texto se construye
+ * justo cuando ocurre el error y se muestra en la misma navegación, el
+ * idioma de la URL es el de la pantalla donde aparecerá.
+ */
+export function localeActual(): Locale {
+  if (typeof document === "undefined") return DEFAULT_LOCALE;
+  return localeDeRuta(document.location.pathname) ?? DEFAULT_LOCALE;
+}

@@ -10,6 +10,7 @@ export const eu: Dict = {
     idioma: "Hizkuntza",
     cambiarAEu: "Euskara",
     cambiarAEs: "Gaztelania",
+    tema: "Argi eta ilun modua txandakatu",
   },
   footer: {
     proxima: "Hurrengo saioa",
@@ -272,5 +273,58 @@ export const eu: Dict = {
     siguiente: "Hurrengoa",
     pagina: "Or. {a} / {b}",
     cerrar: "Itxi",
+  },
+  gate: {
+    verificando: "Saioa egiaztatzen…",
+    tituloError: "Ezin da zure saioa egiaztatu",
+    reintentar: "Berriz saiatu",
+    reintentando: "Berriz saiatzen…",
+    salir: "Irten",
+    clavesNoCoinciden: "Pasahitzak ez datoz bat.",
+    claveActualizada: "Pasahitza eguneratu da.",
+    intentos: "Saiakera gehiegi: itxaron minutu batzuk.",
+    sesionCaducada:
+      "Zure saioa iraungi da: atera eta sartu berriro pasahitza aldatzeko.",
+    claveNoActualizada: "Ezin da pasahitza eguneratu.",
+    cambiarClave_t: "Aldatu zure pasahitza",
+    claveTemporal:
+      "Zure kontua behin-behineko pasahitz batekin sortu zen. Ezarri zurea plataforma erabiltzen jarraitzeko.",
+    claveNueva: "Pasahitz berria",
+    claveRepetir: "Errepikatu pasahitza",
+    guardando: "Gordetzen…",
+    guardarClave: "Gorde pasahitza",
+    correoReenviado: "Egiaztapen mezua berriro bidali da.",
+    correosSeguidos: "Mezu gehiegi segidan: itxaron minutu batzuk.",
+    correoNoReenviado: "Ezin da mezua berriro bidali.",
+    verificarAun:
+      "Oraindik ez da egiaztatuta agertzen. Ireki mezuko esteka eta saiatu berriro.",
+    comprobarNo: "Ezin da egiaztatu. Saiatu berriro.",
+    verifica_t: "Egiaztatu zure posta",
+    enviadoPre: "Egiaztapen mezua bidali dugu ",
+    enviadoSuf:
+      " helbidera. Ireki mezuko esteka zure kontua aktibatzeko (begiratu spam karpetan ere).",
+    comprobando: "Egiaztatzen…",
+    yaVerificado: "Nire posta egiaztatu dut",
+    reenviar: "Berriro bidali mezua",
+  },
+  errores: {
+    correoSeguido:
+      "Mezu gehiegi segidan: itxaron minutu batzuk eta sakatu «Berriro bidali».",
+    correoNoEnviado:
+      "Ezin da egiaztapen mezua bidali ({codigo}). Sakatu «Berriro bidali» geroago.",
+    correoNoEnviadoCorto:
+      "Ezin da egiaztapen mezua bidali. Sakatu «Berriro bidali» geroago.",
+    sesionNoVerificada: "Ezin da zure saioa egiaztatu.",
+    firebaseSinRespuesta:
+      "Firebase ez da erantzuten. Saiatu berriro segundo gutxi barru.",
+    firebaseRegistro:
+      "Firebase ez da erantzuten kontua sortzean. Saiatu berriro segundo gutxi barru.",
+    firebaseNombre: "Firebase ez da erantzuten izena gordetzean.",
+    firebaseCorreo: "Firebase-ek luze hartu du egiaztapen mezua bidaltzen.",
+    desconocido: "Errore ezezaguna.",
+    sinRespuesta:
+      "Ez dago erantzunik backendetik ({ruta}). Saiatu berriro segundo gutxi barru.",
+    red: "Sare-errorea. Egiaztatu zure konexioa.",
+    servidor: "Zerbitzariaren erantzun baliogabea.",
   },
 };
