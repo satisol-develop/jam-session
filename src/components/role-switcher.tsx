@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth/auth-provider";
 import { ROLES_META, ROL_ICONO } from "@/lib/constants";
 import { ROLES } from "@/types";
 import { TabIcon } from "@/components/panel/panel-icons";
+import { localeDeRuta, rutaLocalizada } from "@/i18n";
 
 /**
  * Acceso a los paneles desde la topbar:
@@ -28,7 +29,11 @@ export function RoleSwitcher({
   const asignados = ROLES.filter((r) => roles[r]);
 
   const enPanel = pathname.startsWith("/panel");
-  const enMiZona = pathname === "/mi";
+  // «Mi zona» vive en la parte localizada (/es/mi, /eu/mi) y en la URL
+  // antigua /mi (que redirige): se detecta según el segmento actual.
+  const publico = localeDeRuta(pathname);
+  const hrefMi = publico ? rutaLocalizada(publico, "/mi") : "/mi";
+  const enMiZona = pathname === hrefMi;
   const clase = `${linkCls} ${enPanel ? linkActivo : ""}`;
 
   /** Solo el admin es «puro equipo»: el resto puede pasar a participante. */
@@ -139,7 +144,7 @@ export function RoleSwitcher({
                 <li>
                   <button
                     type="button"
-                    onClick={() => irA("/mi")}
+                    onClick={() => irA(hrefMi)}
                     aria-current={enMiZona ? "page" : undefined}
                     className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition ${
                       enMiZona

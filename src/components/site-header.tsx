@@ -8,12 +8,20 @@ import { DEMO_MODE } from "@/lib/demo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { ROLES } from "@/types";
+import { localeDeRuta, rutaLocalizada } from "@/i18n";
+import { useDict } from "@/i18n/use-locale";
 
 export function SiteHeader() {
   const { user, roles, loading, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const tieneRoles = ROLES.some((r) => roles[r]);
+  // En la parte localizada (pública y Mi zona) los enlaces llevan /es o /eu;
+  // en los paneles y en las URLs antiguas sin idioma se queda la ruta base.
+  const d = useDict();
+  const publico = localeDeRuta(pathname);
+  const l = (ruta: string) => (publico ? rutaLocalizada(publico, ruta) : ruta);
+  const hrefMi = l("/mi");
 
   // El modo oscuro es una opción de la plataforma (logueado); fuera siempre claro.
   useEffect(() => {
@@ -34,7 +42,6 @@ export function SiteHeader() {
     router.replace("/");
   }
 
-  const isActive = (href: string) => pathname === href;
   const enPanel = pathname.startsWith("/panel");
 
   const headerCls = enPanel
@@ -57,7 +64,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:h-16">
         <div className="flex min-w-0 items-center gap-2">
           <Link
-            href="/"
+            href={l("/")}
             className="inline-flex min-h-11 items-center text-lg font-black tracking-tight"
           >
             Jam<span className="text-red-500">Session</span>
@@ -75,12 +82,12 @@ export function SiteHeader() {
             <>
               {/* Mi zona por defecto solo para músicos; el equipo que entra
                   como participante la ve mientras está dentro. */}
-              {(!tieneRoles || (isActive("/mi") && !roles.admin)) && (
+              {(!tieneRoles || (pathname === hrefMi && !roles.admin)) && (
                 <Link
-                  href="/mi"
-                  className={`${linkCls} ${isActive("/mi") ? linkActivo : ""}`}
+                  href={hrefMi}
+                  className={`${linkCls} ${pathname === hrefMi ? linkActivo : ""}`}
                 >
-                  Mi zona
+                  {d.header.miZona}
                 </Link>
               )}
               <RoleSwitcher linkCls={linkCls} linkActivo={linkActivo} />
@@ -93,7 +100,7 @@ export function SiteHeader() {
                   enPanel ? "text-white/60" : "text-neutral-500 dark:text-neutral-400"
                 }`}
               >
-                Salir
+                {d.header.salir}
               </button>
             </>
           ) : loading ? (
@@ -106,14 +113,14 @@ export function SiteHeader() {
             </span>
           ) : (
             <>
-              <Link href="/login" className={linkCls}>
-                Entrar
+              <Link href={l("/login")} className={linkCls}>
+                {d.header.entrar}
               </Link>
               <Link
-                href="/registro"
+                href={l("/registro")}
                 className="inline-flex min-h-10 items-center rounded-lg bg-[#FFE600] px-3 py-2 font-semibold text-black transition hover:bg-white"
               >
-                Registro
+                {d.header.registro}
               </Link>
             </>
           )}

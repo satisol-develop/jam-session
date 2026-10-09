@@ -4,6 +4,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
 import { INSTRUMENTOS } from "@/lib/constants";
+import { fmt, traducirInstrumento } from "@/i18n";
+import { useDict } from "@/i18n/use-locale";
 import type { Cancion, Inscripcion, SolicitudTema } from "@/types";
 
 interface Props {
@@ -31,6 +33,7 @@ export function SubscribeForm({
   sinSesion,
   ensayo,
 }: Props) {
+  const d = useDict();
   const [catalogo, setCatalogo] = useState<Cancion[] | null>(null);
   const [instrumentos, setInstrumentos] = useState<string[]>(
     inscripcion?.instrumentos ?? [],
@@ -91,11 +94,11 @@ export function SubscribeForm({
     );
 
     if (instrumentos.length === 0) {
-      setError("Selecciona al menos un instrumento.");
+      setError(d.mi.inscripcion.selInstrumento);
       return;
     }
     if (temas.length === 0) {
-      setError("Selecciona al menos un tema.");
+      setError(d.mi.inscripcion.selTema);
       return;
     }
 
@@ -109,7 +112,7 @@ export function SubscribeForm({
       onSaved(guardada);
       setOk(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo guardar.");
+      setError(err instanceof Error ? err.message : d.mi.inscripcion.noGuardado);
     } finally {
       setBusy(false);
     }
@@ -121,10 +124,9 @@ export function SubscribeForm({
   if (sinSesion) {
     return (
       <div className="space-y-2 rounded-xl border border-neutral-200 p-4 text-sm dark:border-neutral-800">
-        <p className="font-semibold">No hay ninguna sesión abierta</p>
+        <p className="font-semibold">{d.mi.inscripcion.sinSesionTitulo}</p>
         <p className="text-neutral-500 dark:text-neutral-400">
-          No podrás elegir temas hasta que el Grupo Base abra la próxima
-          jam.
+          {d.mi.inscripcion.sinSesionTexto}
         </p>
       </div>
     );
@@ -133,17 +135,22 @@ export function SubscribeForm({
   if (cerradas) {
     return (
       <div className="space-y-2 rounded-xl border border-neutral-200 p-4 text-sm dark:border-neutral-800">
-        <p className="font-semibold">Inscripciones cerradas</p>
+        <p className="font-semibold">{d.mi.inscripcion.cerradasTitulo}</p>
         <p className="text-neutral-500 dark:text-neutral-400">
-          El Grupo Base ha cerrado la inscripción de esta sesión.
-          {ensayo && ` Ensayo general: ${ensayo}.`}
+          {d.mi.inscripcion.cerradasTexto}
+          {ensayo && ` ${fmt(d.mi.inscripcion.ensayo, { x: ensayo })}`}
         </p>
         {inscripcion && (
           <p className="text-neutral-500 dark:text-neutral-400">
-            Tu inscripción enviada se conserva (solo lectura):{" "}
-            {inscripcion.instrumentos.join(", ") || "—"} ·{" "}
-            {inscripcion.temas.length}{" "}
-            {inscripcion.temas.length === 1 ? "tema" : "temas"}.
+            {d.mi.inscripcion.conservada}{" "}
+            {inscripcion.instrumentos
+              .map((i) => traducirInstrumento(d, i))
+              .join(", ") || "—"}{" "}
+            · {inscripcion.temas.length}{" "}
+            {inscripcion.temas.length === 1
+              ? d.mi.inscripcion.tema
+              : d.mi.inscripcion.temas}
+            .
           </p>
         )}
       </div>
@@ -154,7 +161,7 @@ export function SubscribeForm({
     <form onSubmit={onSubmit} className="space-y-6">
       <fieldset>
         <legend className="mb-2 text-sm font-semibold">
-          ¿En qué instrumentos tocas?
+          {d.mi.inscripcion.legendInstrumentos}
         </legend>
         <div className="flex flex-wrap gap-2">
           {INSTRUMENTOS.map((inst) => {
@@ -171,7 +178,7 @@ export function SubscribeForm({
                     : "border-neutral-300 hover:border-neutral-500 dark:border-neutral-700"
                 }`}
               >
-                {inst}
+                {traducirInstrumento(d, inst)}
               </button>
             );
           })}
@@ -180,13 +187,13 @@ export function SubscribeForm({
 
       <fieldset>
         <legend className="mb-2 text-sm font-semibold">
-          Temas en los que quieres participar
+          {d.mi.inscripcion.legendTemas}
         </legend>
         {catalogo === null ? (
           <SkeletonFilas n={3} />
         ) : catalogo.length === 0 ? (
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Aún no hay repertorio publicado.
+            {d.mi.inscripcion.sinRepertorio}
           </p>
         ) : (
           <ul className="space-y-2">
@@ -219,7 +226,7 @@ export function SubscribeForm({
                     >
                       {opcionesInstrumento.map((i) => (
                         <option key={i} value={i}>
-                          {i}
+                          {traducirInstrumento(d, i)}
                         </option>
                       ))}
                     </select>
@@ -236,7 +243,7 @@ export function SubscribeForm({
           htmlFor="notas"
           className="mb-2 block text-sm font-semibold"
         >
-          Notas para el Grupo Base (opcional)
+          {d.mi.inscripcion.notasLabel}
         </label>
         <textarea
           id="notas"
@@ -244,7 +251,7 @@ export function SubscribeForm({
           onChange={(e) => setNotas(e.target.value)}
           rows={2}
           maxLength={300}
-          placeholder="Ej.: puedo entrar en el tema 3, pero llegaré 15 min tarde."
+          placeholder={d.mi.inscripcion.notasPlaceholder}
           className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
         />
       </fieldset>
@@ -256,7 +263,7 @@ export function SubscribeForm({
       )}
       {ok && (
         <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-950 dark:text-green-300">
-          ¡Inscripción guardada! El Grupo Base revisará las asignaciones.
+          {d.mi.inscripcion.guardadaOk}
         </p>
       )}
 
@@ -266,10 +273,10 @@ export function SubscribeForm({
         className="w-full rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-50 dark:bg-white dark:text-black"
       >
         {busy
-          ? "Guardando…"
+          ? d.mi.inscripcion.guardando
           : inscripcion
-            ? "Actualizar mi inscripción"
-            : "Enviar inscripción"}
+            ? d.mi.inscripcion.actualizar
+            : d.mi.inscripcion.enviar}
       </button>
     </form>
   );

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SkeletonFilas } from "@/components/loading";
 import { api } from "@/lib/api/client";
+import { useDict } from "@/i18n/use-locale";
 
 interface Asistente {
   uid: string;
@@ -10,16 +11,19 @@ interface Asistente {
 }
 
 export function AttendeesList() {
+  const d = useDict();
   const [asistentes, setAsistentes] = useState<Asistente[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     api<{ usuarios: Asistente[] }>("musician.attendees")
-      .then((d) => setAsistentes(d.usuarios ?? []))
+      .then((d2) => setAsistentes(d2.usuarios ?? []))
       .catch((err) =>
-        setError(err instanceof Error ? err.message : "No se pudo cargar."),
+        setError(
+          err instanceof Error ? err.message : d.mi.asistentes.noCargado,
+        ),
       );
-  }, []);
+  }, [d.mi.asistentes.noCargado]);
 
   if (error) {
     return (
@@ -34,7 +38,7 @@ export function AttendeesList() {
   if (asistentes.length === 0) {
     return (
       <p className="text-sm text-neutral-500 dark:text-neutral-400">
-        Nadie se ha inscrito todavía. ¡Sé el primero!
+        {d.mi.asistentes.vacio}
       </p>
     );
   }
@@ -49,7 +53,9 @@ export function AttendeesList() {
           <span className="flex size-7 items-center justify-center rounded-full bg-neutral-900 text-xs font-bold text-white dark:bg-white dark:text-black">
             {(a.nombre || "?").slice(0, 1).toUpperCase()}
           </span>
-          <span className="font-medium">{a.nombre || "Músico"}</span>
+          <span className="font-medium">
+            {a.nombre || d.mi.asistentes.musico}
+          </span>
         </li>
       ))}
     </ul>

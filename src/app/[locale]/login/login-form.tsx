@@ -8,12 +8,16 @@ import { DEMO_MODE } from "@/lib/demo";
 import { DEMO_ACCOUNTS } from "@/lib/demo/data";
 import { ROLES_META } from "@/lib/constants";
 import { ROLES, type RolesMap } from "@/types";
+import { rutaLocalizada } from "@/i18n";
+import { useDict, useLocale } from "@/i18n/use-locale";
 import { FirebaseError } from "firebase/app";
 
 export function LoginForm() {
   const { signIn } = useAuth();
   const router = useRouter();
   const search = useSearchParams();
+  const locale = useLocale();
+  const d = useDict();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +28,9 @@ export function LoginForm() {
   /** Sin `next`: el equipo va a su panel y los músicos a Mi zona. */
   function destinoPostLogin(mapa: RolesMap): string {
     if (next) return next;
-    return ROLES.some((r) => mapa[r]) ? "/panel" : "/mi";
+    return ROLES.some((r) => mapa[r])
+      ? "/panel"
+      : rutaLocalizada(locale, "/mi");
   }
 
   async function onSubmit(e: FormEvent) {
@@ -38,11 +44,11 @@ export function LoginForm() {
       setError(
         err instanceof FirebaseError
           ? err.code === "auth/too-many-requests"
-            ? "Demasiados intentos: espera unos minutos antes de probar."
-            : "Credenciales incorrectas o usuario no encontrado."
+            ? d.login.errorRate
+            : d.login.errorCredenciales
           : err instanceof Error && err.message
             ? err.message
-            : "Error inesperado. Inténtalo de nuevo.",
+            : d.login.errorInesperado,
       );
     } finally {
       setBusy(false);
@@ -56,7 +62,7 @@ export function LoginForm() {
       const mapa = await signIn(email, "demo");
       router.replace(destinoPostLogin(mapa));
     } catch {
-      setError("No se pudo iniciar la sesión de demo.");
+      setError(d.login.errorDemo);
     } finally {
       setBusy(false);
     }
@@ -66,19 +72,19 @@ export function LoginForm() {
     <div className="flex min-h-[calc(100dvh-3.5rem)] items-center justify-center px-4 sm:min-h-[calc(100dvh-4rem)]">
       <div className="w-full max-w-sm">
         <p className="text-xs font-extrabold tracking-[0.22em] text-red-500 uppercase">
-          Debarock Kolektiboa
+          {d.login.kicker}
         </p>
         <h1 className="mt-1 mb-1 text-3xl font-black tracking-tight uppercase italic">
-          Entrar
+          {d.login.entrar}
         </h1>
         <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
-          Accede para inscribirte y ver el material.
+          {d.login.subtitulo}
         </p>
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="mb-1 block text-sm font-medium">
-              Correo
+              {d.login.correo}
             </label>
             <input
               id="email"
@@ -92,7 +98,7 @@ export function LoginForm() {
           </div>
           <div>
             <label htmlFor="password" className="mb-1 block text-sm font-medium">
-              Contraseña
+              {d.login.contrasena}
             </label>
             <input
               id="password"
@@ -116,14 +122,14 @@ export function LoginForm() {
             disabled={busy}
             className="w-full rounded-xl bg-[#FFE600] px-4 py-2.5 text-sm font-extrabold tracking-wide text-black uppercase transition hover:bg-neutral-950 hover:text-[#FFE600] disabled:opacity-50"
           >
-            {busy ? "Entrando…" : "Entrar"}
+            {busy ? d.login.entrando : d.login.entrar}
           </button>
         </form>
 
         {DEMO_MODE && (
           <div className="mt-6 rounded-xl border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-800 dark:bg-neutral-950">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-              Modo demo · entra como
+              {d.login.demoTitulo}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {DEMO_ACCOUNTS.map((a) => (
@@ -135,24 +141,23 @@ export function LoginForm() {
                   className="min-h-9 rounded-full border border-neutral-300 bg-white px-2.5 py-2 text-xs font-medium transition hover:border-neutral-900 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-white"
                   title={a.email}
                 >
-                  {a.rol ? ROLES_META[a.rol].label.split("·")[0].trim() : "Músico"}
+                  {a.rol ? ROLES_META[a.rol].label.split("·")[0].trim() : d.login.demoMusico}
                 </button>
               ))}
             </div>
             <p className="mt-2 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
-              Cada cuenta solo ve su panel (el músico no tiene roles). Contraseña
-              libre; en registro se crea un músico sin roles.
+              {d.login.demoPista}
             </p>
           </div>
         )}
 
         <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
-          ¿No tienes cuenta?{" "}
+          {d.login.sinCuenta}{" "}
           <Link
-            href="/registro"
+            href={rutaLocalizada(locale, "/registro")}
             className="font-medium text-neutral-900 underline dark:text-white"
           >
-            Regístrate
+            {d.login.registate}
           </Link>
         </p>
       </div>

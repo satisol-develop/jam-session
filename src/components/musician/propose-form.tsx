@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { api } from "@/lib/api/client";
 import { INSTRUMENTOS } from "@/lib/constants";
+import { fmt, traducirInstrumento } from "@/i18n";
+import { useDict } from "@/i18n/use-locale";
 
 interface Adjunto {
   nombre: string;
@@ -21,12 +23,6 @@ interface PropuestaItem {
   archivos?: { nombre: string; mimeType: string; bytes: number }[];
 }
 
-const ESTADO_LABEL: Record<string, string> = {
-  pendiente: "Pendiente",
-  aprobada: "En repertorio",
-  rechazada: "Descartada",
-};
-
 const MAX_ARCHIVOS = 6;
 const MAX_ARCHIVO_BYTES = 6 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 10 * 1024 * 1024;
@@ -44,6 +40,7 @@ function leerBase64(file: File): Promise<string> {
 }
 
 export function ProposeForm() {
+  const d = useDict();
   const [cancion, setCancion] = useState("");
   const [artista, setArtista] = useState("");
   const [instrumento, setInstrumento] = useState("");
@@ -65,19 +62,19 @@ export function ProposeForm() {
     setError(null);
     const entradas = Array.from(files);
     if (adjuntos.length + entradas.length > MAX_ARCHIVOS) {
-      setError(`Máximo ${MAX_ARCHIVOS} ficheros por propuesta.`);
+      setError(fmt(d.mi.propuestas.maxFicheros, { n: MAX_ARCHIVOS }));
       return;
     }
     let total = adjuntos.reduce((n, a) => n + a.bytes, 0);
     const nuevos: Adjunto[] = [];
     for (const f of entradas) {
       if (f.size > MAX_ARCHIVO_BYTES) {
-        setError(`«${f.name}» supera los 6 MB.`);
+        setError(fmt(d.mi.propuestas.file6mb, { nombre: f.name }));
         return;
       }
       total += f.size;
       if (total > MAX_TOTAL_BYTES) {
-        setError("Los ficheros superan los 10 MB en total.");
+        setError(d.mi.propuestas.total10mb);
         return;
       }
       nuevos.push({
@@ -134,9 +131,22 @@ export function ProposeForm() {
       setAdjuntos([]);
       setOk(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo enviar.");
+      setError(err instanceof Error ? err.message : d.mi.propuestas.noEnviado);
     } finally {
       setBusy(false);
+    }
+  }
+
+  function estadoLabel(estado: string): string {
+    switch (estado) {
+      case "pendiente":
+        return d.mi.propuestas.estadoPendiente;
+      case "aprobada":
+        return d.mi.propuestas.estadoAprobada;
+      case "rechazada":
+        return d.mi.propuestas.estadoRechazada;
+      default:
+        return estado;
     }
   }
 
@@ -146,7 +156,7 @@ export function ProposeForm() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="cancion" className="block text-sm font-semibold">
-              Canción
+              {d.mi.propuestas.cancion}
             </label>
             <input
               id="cancion"
@@ -155,15 +165,15 @@ export function ProposeForm() {
               maxLength={120}
               value={cancion}
               onChange={(e) => setCancion(e.target.value)}
-              placeholder="Ej. September"
+              placeholder={d.mi.propuestas.cancionPlaceholder}
               className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
             />
           </div>
           <div>
             <label htmlFor="artista" className="block text-sm font-semibold">
-              Artista{" "}
+              {d.mi.propuestas.artista}{" "}
               <span className="font-normal text-neutral-500 dark:text-neutral-400">
-                (opcional)
+                {d.mi.propuestas.opcional}
               </span>
             </label>
             <input
@@ -172,26 +182,26 @@ export function ProposeForm() {
               maxLength={120}
               value={artista}
               onChange={(e) => setArtista(e.target.value)}
-              placeholder="Ej. Earth, Wind & Fire"
+              placeholder={d.mi.propuestas.artistaPlaceholder}
               className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
             />
           </div>
         </div>
         <div>
           <label htmlFor="instrumento" className="block text-sm font-semibold">
-            El instrumento con el que la tocarías
+            {d.mi.propuestas.instrumentoLabel}
           </label>
           <select
             id="instrumento"
             required
             value={instrumento}
             onChange={(e) => setInstrumento(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
+            className="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white sm:text-sm"
           >
-            <option value="">Elige un instrumento…</option>
+            <option value="">{d.mi.propuestas.instrumentoElige}</option>
             {INSTRUMENTOS.map((i) => (
               <option key={i} value={i}>
-                {i}
+                {traducirInstrumento(d, i)}
               </option>
             ))}
           </select>
@@ -202,12 +212,10 @@ export function ProposeForm() {
             htmlFor="propuesta-ficheros"
             className="block text-sm font-semibold"
           >
-            Ficheros (partitura, cifrado o guía)
+            {d.mi.propuestas.ficherosLabel}
           </label>
           <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-            Si la propuesta se aprueba, estos ficheros pasan a formar parte del
-            repertorio y se verán en «Partituras». Opcional: máx. {MAX_ARCHIVOS}{" "}
-            ficheros, 6 MB cada uno.
+            {fmt(d.mi.propuestas.ficherosDesc, { n: MAX_ARCHIVOS })}
           </p>
           <input
             ref={inputArchivos}
@@ -232,7 +240,7 @@ export function ProposeForm() {
                   <button
                     type="button"
                     onClick={() => quitarAdjunto(a.nombre)}
-                    aria-label={`Quitar ${a.nombre}`}
+                    aria-label={fmt(d.mi.propuestas.quitar, { nombre: a.nombre })}
                     className="inline-flex size-7 items-center justify-center rounded-full text-lg leading-none text-neutral-500 transition hover:bg-red-100 hover:text-red-600 dark:text-neutral-400 dark:hover:bg-red-950"
                   >
                     ×
@@ -256,8 +264,7 @@ export function ProposeForm() {
             role="status"
             className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-950 dark:text-green-300"
           >
-            Propuesta enviada. El Grupo Base la tendrá en cuenta y el General
-            decide si entra al repertorio.
+            {d.mi.propuestas.enviadaOk}
           </p>
         )}
         <button
@@ -265,14 +272,13 @@ export function ProposeForm() {
           disabled={busy}
           className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100 disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-900 sm:w-auto"
         >
-          {busy ? "Enviando…" : "Enviar propuesta"}
+          {busy ? d.mi.propuestas.enviando : d.mi.propuestas.enviar}
         </button>
       </form>
 
       {propuestas.length === 0 && (
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Aún no has enviado propuestas. Usa el formulario para proponer una
-          canción.
+          {d.mi.propuestas.sinPropuestas}
         </p>
       )}
 
@@ -287,14 +293,19 @@ export function ProposeForm() {
                 «{p.cancion}»{p.artista ? ` — ${p.artista}` : ""}
                 <span className="text-neutral-500 text-xs dark:text-neutral-400">
                   {" "}
-                  · en {p.instrumento}
+                  · {fmt(d.mi.propuestas.en, { i: p.instrumento })}
                   {p.archivos && p.archivos.length > 0
-                    ? ` · ${p.archivos.length} fichero${p.archivos.length > 1 ? "s" : ""}`
+                    ? ` · ${fmt(
+                        p.archivos.length === 1
+                          ? d.mi.propuestas.fichero
+                          : d.mi.propuestas.ficheros,
+                        { n: p.archivos.length },
+                      )}`
                     : ""}
                 </span>
               </span>
               <span className="shrink-0 text-xs text-neutral-500 dark:text-neutral-400">
-                {ESTADO_LABEL[p.estado] ?? p.estado}
+                {estadoLabel(p.estado)}
               </span>
             </li>
           ))}

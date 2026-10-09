@@ -117,7 +117,7 @@ export async function demoApi<T>(route: string, body?: unknown): Promise<T> {
       return {
         evento: s.evento,
         catalogo: s.catalogo,
-        masTocadas: topCancionesDemo(s, 10),
+        masTocadas: topCancionesDemo(s, 15),
         dataVersion: String(s.dataVersion),
       } as T;
 

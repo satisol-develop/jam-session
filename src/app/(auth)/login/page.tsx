@@ -1,20 +1,13 @@
-import { Suspense } from "react";
-import { LoginForm } from "./login-form";
+import type { Metadata } from "next";
+import { IrAIdioma } from "@/components/i18n/ir-a-idioma";
+import { REDIRECT_METADATA } from "@/i18n/meta";
 
-export const metadata = {
+export const metadata: Metadata = {
+  ...REDIRECT_METADATA,
   title: "Entrar",
 };
 
+/** URL antigua: redirige a /es/login o /eu/login (cookie → navegador → es). */
 export default function LoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
-          Cargando…
-        </div>
-      }
-    >
-      <LoginForm />
-    </Suspense>
-  );
+  return <IrAIdioma ruta="/login" />;
 }

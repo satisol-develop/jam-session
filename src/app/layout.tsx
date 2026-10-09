@@ -5,6 +5,7 @@ import { AuthProvider } from "@/lib/auth/auth-provider";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SessionGate } from "@/components/auth/session-gate";
+import { LangSync } from "@/components/i18n/lang-sync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             eleva estos <link> al <head>. */}
         <link rel="preconnect" href="https://script.google.com" />
         <script dangerouslySetInnerHTML={{ __html: TEMA_INICIAL }} />
+        <LangSync />
         <AuthProvider>
           <SiteHeader />
           <main className="flex-1">
