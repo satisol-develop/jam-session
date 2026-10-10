@@ -6,7 +6,7 @@ export const eu: Dict = {
     miZona: "Nire gunea",
     salir: "Irten",
     entrar: "Sartu",
-    registro: "Izen ematea",
+    registro: "Izen-ematea",
     idioma: "Hizkuntza",
     cambiarAEu: "Euskara",
     cambiarAEs: "Gaztelania",
@@ -15,20 +15,20 @@ export const eu: Dict = {
   footer: {
     proxima: "Hurrengo saioa",
     entrar: "Sartu",
-    registro: "Izen ematea",
+    registro: "Izen-ematea",
     privacidad: "Pribatutasuna",
     terminos: "Baldintzak",
   },
   cartel: {
     presenta: "Debarock Kolektiboa aurkezten du",
-    trae: "Ekarrri zure instrumentua!",
-    fechaDefecto: "Lar 25 · 20:30 H",
+    trae: "Ekar zure instrumentua!",
+    fechaDefecto: "Lar 25 · 20:30",
     lugarDefecto: "Debarock gunea",
   },
   landing: {
     kicker: "Debarock Kolektiboa aurkezten du",
     metaDesc:
-      "Debarock Kolektiboa-ren jam irekia: errepertorioa, izen-emateak, eskaleta eta zuzenean jotzeko materiala.",
+      "Debarock Kolektiboa elkartearen jam irekia: errepertorioa, izen-emateak, eskaleta eta zuzenean jotzeko materiala.",
     subtitulo:
       "Jo, partekatu eta igo agertokira. Aukeratu parte hartu nahi dituzun kantuak, elkarrekin entseatu egingo dugu eta Jam Session-a zuzenean izango da.",
     chipUltima: "Azken saioa",
@@ -47,7 +47,7 @@ export const eu: Dict = {
     pasos: [
       {
         titulo: "Sortu zure kontua",
-        texto: "Izen eman zure postarekin eta berrets itzula. Kuotarik eta letra txikirik gabe.",
+        texto: "Izen eman zure posta elektronikoarekin eta berretsi esteka. Kuotarik eta letra txikirik gabe.",
       },
       {
         titulo: "Aukeratu zer jotzen duzun",
@@ -64,7 +64,7 @@ export const eu: Dict = {
       },
     ],
     tocamosKicker: "Zer jotzen dugun",
-    masTocadas: "Arrakastatsuenak",
+    masTocadas: "Gehien jotzen direnak",
     repertorioMes: "Hileko errepertorioa",
     porSesiones: "saio kopuruaren arabera",
     nTemas: "{n} kantu",
@@ -77,7 +77,7 @@ export const eu: Dict = {
     ctaKicker: "Jam-ak zain zaitu",
     ctaTitulo: "Instrumentu bat jotzen al duzu?",
     ctaTexto:
-      "Izen eman, eskatu parte hartu nahi dituzun kantuak eta ikusi ikasketa-materiala. Hurrengo jam-a zurea izan daiteke.",
+      "Izen eman, eskatu parte hartu nahi dituzun kantuak eta ikusi ikasmateriala. Hurrengo jam-a zurea izan daiteke.",
   },
   legales: {
     privacidad: "Pribatutasun politika",
@@ -107,7 +107,7 @@ export const eu: Dict = {
     musico: "musikaria",
     eventoCerradas: "Izen-emateak itxita: {t}.",
     eventoAbierta: "Izen-ematea zabalik: {t}.",
-    sinEvento: "Une honetan ez dago ekintza aktiborik.",
+    sinEvento: "Une honetan ez dago ekitaldi aktiborik.",
     partituras: "Partiturak eta materiala",
     paneles: "Taldeko panelak",
     escaletaTitulo: "Eskaleta zuzenean",
@@ -125,9 +125,9 @@ export const eu: Dict = {
       titulo: "Izen-ematea",
       descSinSesion: "Ez dago saiorik zabalik.",
       descCerradas: "Talde Oinarrizkoak itxi ditu izen-emateak.",
-      descAbierta: "Aukeratu zein instrumentu eta kantutan jo nahi duzun.",
-      selInstrumento: "Aukerat gutxienez instrumentu bat.",
-      selTema: "Aukerat gutxienez kantu bat.",
+      descAbierta: "Aukeratu zein instrumentutan eta zein kantutan jo nahi duzun.",
+      selInstrumento: "Aukeratu gutxienez instrumentu bat.",
+      selTema: "Aukeratu gutxienez kantu bat.",
       noGuardado: "Ezin izan da gorde.",
       sinSesionTitulo: "Ez dago saiorik zabalik",
       sinSesionTexto:
@@ -168,7 +168,7 @@ export const eu: Dict = {
       total10mb: "Fitxategiek 10 MB guztira gainditzen dute.",
       noEnviado: "Ezin izan da bidali.",
       enviadaOk:
-        "Proposamena bidali da. Talde Oinarrizkoak aintzat hartuko du eta Nagusiak erabakiko du sartzen den errepertorian.",
+        "Proposamena bidali da. Talde Oinarrizkoak aintzat hartuko du eta Nagusiak erabakiko du errepertorian sartzen den.",
       enviando: "Bidaltzen…",
       enviar: "Bidali proposamena",
       sinPropuestas:
@@ -192,7 +192,7 @@ export const eu: Dict = {
   login: {
     title: "Sartu",
     kicker: "Debarock Kolektiboa",
-    subtitulo: "Sartu izen emateko eta materiala ikusteko.",
+    subtitulo: "Sartu izena emateko eta materiala ikusteko.",
     correo: "Posta elektronikoa",
     contrasena: "Pasahitza",
     entrando: "Sartzen…",
@@ -204,7 +204,7 @@ export const eu: Dict = {
     demoTitulo: "Demo modua · sartu honela",
     demoMusico: "Musikaria",
     demoPista:
-      "Kontu bakoitzak bere panelea baino ikusten du (musikariak ez du rolik). Pasahitea libre da; izen-ematean musikari bat sortzen da rol gabe.",
+      "Kontu bakoitzak bere panela bakarrik ikusten du (musikariak ez du rolik). Pasahitza libre da; izen-ematean musikari bat sortzen da rol gabe.",
     sinCuenta: "Ez duzu konturik?",
     registate: "Izen eman",
     cargando: "Kargatzen…",
@@ -213,7 +213,7 @@ export const eu: Dict = {
     title: "Sortu kontua",
     kicker: "Egin bat jam-arekin",
     subtitulo:
-      "Izen-ematea parte-hartzaileentzat: egiaztapen-mezu bat bidaliko dizugu posta bidez; sartu aurretik ireki beharko duzu.",
+      "Izen-ematea parte-hartzaileentzat: egiaztapen-mezu bat bidaliko dizugu posta elektronikoz; sartu aurretik ireki beharko duzu.",
     demoNota:
       "Demo modua: izen-emateak musikari bat sortzen du rolerik gabe («Nire gunea» eta materiala bakarrik). Rol-panelak «Sartu» ataleko kontu-hautatzailearekin probatzen dira.",
     nombre: "Izena",
@@ -228,7 +228,7 @@ export const eu: Dict = {
     yaCuenta: "Dagoeneko kontua al duzu?",
     entrar: "Sartu",
     errorAcepta: "Pribatutasun-politika eta erabilera-baldintzak onartu behar dituzu.",
-    errorUsado: "Dagoeneko badago kontu bat horrekin. Saiatu sartzen.",
+    errorUsado: "Posta horrekin dagoeneko badago kontu bat. Saiatu sartzen.",
     errorDebil: "Pasahitzak gutxienez 6 karaktere izan behar ditu.",
     errorRate: "Saiakera gehiegi: itxaron minutu batzuk.",
     errorCrear: "Ezin izan da kontua sortu. Begiratu datuak.",
@@ -236,8 +236,8 @@ export const eu: Dict = {
     captchaMontaje:
       "Antispam egiaztapenak huts egin du. Birkargatu orria eta saiatu berriro.",
     captchaNoMonta:
-      "Ezin izan da antispam egiaztapena kargatu (iragarki-blokeatzailea edo Google-ra konektatuta ez zaude?). Desgaitu edo birkargatu orria eta saiatu berriro.",
-    captchaTimeout: "Antispam egiaztapenak luzeegia hartu du. Saiatu berriro.",
+      "Ezin izan da antispam egiaztapena kargatu (iragarki-blokeatzailea erabiltzen al duzu edo ez zaude Google-ra konektatuta?). Desgaitu edo birkargatu orria eta saiatu berriro.",
+    captchaTimeout: "Antispam egiaztapenak denbora luzeegi hartu du. Saiatu berriro.",
     recaptcha1: "Gune hau reCAPTCHA bidez babestuta dago eta Google-ren",
     recaptcha2: " eta ",
     recaptcha3: " aplikatzen dira.",
@@ -248,11 +248,11 @@ export const eu: Dict = {
     title: "Partiturak eta materiala",
     kicker: "Zer jotzen dugun",
     subtitulo:
-      "Errepertorioaren akordeak, partiturak eta audio-gidak. Erregistratutako musikoentzat sarbidea.",
+      "Errepertorioaren akordeak, partiturak eta audio-gidak. Sarbidea erregistratutako musikoentzat bakarrik.",
     volverPanel: "← Panela",
     volverMiZona: "← Nire gunea",
     errorCargar: "Ezin izan da kargatu.",
-    errorAbrir: "Ezin ireki.",
+    errorAbrir: "Ezin izan da ireki.",
     sinArchivos: "Kantu honek oraindik ez du fitxategirik.",
     abriendo: "Fitxategia irekitzen…",
     descargar: "Deskargatu",
@@ -265,7 +265,7 @@ export const eu: Dict = {
     colTitulo: "Izenburua",
     colArtista: "Artista",
     colGenero: "Generoa",
-    sinCoincidencias: "Ez dago kantorik «{q}»(r)ekin bat datorrenik.",
+    sinCoincidencias: "Ez dago «{q}»(r)ekin bat datorren kanturik.",
     cargandoRep: "Errepertorioa kargatzen…",
     mostrando: "{m} artetik {n} erakusten",
     repertorioTotal: " (errepertorioa: {t})",
@@ -299,7 +299,7 @@ export const eu: Dict = {
     verificarAun:
       "Oraindik ez da egiaztatuta agertzen. Ireki mezuko esteka eta saiatu berriro.",
     comprobarNo: "Ezin da egiaztatu. Saiatu berriro.",
-    verifica_t: "Egiaztatu zure posta",
+    verifica_t: "Egiaztatu zure posta elektronikoa",
     enviadoPre: "Egiaztapen mezua bidali dugu ",
     enviadoSuf:
       " helbidera. Ireki mezuko esteka zure kontua aktibatzeko (begiratu spam karpetan ere).",
@@ -320,7 +320,7 @@ export const eu: Dict = {
     firebaseRegistro:
       "Firebase ez da erantzuten kontua sortzean. Saiatu berriro segundo gutxi barru.",
     firebaseNombre: "Firebase ez da erantzuten izena gordetzean.",
-    firebaseCorreo: "Firebase-ek luze hartu du egiaztapen mezua bidaltzen.",
+    firebaseCorreo: "Firebase-ek gehiegi atzeratu du egiaztapen mezua bidaltzen.",
     desconocido: "Errore ezezaguna.",
     sinRespuesta:
       "Ez dago erantzunik backendetik ({ruta}). Saiatu berriro segundo gutxi barru.",
