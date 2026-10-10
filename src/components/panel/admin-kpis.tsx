@@ -23,7 +23,7 @@ function Kpi({
         {valor}
       </p>
       <p className="mt-0.5 text-xs font-bold text-white/85">{label}</p>
-      <p className="db-muted text-[11px]">{nota}</p>
+      <p className="db-muted text-xs">{nota}</p>
     </div>
   );
 }

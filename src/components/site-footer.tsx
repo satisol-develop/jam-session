@@ -29,7 +29,7 @@ export function SiteFooter() {
             #DebarockKolektiboa
           </span>
         </p>
-        <nav className="flex flex-wrap gap-x-4 gap-y-1">
+        <nav className="flex flex-wrap gap-x-5 gap-y-0">
           <Link href={l("/")} className={clase}>
             {d.footer.proxima}
           </Link>

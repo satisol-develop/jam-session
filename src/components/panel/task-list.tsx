@@ -273,7 +273,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                 {esTitular && (
                   <form
                     onSubmit={(e) => onAddSub(e, t)}
-                    className="ml-6 mr-4 mb-3 flex gap-1.5 sm:ml-12"
+                    className="ml-6 mr-4 mb-3 flex gap-2 sm:ml-12"
                   >
                     <input
                       type="text"
@@ -336,7 +336,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                       {puedeComentar && (
                         <form
                           onSubmit={(e) => onComentar(e, t)}
-                          className="flex gap-1.5"
+                          className="flex gap-2"
                         >
                           <input
                             type="text"

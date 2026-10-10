@@ -8,18 +8,39 @@
  *   llegando después (se adaptan al tema claro y a la zona db-* oscura).
  */
 
-export function PantallaCargando({ texto }: { texto: string }) {
+export function PantallaCargando({
+  texto,
+  tono = "claro",
+}: {
+  texto: string;
+  /** "db" = sobre paneles/tema oscuro (fondo #0a0a0a sin parpadeo blanco). */
+  tono?: "claro" | "db";
+}) {
   return (
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-white dark:bg-black"
+      className={`fixed inset-0 z-[70] flex flex-col items-center justify-center gap-4 ${
+        tono === "db"
+          ? "bg-[#0a0a0a] text-white"
+          : "bg-white dark:bg-black"
+      }`}
     >
       <span
         aria-hidden
-        className="size-10 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-800 dark:border-t-[#FFE600]"
+        className={`size-10 animate-spin rounded-full border-4 ${
+          tono === "db"
+            ? "border-neutral-700 border-t-[#FFE600]"
+            : "border-neutral-200 border-t-neutral-900 dark:border-neutral-800 dark:border-t-[#FFE600]"
+        }`}
       />
-      <p className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">
+      <p
+        className={`text-sm font-semibold ${
+          tono === "db"
+            ? "text-neutral-300"
+            : "text-neutral-600 dark:text-neutral-400"
+        }`}
+      >
         {texto}
       </p>
     </div>

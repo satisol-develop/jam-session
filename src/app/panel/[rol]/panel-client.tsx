@@ -59,7 +59,7 @@ function Seccion({
 function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
   const esTitular = tipo === "titular";
   const { roles: rolesUsuario } = useAuth();
-  const { recargar, ...estado } = usePanelStatus(rol);
+  const estado = usePanelStatus(rol);
   const pendTareas = Math.max(estado.tareasTotal - estado.tareasHechas, 0);
   const paso = proximoPaso(rol, estado);
 
@@ -94,10 +94,11 @@ function PanelBody({ rol, tipo }: { rol: Rol; tipo: string }) {
     );
   }
 
+  // Cambiar de pestaña no recarga datos: los paneles ya tienen su propio
+  // refresh (pull/manual) y recargar en cada salto encarecía el móvil.
   function seleccionar(id: string) {
     setActivo(id);
     window.history.replaceState(null, "", `#${id}`);
-    recargar();
   }
 
   function irA(id: string) {
@@ -610,7 +611,7 @@ export function RolPanelClient({ rol: rolParam }: { rol: string }) {
   const tipo = roles[rol];
 
   if (pendiente || loading) {
-    return <PantallaCargando texto="Cargando panel…" />;
+    return <PantallaCargando texto="Cargando panel…" tono="db" />;
   }
 
   if (!valido) {

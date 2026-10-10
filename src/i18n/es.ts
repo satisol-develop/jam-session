@@ -22,6 +22,7 @@ export const es = {
     trae: "¡Trae tu instrumento!",
     fechaDefecto: "Sáb 25 · 20:30 H",
     lugarDefecto: "Sede Debarock",
+    puertas: "PUERTAS 20:00 · ENTRADA LIBRE",
   },
   landing: {
     kicker: "Debarock Kolektiboa presenta",
@@ -325,5 +326,11 @@ export const es = {
       "Sin respuesta del backend ({ruta}). Reinténtalo en unos segundos.",
     red: "Error de red. Comprueba tu conexión.",
     servidor: "Respuesta inválida del servidor.",
+    noEncontradaTitulo: "Página no encontrada",
+    noEncontradaTexto: "La página que buscas no existe o ha cambiado de sitio.",
+    volverInicio: "Volver al inicio",
+    errorTitulo: "Algo ha ido mal",
+    errorTexto:
+      "Se produjo un error al mostrar esta página. Puedes reintentarlo.",
   },
 };

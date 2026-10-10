@@ -25,19 +25,46 @@ function formatTs(iso: string): string {
 
 /** Últimos movimientos de la hoja LogActividad (solo admin). */
 export function AuditPanel() {
-  const [eventos, setEventos] = useState<EventoLog[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [intento, setIntento] = useState(0);
+  const [datos, setDatos] = useState<{
+    intento: number;
+    eventos: EventoLog[] | null;
+    error: string | null;
+  }>({ intento: 0, eventos: null, error: null });
 
   useEffect(() => {
     api<{ eventos: EventoLog[] }>("admin.audit", { limite: 200 })
-      .then((d) => setEventos(d.eventos ?? []))
-      .catch((err) => {
-        setError(err instanceof Error ? err.message : "No se pudo cargar.");
-        setEventos([]);
-      });
-  }, []);
+      .then((d) =>
+        setDatos({ intento, eventos: d.eventos ?? [], error: null }),
+      )
+      .catch((err) =>
+        setDatos({
+          intento,
+          eventos: [],
+          error: err instanceof Error ? err.message : "No se pudo cargar.",
+        }),
+      );
+  }, [intento]);
 
-  if (error) return <p className="db-error text-sm">{error}</p>;
+  // Cambiando de `intento` (retry) se vuelve al esqueleto sin setState
+  // síncrono dentro del effect.
+  const eventos = datos.intento === intento ? datos.eventos : null;
+  const error = datos.intento === intento ? datos.error : null;
+
+  if (error) {
+    return (
+      <div className="space-y-2">
+        <p className="db-error text-sm">{error}</p>
+        <button
+          type="button"
+          onClick={() => setIntento((n) => n + 1)}
+          className="db-kicker inline-flex min-h-10 items-center gap-1.5 text-xs underline"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
+  }
   if (eventos === null) return <SkeletonFilas n={5} />;
   if (eventos.length === 0) {
     return <p className="db-muted text-sm">Todavía no hay actividad registrada.</p>;
@@ -52,10 +79,13 @@ export function AuditPanel() {
         >
           <span className="db-muted shrink-0 tabular-nums">{formatTs(r.ts)}</span>
           <span className="font-semibold">{r.usuario}</span>
-          <span className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-[11px]">
+          <span className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs">
             {r.accion}
           </span>
-          <span className="db-muted min-w-0 flex-1 truncate" title={r.detalle}>
+          <span
+            className="db-muted min-w-0 flex-1 break-words sm:truncate"
+            title={r.detalle}
+          >
             {r.detalle}
           </span>
         </li>

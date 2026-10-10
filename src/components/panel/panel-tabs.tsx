@@ -16,7 +16,7 @@ export interface PanelTab {
 function Conteo({ n, activa }: { n: number; activa?: boolean }) {
   return (
     <span
-      className={`rounded-full px-1.5 text-[10px] font-black tabular-nums ${
+      className={`rounded-full px-1.5 text-xs font-black tabular-nums ${
         activa ? "bg-black/20 text-black" : "bg-[#FFE600] text-black"
       }`}
     >
@@ -111,7 +111,7 @@ export function PanelTabs({
             if (el)
               setSombraDcha(el.scrollWidth - el.scrollLeft - el.clientWidth > 8);
           }}
-          className="db-scroll-x flex gap-1.5 overflow-x-auto px-4 pt-3 pb-2.5"
+          className="db-scroll-x flex gap-2 overflow-x-auto px-4 pt-3 pb-2.5"
         >
           {tabs.map((t) => {
             const activa = t.id === actual?.id;
@@ -169,7 +169,7 @@ export function PanelTabs({
               <span className="relative">
                 <TabIcon id={t.id} className="size-5" />
                 {tieneConteo && !activa && (
-                  <span className="absolute -top-1.5 -right-2 rounded-full bg-[#FFE600] px-1 text-[10px] leading-4 font-black text-black tabular-nums">
+                  <span className="absolute -top-1.5 -right-2 rounded-full bg-[#FFE600] px-1 text-xs leading-4 font-black text-black tabular-nums">
                     {t.conteo}
                   </span>
                 )}

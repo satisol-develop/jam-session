@@ -24,10 +24,16 @@ export function SiteHeader() {
   const l = (ruta: string) => (publico ? rutaLocalizada(publico, ruta) : ruta);
   const hrefMi = l("/mi");
 
-  // El modo oscuro es una opción de la plataforma (logueado); fuera siempre claro.
+  // El modo oscuro es una opción de la plataforma (logueado) y solo aplica
+  // a las rutas privadas (/panel, /mi, /partituras): la parte pública
+  // (landing, login…) es siempre clara, que es como está diseñada.
   useEffect(() => {
     const raiz = document.documentElement;
-    if (!user) {
+    const ruta = pathname.replace(/^\/(?:es|eu)(?=\/|$)/, "") || "/";
+    const esPrivada = ["/panel", "/mi", "/partituras"].some(
+      (p) => ruta === p || ruta.startsWith(`${p}/`),
+    );
+    if (!user || !esPrivada) {
       raiz.classList.remove("dark");
       return;
     }
@@ -36,7 +42,7 @@ export function SiteHeader() {
     } catch {
       /* almacenamiento no disponible */
     }
-  }, [user]);
+  }, [user, pathname]);
 
   async function onLogout() {
     await logout();
@@ -62,7 +68,7 @@ export function SiteHeader() {
     <header
       className={`sticky top-0 z-40 border-b pt-[env(safe-area-inset-top)] ${headerCls}`}
     >
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:h-16">
+      <div className="mx-auto flex min-h-14 max-w-5xl flex-wrap items-center justify-between gap-x-2 gap-y-1 px-4 sm:min-h-16 sm:gap-y-0">
         <div className="flex min-w-0 items-center gap-2">
           <Link
             href={l("/")}
@@ -77,7 +83,7 @@ export function SiteHeader() {
           )}
         </div>
 
-        <nav className="flex min-w-0 items-center gap-0.5 text-sm sm:gap-1">
+        <nav className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm sm:gap-2">
           <LangSwitcher />
           {!loading && user && <ThemeToggle enPanel={enPanel} />}
           {!loading && user ? (

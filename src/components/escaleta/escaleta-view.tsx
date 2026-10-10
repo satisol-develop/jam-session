@@ -208,8 +208,8 @@ export function EscaletaView({ puedeEditar }: { puedeEditar: boolean }) {
                   </div>
 
                   {puedeEditar && (
-                    <div className="flex shrink-0 flex-col gap-1.5">
-                      <div className="flex gap-1.5">
+                    <div className="flex shrink-0 flex-col gap-2">
+                      <div className="flex gap-2">
                         <button
                           onClick={() => mover(i, -1)}
                           disabled={i === 0 || guardando}

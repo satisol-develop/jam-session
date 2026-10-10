@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { ROLES } from "@/types";
 import { RolPanelClient } from "./panel-client";
 
@@ -11,5 +12,6 @@ export default async function RolPanelPage({
   params: Promise<{ rol: string }>;
 }) {
   const { rol } = await params;
+  if (!ROLES.includes(rol as (typeof ROLES)[number])) notFound();
   return <RolPanelClient rol={rol} />;
 }

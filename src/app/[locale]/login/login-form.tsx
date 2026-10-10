@@ -131,14 +131,14 @@ export function LoginForm() {
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
               {d.login.demoTitulo}
             </p>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {DEMO_ACCOUNTS.map((a) => (
                 <button
                   key={a.uid}
                   type="button"
                   onClick={() => quickLogin(a.email)}
                   disabled={busy}
-                  className="min-h-9 rounded-full border border-neutral-300 bg-white px-2.5 py-2 text-xs font-medium transition hover:border-neutral-900 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-white"
+                  className="min-h-10 rounded-full border border-neutral-300 bg-white px-3 py-2 text-xs font-medium transition hover:border-neutral-900 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-white"
                   title={a.email}
                 >
                   {a.rol ? ROLES_META[a.rol].label.split("·")[0].trim() : d.login.demoMusico}

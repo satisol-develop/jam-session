@@ -57,9 +57,10 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
       carpetaDriveId: cancion.carpetaDriveId,
     })
       .then((d2) => setArchivos(d2.archivos ?? []))
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : d.partituras.errorCargar),
-      );
+      .catch((err) => {
+        setArchivos([]);
+        setError(err instanceof Error ? err.message : d.partituras.errorCargar);
+      });
   }, [cancion.carpetaDriveId, d.partituras.errorCargar]);
 
   useEffect(() => {
@@ -111,7 +112,7 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
                     : "border-neutral-200 hover:border-neutral-400 dark:border-neutral-800"
                 }`}
               >
-                <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] font-bold text-white dark:bg-white dark:text-black">
+                <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-xs font-bold text-white dark:bg-white dark:text-black">
                   {fileIcon(a.mimeType)}
                 </span>
                 <span className="min-w-0 flex-1 break-words font-medium">
@@ -136,7 +137,7 @@ function MaterialViewer({ cancion }: { cancion: Cancion }) {
             <a
               href={blobUrl}
               download={contenido.nombre}
-              className="inline-block rounded-lg px-2 py-2 text-sm font-medium underline text-neutral-500 dark:text-neutral-400"
+              className="inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-medium underline text-neutral-500 dark:text-neutral-400"
             >
               {d.partituras.descargar}
             </a>
@@ -193,9 +194,10 @@ export function PartiturasVista() {
   useEffect(() => {
     api<{ catalogo: Cancion[] }>("public.catalog")
       .then((d2) => setCatalogo((d2.catalogo ?? []).filter((c) => c.carpetaDriveId)))
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : d.partituras.errorCargar),
-      );
+      .catch((err) => {
+        setCatalogo([]);
+        setError(err instanceof Error ? err.message : d.partituras.errorCargar);
+      });
   }, [d.partituras.errorCargar]);
 
   // Al abrir un tema, el visor queda fuera de pantalla en móvil: bajamos
@@ -323,7 +325,7 @@ export function PartiturasVista() {
                     pageSize: Number(e.target.value),
                   }))
                 }
-                className="min-h-10 rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-xs text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white"
+                className="min-h-10 rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-base text-black outline-none focus:border-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:focus:border-white sm:text-xs"
               >
                 {[10, 25, 50].map((n) => (
                   <option key={n} value={n}>

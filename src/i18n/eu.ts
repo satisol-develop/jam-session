@@ -24,6 +24,7 @@ export const eu: Dict = {
     trae: "Ekar zure instrumentua!",
     fechaDefecto: "Lar 25 · 20:30",
     lugarDefecto: "Debarock gunea",
+    puertas: "ATEAK 20:00 · SARRERA ASKE",
   },
   landing: {
     kicker: "Debarock Kolektiboa aurkezten du",
@@ -326,5 +327,11 @@ export const eu: Dict = {
       "Ez dago erantzunik backendetik ({ruta}). Saiatu berriro segundo gutxi barru.",
     red: "Sare-errorea. Egiaztatu zure konexioa.",
     servidor: "Zerbitzariaren erantzun baliogabea.",
+    noEncontradaTitulo: "Orria ez dago",
+    noEncontradaTexto: "Bilatzen duzun orria ez dago edo lekuz aldatu da.",
+    volverInicio: "Hasierara itzuli",
+    errorTitulo: "Zerbait gaizki joan da",
+    errorTexto:
+      "Errorea gertatu da orri hau erakustean. Berriro saiatu dezakezu.",
   },
 };

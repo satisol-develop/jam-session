@@ -219,10 +219,11 @@ export function SubscribeForm({
                   {checked && (
                     <select
                       value={seleccion[c.id]}
+                      aria-label={`${d.mi.inscripcion.legendInstrumentos}: ${c.titulo}`}
                       onChange={(e) =>
                         setInstrumentoTema(c.id, e.target.value)
                       }
-                      className="rounded-lg border border-neutral-300 bg-white px-2 py-2 text-base text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
+                      className="min-h-10 rounded-lg border border-neutral-300 bg-white px-2.5 py-2 text-base text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:text-sm"
                     >
                       {opcionesInstrumento.map((i) => (
                         <option key={i} value={i}>

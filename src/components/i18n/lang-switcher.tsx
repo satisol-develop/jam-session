@@ -32,7 +32,7 @@ export function LangSwitcher() {
           lang={loc}
           hrefLang={loc}
           aria-current={loc === actual ? "true" : undefined}
-          className={`px-2 py-1.5 text-xs font-bold uppercase transition ${
+          className={`flex min-h-10 min-w-10 items-center justify-center px-3 text-xs font-bold uppercase transition ${
             loc === actual
               ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
               : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"

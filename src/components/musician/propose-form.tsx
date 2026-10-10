@@ -5,6 +5,7 @@ import { api } from "@/lib/api/client";
 import { INSTRUMENTOS } from "@/lib/constants";
 import { fmt, traducirInstrumento } from "@/i18n";
 import { useDict } from "@/i18n/use-locale";
+import { SkeletonFilas } from "@/components/loading";
 
 interface Adjunto {
   nombre: string;
@@ -44,7 +45,7 @@ export function ProposeForm() {
   const [cancion, setCancion] = useState("");
   const [artista, setArtista] = useState("");
   const [instrumento, setInstrumento] = useState("");
-  const [propuestas, setPropuestas] = useState<PropuestaItem[]>([]);
+  const [propuestas, setPropuestas] = useState<PropuestaItem[] | null>(null);
   const [adjuntos, setAdjuntos] = useState<Adjunto[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,8 +55,11 @@ export function ProposeForm() {
   useEffect(() => {
     api<{ propuestas: PropuestaItem[] }>("musician.myProposals")
       .then((d) => setPropuestas(d.propuestas ?? []))
-      .catch(() => undefined);
-  }, []);
+      .catch((err) => {
+        setPropuestas([]);
+        setError(err instanceof Error ? err.message : d.mi.propuestas.noEnviado);
+      });
+  }, [d.mi.propuestas.noEnviado]);
 
   async function onArchivos(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -123,7 +127,7 @@ export function ProposeForm() {
             bytes: a.bytes,
           })),
         },
-        ...prev,
+        ...(prev ?? []),
       ]);
       setCancion("");
       setArtista("");
@@ -241,7 +245,7 @@ export function ProposeForm() {
                     type="button"
                     onClick={() => quitarAdjunto(a.nombre)}
                     aria-label={fmt(d.mi.propuestas.quitar, { nombre: a.nombre })}
-                    className="inline-flex size-7 items-center justify-center rounded-full text-lg leading-none text-neutral-500 transition hover:bg-red-100 hover:text-red-600 dark:text-neutral-400 dark:hover:bg-red-950"
+                    className="inline-flex size-10 items-center justify-center rounded-full text-lg leading-none text-neutral-500 transition hover:bg-red-100 hover:text-red-600 dark:text-neutral-400 dark:hover:bg-red-950"
                   >
                     ×
                   </button>
@@ -276,13 +280,13 @@ export function ProposeForm() {
         </button>
       </form>
 
-      {propuestas.length === 0 && (
+      {propuestas === null ? (
+        <SkeletonFilas n={2} />
+      ) : propuestas.length === 0 ? (
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           {d.mi.propuestas.sinPropuestas}
         </p>
-      )}
-
-      {propuestas.length > 0 && (
+      ) : (
         <ul className="space-y-2">
           {propuestas.map((p) => (
             <li

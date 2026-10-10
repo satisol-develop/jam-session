@@ -64,14 +64,20 @@ export function UsuariosPanel() {
     recargar();
   }, [recargar]);
 
-  // El modal de resultado se cierra con Escape (patrón de la app).
+  // El modal de resultado se cierra con Escape y bloquea el scroll
+  // de fondo (patrón de la app).
   useEffect(() => {
     if (!resultado) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setResultado(null);
     }
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [resultado]);
 
   async function onCreate(e: FormEvent) {
@@ -652,7 +658,7 @@ export function UsuariosPanel() {
                             );
                           })}
                         </div>
-                        <p className="db-muted mt-1.5 text-[11px]">
+                        <p className="db-muted mt-1.5 text-xs">
                           Ciclo: sin rol → titular → apoyo → sin rol. Admin: solo
                           titular y permanente. Grupo Base: solo titulares (los
                           miembros los elige el General, sin apoyo).

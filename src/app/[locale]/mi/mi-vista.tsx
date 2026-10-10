@@ -46,6 +46,7 @@ export function MiVista() {
   const [evento, setEvento] = useState<Evento | null>(null);
   const [inscripcion, setInscripcion] = useState<Inscripcion | null>(null);
   const [cargado, setCargado] = useState(false);
+  const [errorCarga, setErrorCarga] = useState<string | null>(null);
   const [turnos, setTurnos] = useState<Turno[] | null>(null);
 
   // Mi zona es para participantes: el admin es el único rol que no
@@ -64,7 +65,7 @@ export function MiVista() {
 
   useEffect(() => {
     // Salvaguarda: a los 12 s se pinta la zona aunque un endpoint tarde;
-    // lo que llegue después sobrescribe.
+    // lo que llegue después sobrescribe. Todas las lecturas van en paralelo.
     const salvamento = setTimeout(() => setCargado(true), 12000);
     Promise.all([
       api<{ evento: Evento | null }>("public.event"),
@@ -74,7 +75,11 @@ export function MiVista() {
         setEvento(ev.evento ?? null);
         setInscripcion(sub.inscripcion ?? null);
       })
-      .catch(() => undefined)
+      .catch((err) => {
+        setErrorCarga(
+          err instanceof Error && err.message ? err.message : null,
+        );
+      })
       .finally(() => setCargado(true));
     return () => clearTimeout(salvamento);
   }, []);
@@ -87,43 +92,49 @@ export function MiVista() {
     return <PantallaCargando texto={d.mi.abriendoPanel} />;
   }
 
-  // Primer lote de endpoints: en cuanto lleguen roles y correo verificado
-  // (gate) se pinta la zona con skeletons, sin pantalla completa.
-  if (!cargado) {
-    return (
-      <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
-        <header>
-          <Skeleton className="h-8 w-40 rounded-xl" />
-          <Skeleton className="mt-3 h-4 w-3/4 rounded-lg" />
-        </header>
-        <SkeletonFilas n={3} />
-      </div>
-    );
-  }
-
+  // Primer lote de endpoints: la zona se pinta con skeletons mientras
+  // llegan (sin pantalla completa); el form de inscripción se gatea solo.
   const roleEntries = Object.entries(roles);
   const nombre = user?.displayName ?? user?.email ?? d.mi.musico;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
       <header>
-        <h1 className="text-2xl font-bold">{d.mi.titulo}</h1>
-        <p className="mt-1 text-neutral-500 dark:text-neutral-400">
-          {fmt(d.mi.saludo, { nombre })}
-          {evento
-            ? ` ${
-                evento.inscripcionesCerradas
-                  ? fmt(d.mi.eventoCerradas, {
-                      t: evento.titulo || "Jam Session",
-                    })
-                  : fmt(d.mi.eventoAbierta, {
-                      t: evento.titulo || "Jam Session",
-                    })
-              }`
-            : ""}
-        </p>
-        {!evento && (
-          <p className="mt-2 text-sm text-amber-600">{d.mi.sinEvento}</p>
+        {cargado ? (
+          <h1 className="text-2xl font-bold">{d.mi.titulo}</h1>
+        ) : (
+          <Skeleton className="h-8 w-40 rounded-xl" />
+        )}
+        {cargado ? (
+          <p className="mt-1 text-neutral-500 dark:text-neutral-400">
+            {fmt(d.mi.saludo, { nombre })}
+            {evento
+              ? ` ${
+                  evento.inscripcionesCerradas
+                    ? fmt(d.mi.eventoCerradas, {
+                        t: evento.titulo || "Jam Session",
+                      })
+                    : fmt(d.mi.eventoAbierta, {
+                        t: evento.titulo || "Jam Session",
+                      })
+                }`
+              : ""}
+          </p>
+        ) : (
+          <Skeleton className="mt-3 h-4 w-3/4 rounded-lg" />
+        )}
+        {errorCarga && (
+          <p
+            role="alert"
+            className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
+          >
+            {errorCarga}
+          </p>
+        )}
+        {cargado && !evento && !errorCarga && (
+          <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+            {d.mi.sinEvento}
+          </p>
         )}
       </header>
 
@@ -195,21 +206,27 @@ export function MiVista() {
       <Section
         title={d.mi.inscripcion.titulo}
         description={
-          !evento
-            ? d.mi.inscripcion.descSinSesion
-            : evento.inscripcionesCerradas
-              ? d.mi.inscripcion.descCerradas
-              : d.mi.inscripcion.descAbierta
+          !cargado
+            ? undefined
+            : !evento
+              ? d.mi.inscripcion.descSinSesion
+              : evento.inscripcionesCerradas
+                ? d.mi.inscripcion.descCerradas
+                : d.mi.inscripcion.descAbierta
         }
       >
-        <SubscribeForm
-          key={inscripcion?.id ?? "sin-inscripcion"}
-          inscripcion={inscripcion}
-          onSaved={setInscripcion}
-          sinSesion={!evento}
-          cerradas={evento?.inscripcionesCerradas ?? false}
-          ensayo={evento?.ensayo || undefined}
-        />
+        {!cargado ? (
+          <SkeletonFilas n={2} />
+        ) : (
+          <SubscribeForm
+            key={inscripcion?.id ?? "sin-inscripcion"}
+            inscripcion={inscripcion}
+            onSaved={setInscripcion}
+            sinSesion={!evento}
+            cerradas={evento?.inscripcionesCerradas ?? false}
+            ensayo={evento?.ensayo || undefined}
+          />
+        )}
       </Section>
 
       <Section

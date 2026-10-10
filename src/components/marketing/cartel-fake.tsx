@@ -1,4 +1,7 @@
+"use client";
+
 import { useId } from "react";
+import { useDict } from "@/i18n/use-locale";
 
 /**
  * Cartel ficticio (SVG) con la identidad Debarock: negro grunge, amarillo
@@ -17,18 +20,26 @@ export function CartelFake({
   lugar?: string;
   className?: string;
 }) {
+  const d = useDict();
   const uid = useId().replace(/:/g, "");
   const idRuido = `r${uid}`;
   const idPuntos = `p${uid}`;
 
-  const textoFecha = (fecha || "SÁB 25 · 20:30 H").toUpperCase();
-  const textoLugar = (lugar || "SEDE DEBAROCK").toUpperCase();
+  const presenta = d.cartel.presenta.toUpperCase();
+  const traeLineas = d.cartel.trae.trim().split(/\s+/);
+  const mitad = Math.ceil(traeLineas.length / 2);
+  const trae1 = traeLineas.slice(0, mitad).join(" ");
+  const trae2 = traeLineas.slice(mitad).join(" ");
+  const textoFecha = (fecha || d.cartel.fechaDefecto).toUpperCase();
+  const textoLugar = (lugar || d.cartel.lugarDefecto).toUpperCase();
+  const puertas = d.cartel.puertas.toUpperCase();
+  const altCartel = `${d.cartel.presenta}: Jam Session — ${textoFecha}, ${textoLugar}`;
 
   return (
     <svg
       viewBox="0 0 600 800"
       role="img"
-      aria-label={`Cartel de la Jam Session: ${textoFecha}, ${textoLugar}`}
+      aria-label={altCartel}
       className={className}
     >
       <defs>
@@ -86,7 +97,7 @@ export function CartelFake({
           letterSpacing="5"
           fill="#0a0a0a"
         >
-          DEBAROCK KOLEKTIBOA PRESENTA
+          {presenta}
         </text>
       </g>
 
@@ -143,7 +154,7 @@ export function CartelFake({
         fontSize="22"
         fill="rgba(255,255,255,0.75)"
       >
-        PUERTAS 20:00 · ENTRADA LIBRE
+        {puertas}
       </text>
 
       {/* Sello rojo rotado */}
@@ -167,7 +178,7 @@ export function CartelFake({
           fontSize="21"
           fill="#ffffff"
         >
-          ¡TRAE TU
+          {trae1}
         </text>
         <text
           x="486"
@@ -178,7 +189,7 @@ export function CartelFake({
           fontSize="21"
           fill="#ffffff"
         >
-          INSTRUMENTO!
+          {trae2}
         </text>
       </g>
 

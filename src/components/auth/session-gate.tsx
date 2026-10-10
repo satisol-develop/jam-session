@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { sendEmailVerification, updatePassword } from "firebase/auth";
 import { useAuth, mensajeCorreoError } from "@/lib/auth/auth-provider";
 import { api } from "@/lib/api/client";
@@ -31,7 +32,7 @@ function ErrorVerificacion({
   return (
     <div
       role="alert"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-white p-4 dark:bg-black"
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-white p-4 dark:bg-black"
     >
       <div className="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 text-center shadow-xl dark:border-neutral-800 dark:bg-neutral-950">
         <h1 className="text-lg font-bold">{d.gate.tituloError}</h1>
@@ -50,13 +51,20 @@ function ErrorVerificacion({
           <button
             type="button"
             onClick={onSalir}
-            className="w-full px-4 py-2 text-sm text-neutral-500 underline dark:text-neutral-400"
+            className="w-full min-h-10 px-4 py-2 text-sm text-neutral-500 underline dark:text-neutral-400"
           >
             {d.gate.salir}
           </button>
         </div>
       </div>
     </div>
+  );
+}
+
+function esRutaPublica(pathname: string): boolean {
+  const ruta = pathname.replace(/^\/(?:es|eu)(?=\/|$)/, "") || "/";
+  return !["/panel", "/mi", "/partituras"].some(
+    (p) => ruta === p || ruta.startsWith(`${p}/`),
   );
 }
 
@@ -73,6 +81,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
     setRegistroAviso,
   } = useAuth();
   const d = useDict();
+  const pathname = usePathname();
   const [clave, setClave] = useState("");
   const [clave2, setClave2] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -80,12 +89,14 @@ export function SessionGate({ children }: { children: ReactNode }) {
   const [busy, setBusy] = useState(false);
   const [reintentando, setReintentando] = useState(false);
 
-  // 1) Verificación en curso: nada del interior se pinta sin confirmar.
+  // 1) Verificación en curso: en rutas privadas nada se pinta sin
+  // confirmar; en públicas (landing, login…) no se tapa la página.
   if (loading) {
+    if (esRutaPublica(pathname)) return <>{children}</>;
     return (
       <>
         {children}
-        <PantallaCargando texto={d.gate.verificando} />
+        <PantallaCargando texto={d.gate.verificando} tono="db" />
       </>
     );
   }
@@ -311,7 +322,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
           <button
             type="button"
             onClick={() => void logout()}
-            className="w-full px-4 py-2 text-sm text-neutral-500 underline dark:text-neutral-400"
+            className="w-full min-h-10 px-4 py-2 text-sm text-neutral-500 underline dark:text-neutral-400"
           >
             {d.gate.salir}
           </button>

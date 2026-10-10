@@ -21,8 +21,13 @@ import {
 } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import { getFirebaseAuth } from "@/lib/firebase/client";
-import { api } from "@/lib/api/client";
+import { api, invalidarLecturas } from "@/lib/api/client";
 import { DEMO_MODE } from "@/lib/demo";
+import {
+  borrarRolesCache,
+  escribirRolesCache,
+  leerRolesCache,
+} from "@/lib/auth/roles-cache";
 import { fmt, getDict, localeActual } from "@/i18n";
 import {
   clearDemoSession,
@@ -132,9 +137,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         usuario?: { clavePendiente?: boolean };
       }>("user.me");
       const map = me?.roles ?? {};
+      const pendiente = me?.usuario?.clavePendiente === true;
       setRoles(map);
-      setClavePendiente(me?.usuario?.clavePendiente === true);
+      setClavePendiente(pendiente);
       setSessionCookies(u, map);
+      escribirRolesCache({ uid: u.uid, roles: map, clavePendiente: pendiente });
       verificadoRef.current = true;
       setRolesError(null);
       return map;
@@ -176,9 +183,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(fallback);
       setUser(u);
       if (u) {
+        // Pintar al instante los roles cacheados (F5 o vuelta atrás):
+        // user.me sigue verificando en segundo plano y corrige si hace falta.
+        const cache = leerRolesCache(u.uid);
+        if (cache) {
+          setRoles(cache.roles);
+          setClavePendiente(cache.clavePendiente);
+          setSessionCookies(u, cache.roles);
+          setLoading(false);
+        }
         await loadRoles(u).catch(() => setSessionCookies(u, {}));
       } else {
         setRoles({});
+        borrarRolesCache();
+        invalidarLecturas();
         setSessionCookies(null, {});
       }
       setLoading(false);
@@ -290,6 +308,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     await signOut(getFirebaseAuth());
+    borrarRolesCache();
+    invalidarLecturas();
     setRolesError(null);
   }, []);
 

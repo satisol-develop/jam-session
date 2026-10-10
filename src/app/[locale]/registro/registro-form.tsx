@@ -190,14 +190,14 @@ export function RegistroForm() {
             />
           </div>
 
-          <div className="flex items-start gap-2">
+          <div className="flex min-h-10 items-start gap-2.5 py-1">
             <input
               id="acepta"
               type="checkbox"
               required
               checked={acepta}
               onChange={(e) => setAcepta(e.target.checked)}
-              className="mt-1 size-4 shrink-0 accent-neutral-900 dark:accent-white"
+              className="mt-1 size-5 shrink-0 accent-neutral-900 dark:accent-white"
             />
             <label
               htmlFor="acepta"
@@ -241,7 +241,7 @@ export function RegistroForm() {
         {captchaActivo && (
           <>
             <div ref={captchaHostRef} aria-hidden="true" />
-            <p className="mt-3 text-center text-[11px] text-neutral-400 dark:text-neutral-500">
+            <p className="mt-3 text-center text-xs text-neutral-500 dark:text-neutral-400">
               {d.registro.recaptcha1}
               <a
                 href="https://policies.google.com/privacy"
