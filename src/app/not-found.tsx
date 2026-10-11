@@ -1,13 +1,17 @@
-import Link from "next/link";
-import { cookies } from "next/headers";
-import { DEFAULT_LOCALE, getDict, hasLocale, rutaLocalizada } from "@/i18n";
+"use client";
 
-/** 404 global (también la renderiza [locale] con notFound()). */
-export default async function NoEncontrado() {
-  const store = await cookies();
-  const guardado = store.get("jam_lang")?.value ?? "";
-  const locale = hasLocale(guardado) ? guardado : DEFAULT_LOCALE;
-  const d = getDict(locale);
+import Link from "next/link";
+import { rutaLocalizada } from "@/i18n";
+import { useDict, useLocale } from "@/i18n/use-locale";
+
+/**
+ * 404 global (también la renderiza [locale] con notFound()). Cliente y con
+ * el idioma de la URL: la exportación estática de GitHub Pages prerenderiza
+ * sin servidor, así que no se puede usar cookies() aquí.
+ */
+export default function NoEncontrado() {
+  const locale = useLocale();
+  const d = useDict();
   return (
     <main className="flex min-h-dvh items-center justify-center bg-white px-4 dark:bg-black">
       <div className="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 text-center shadow-xl dark:border-neutral-800 dark:bg-neutral-950">
