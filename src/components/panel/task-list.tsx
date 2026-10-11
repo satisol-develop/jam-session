@@ -217,12 +217,12 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                       {t.titulo}
                     </span>
                     {todas && (
-                      <span className="ml-2 rounded bg-[#FFE600]/15 px-1.5 py-0.5 text-[11px] font-semibold uppercase text-[#FFE600]">
+                      <span className="ml-2 rounded bg-[#FFE600]/15 px-1.5 py-0.5 text-xs font-semibold uppercase text-[#FFE600]">
                         {t.rol}
                       </span>
                     )}
                     {t.origen === "personal" && (
-                      <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold uppercase text-white/60">
+                      <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-xs font-semibold uppercase text-white/60">
                         personal
                       </span>
                     )}
@@ -247,7 +247,7 @@ export function TaskList({ rol, todas = false, soloLectura = false }: Props) {
                           }`}
                         >
                           <span
-                            className={`flex size-3.5 shrink-0 items-center justify-center rounded-[3px] border text-[9px] ${
+                            className={`flex size-4 shrink-0 items-center justify-center rounded-[3px] border text-xs ${
                               st.hecha
                                 ? "border-[#FFE600] bg-[#FFE600] text-black"
                                 : "border-white/30"

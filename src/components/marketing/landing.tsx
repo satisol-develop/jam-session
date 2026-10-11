@@ -281,7 +281,7 @@ export function Landing() {
                 key={c.id}
                 className="flex items-center gap-4 px-4 py-3 sm:px-6"
               >
-                <span className="flex size-6 shrink-0 items-center justify-center rounded bg-neutral-950 text-[11px] font-black text-[#FFE600] tabular-nums">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded bg-neutral-950 text-xs font-black text-[#FFE600] tabular-nums">
                   {i + 1}
                 </span>
                 <span className="min-w-0 flex-1 truncate font-medium">
@@ -307,7 +307,7 @@ export function Landing() {
                 key={c.id}
                 className="flex items-center gap-4 px-4 py-3 sm:px-6"
               >
-                <span className="flex size-6 shrink-0 items-center justify-center rounded bg-neutral-950 text-[11px] font-black text-[#FFE600] tabular-nums">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded bg-neutral-950 text-xs font-black text-[#FFE600] tabular-nums">
                   {i + 1}
                 </span>
                 <span className="min-w-0 flex-1 truncate font-medium">

@@ -271,7 +271,7 @@ export function DifusionKit({ editable }: { editable: boolean }) {
                   >
                     {p.nombre}
                   </a>
-                  <span className="db-badge db-badge-line shrink-0 text-[11px]!">
+                  <span className="db-badge db-badge-line shrink-0">
                     {(p.nombre.split(".").pop() || "?").toUpperCase()} ·{" "}
                     {formatBytes(p.bytes)}
                   </span>

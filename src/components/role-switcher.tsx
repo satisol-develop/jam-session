@@ -128,7 +128,7 @@ export function RoleSwitcher({
                         {ROLES_META[rol].label}
                       </span>
                       <span
-                        className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase ${
+                        className={`shrink-0 rounded-full px-1.5 py-0.5 text-xs font-black uppercase ${
                           activo
                             ? "bg-black/20 text-black"
                             : "border border-white/20 text-white/60"
@@ -160,7 +160,7 @@ export function RoleSwitcher({
                       Participante
                     </span>
                     <span
-                      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase ${
+                      className={`shrink-0 rounded-full px-1.5 py-0.5 text-xs font-black uppercase ${
                         enMiZona
                           ? "bg-black/20 text-black"
                           : "border border-white/20 text-white/60"

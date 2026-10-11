@@ -454,7 +454,7 @@ export function UsuariosPanel() {
                       {ROLES.filter((r) => tipoDe(u.uid, r)).map((r) => (
                         <span
                           key={r}
-                          className="db-badge db-badge-line !text-[11px]"
+                          className="db-badge db-badge-line"
                         >
                           {ROLES_META[r].label.split("·")[0].trim()}
                           {tipoDe(u.uid, r) === "apoyo" ? " · apoyo" : ""}

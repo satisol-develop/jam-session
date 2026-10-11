@@ -189,7 +189,7 @@ export function MiVista() {
                     )}
                   </span>
                   {t.estado === "escena" && (
-                    <span className="shrink-0 rounded bg-[#FFE600] px-1.5 py-0.5 text-[11px] font-bold uppercase text-black">
+                    <span className="shrink-0 rounded bg-[#FFE600] px-1.5 py-0.5 text-xs font-bold uppercase text-black">
                       {d.mi.enEscena}
                     </span>
                   )}

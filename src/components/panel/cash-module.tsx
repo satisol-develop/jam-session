@@ -280,7 +280,7 @@ export function CashModule({ puedeEscribir, puedeCerrar }: Props) {
               <span className="min-w-0 flex-1 break-words">
                 <span className="font-medium">{m.concepto || m.tipo}</span>
                 <span
-                  className={`ml-2 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
+                  className={`ml-2 rounded px-1.5 py-0.5 text-xs font-semibold uppercase ${
                     m.tipo === "gasto"
                       ? "bg-red-500/15 text-red-300"
                       : m.tipo === "otro"

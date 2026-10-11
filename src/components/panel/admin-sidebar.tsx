@@ -27,7 +27,7 @@ export function AdminSidebar({
         className="db-card sticky top-[calc(4rem+env(safe-area-inset-top))] p-2"
       >
         <p className="db-kicker px-3 pt-2 pb-1.5">Administración</p>
-        <ul className="grid gap-0.5">
+        <ul className="grid gap-1">
           {tabs.map((t) => {
             const activa = t.id === activo;
             const tieneConteo = typeof t.conteo === "number" && t.conteo > 0;
@@ -47,7 +47,7 @@ export function AdminSidebar({
                   <span className="min-w-0 flex-1 truncate">{t.label}</span>
                   {tieneConteo && (
                     <span
-                      className={`rounded-full px-1.5 text-[10px] font-black tabular-nums ${
+                      className={`rounded-full px-1.5 text-xs font-black tabular-nums ${
                         activa ? "bg-black/20 text-black" : "bg-[#FFE600] text-black"
                       }`}
                     >
